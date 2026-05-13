@@ -1,13 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import Anthropic from '@anthropic-ai/sdk';
-import formidable from 'formidable';
+import { IncomingForm } from 'formidable';
 import fs from 'fs';
-
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
 
 const IMAGE_EXTRACTION_PROMPT = `
 You are a helpful assistant that extracts structured event data from school notices or invitations shown in images.
@@ -15,14 +9,14 @@ You are a helpful assistant that extracts structured event data from school noti
 Your task:
 - Extract ALL events listed in the image. Do not miss any.
 - If the image contains multiple events, extract every single one.
-- Interpret dates precisely as written, without adjusting or assuming a day earlier.
+- Interpret dates precisely as written.
 - YEAR HANDLING:
   * If a year is explicitly shown, use that year exactly.
   * If NO year is specified, use 2026 for dates that haven't passed yet this year.
   * If NO year is specified and the date has already passed this year, use 2027.
 - Output a valid JSON array, one object per event.
 - ALWAYS include todos for each event based on its category.
-- Only return data in the structure shown below, and nothing else.
+- Only return the JSON array, nothing else — no markdown, no explanation.
 
 Required format:
 [
@@ -35,11 +29,7 @@ Required format:
     "category": "holiday" | "birthday" | "sports" | "swimming" | "music" | "parent" | "report" | "exam" | "general",
     "source": "string",
     "todos": [
-      {
-        "id": "string",
-        "text": "string",
-        "completed": false
-      }
+      { "id": "string", "text": "string", "completed": false }
     ]
   }
 ]
@@ -69,8 +59,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const form = formidable({ maxFileSize: 10 * 1024 * 1024 });
-    const [, files] = await form.parse(req);
+    const form = new IncomingForm({ maxFileSize: 10 * 1024 * 1024 });
+
+    const { files } = await new Promise<{ fields: any; files: any }>((resolve, reject) => {
+      form.parse(req, (err, fields, files) => {
+        if (err) reject(err);
+        else resolve({ fields, files });
+      });
+    });
 
     const fileField = files.image;
     const file = Array.isArray(fileField) ? fileField[0] : fileField;
@@ -79,7 +75,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'No image file uploaded' });
     }
 
-    const mimeType = file.mimetype || 'image/jpeg';
+    const mimeType: string = file.mimetype || 'image/jpeg';
     if (!mimeType.startsWith('image/') && mimeType !== 'application/pdf') {
       return res.status(415).json({ error: 'File must be an image or PDF' });
     }
@@ -118,14 +114,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(500).json({ error: 'Unexpected response from AI' });
     }
 
-    // Strip markdown code fences if present
     const raw = content.text.trim().replace(/^```json\n?/, '').replace(/\n?```$/, '');
 
     let events;
     try {
       events = JSON.parse(raw);
     } catch {
-      return res.status(500).json({ error: 'Failed to parse AI response as JSON', raw: content.text });
+      return res.status(500).json({ error: 'Failed to parse AI response', raw: content.text });
     }
 
     if (!Array.isArray(events)) {
