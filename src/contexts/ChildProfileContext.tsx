@@ -54,8 +54,10 @@ export const ChildProfileProvider = ({ children }: ChildProfileContextProps) => 
       }
     };
 
-    loadProfiles();
-  }, []);
+    if (user) {
+      loadProfiles();
+    }
+  }, [user]);
 
   // Load pending form data from localStorage on mount
   useEffect(() => {
