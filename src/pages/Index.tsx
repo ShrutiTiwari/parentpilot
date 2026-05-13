@@ -95,6 +95,10 @@ const Index = () => {
   // Show landing page for unauthenticated users, dashboard for authenticated users
   if (!user) {
     console.log('Index: No user, showing landing page');
+    // Store the intended path so landing page can redirect back after sign-in
+    if (location.pathname !== '/') {
+      localStorage.setItem('authReturnTo', location.pathname);
+    }
     return <PowerParentIntegratedLanding />;
   }
 
