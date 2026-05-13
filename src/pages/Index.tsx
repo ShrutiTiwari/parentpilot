@@ -92,13 +92,10 @@ const Index = () => {
     );
   }
 
-  // Show landing page for unauthenticated users, dashboard for authenticated users
-  if (!user) {
-    console.log('Index: No user, showing landing page');
-    // Store the intended path so landing page can redirect back after sign-in
-    if (location.pathname !== '/') {
-      localStorage.setItem('authReturnTo', location.pathname);
-    }
+  // Show landing page only on the root path for unauthenticated users
+  // All other routes (e.g. /events) render the dashboard so guests can browse
+  if (!user && location.pathname === '/') {
+    console.log('Index: No user on root, showing landing page');
     return <PowerParentIntegratedLanding />;
   }
 
@@ -108,52 +105,58 @@ const Index = () => {
       <SchoolAuthorizationProvider>
         <AgeThemeProvider>
           <div className="min-h-screen bg-background">
-            {/* Top navigation area with sign out and profile buttons */}
+            {/* Top navigation area */}
             <div className="w-full border-b border-gray-200 bg-white">
               <div className="max-w-[1400px] mx-auto px-4 py-2 flex justify-end items-center gap-2 sm:gap-4">
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  className="text-red-500 hover:bg-red-100 hover:text-red-600"
-                  onClick={handleSignOut}
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Sign Out
-                </Button>
-                <ChildProfileSelector onManageProfiles={() => setIsProfileDialogOpen(true)} />
+                {user ? (
+                  <>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-red-500 hover:bg-red-100 hover:text-red-600"
+                      onClick={handleSignOut}
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Sign Out
+                    </Button>
+                    <ChildProfileSelector onManageProfiles={() => setIsProfileDialogOpen(true)} />
+                  </>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-purple-600 hover:bg-purple-50 hover:text-purple-700"
+                    onClick={() => handleShowAuthModal(true, 'general')}
+                  >
+                    Sign In
+                  </Button>
+                )}
               </div>
             </div>
             {/* Main content area */}
             <div className="px-4 sm:px-6 py-4 sm:py-6">
               <div className="max-w-[1400px] mx-auto">
-                {/* Centered title */}
-                <div className="text-center mb-6">
-                  <h1 className="text-2xl sm:text-3xl font-bold">Welcome to Power Parent!</h1>
-                </div>
-                <QuotesCarousel />
                 <Dashboard
                   showAuthModal={showAuthModal}
                   setShowAuthModal={handleShowAuthModal}
+                  onSignOut={handleSignOut}
                   initialActiveTab={initialActiveTab}
                   initialActiveSubTab={initialActiveSubTab}
                 />
-                <ManageProfilesDialog 
-                  open={isProfileDialogOpen} 
-                  onOpenChange={setIsProfileDialogOpen}
-                  showAuthModal={showAuthModal}
-                  setShowAuthModal={handleShowAuthModal}
-                />
+                {user && (
+                  <ManageProfilesDialog
+                    open={isProfileDialogOpen}
+                    onOpenChange={setIsProfileDialogOpen}
+                    showAuthModal={showAuthModal}
+                    setShowAuthModal={handleShowAuthModal}
+                  />
+                )}
                 <AuthModal
                   open={showAuthModal}
                   onOpenChange={setShowAuthModal}
                   customMessage={getAuthMessage()}
                   onSuccess={() => {
                     console.log('Auth successful, pending operations will resume automatically');
-                    // Keep the event dialog open if user was saving an event
-                    if (authTriggerAction === 'save_event') {
-                      // The event dialog should remain open so user can see their saved event
-                      console.log('Keeping event dialog open after auth success');
-                    }
                   }}
                 />
               </div>
