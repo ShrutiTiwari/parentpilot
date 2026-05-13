@@ -66,13 +66,6 @@ const supabaseAdmin = supabaseUrl && supabaseServiceRoleKey ? createClient(supab
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024, files: 1 },
-  fileFilter: (req, file, cb) => {
-    const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'];
-    if (!allowed.includes(file.mimetype)) {
-      return cb(new Error('Only images and PDFs are allowed'), false);
-    }
-    cb(null, true);
-  },
 });
 
 // ─── Health ───────────────────────────────────────────────────────────────────
@@ -83,12 +76,14 @@ app.get('/api/health', (req, res) => {
 // ─── Extract event from image/PDF ─────────────────────────────────────────────
 app.post('/api/extract-event', uploadLimiter, upload.single('image'), async (req, res) => {
   try {
+    console.log('extract-event: file present:', !!req.file);
+    console.log('extract-event: ANTHROPIC_API_KEY present:', !!process.env.ANTHROPIC_API_KEY);
+    console.log('extract-event: LLM_STRATEGY:', process.env.LLM_STRATEGY);
+
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
 
     const mimeType = req.file.mimetype;
-    if (!mimeType.startsWith('image/') && mimeType !== 'application/pdf') {
-      return res.status(400).json({ error: 'File must be an image or PDF' });
-    }
+    console.log('extract-event: mimetype:', mimeType, 'size:', req.file.size);
 
     const extractedEvent = await extractDataFromImage(
       IMAGE_EXTRACTION_PROMPT,

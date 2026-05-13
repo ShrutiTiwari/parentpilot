@@ -19,7 +19,7 @@ const CLAUDE_CONFIG = {
   },
 
   // Default model to use - Claude Sonnet 4.5 (best balance of speed/intelligence)
-  DEFAULT_MODEL: 'claude-sonnet-4-5-20250929',
+  DEFAULT_MODEL: 'claude-haiku-4-5-20251001',
 
   // Temperature settings
   TEMPERATURE: {
