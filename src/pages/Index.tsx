@@ -3,12 +3,9 @@ import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { QuotesCarousel } from "@/components/QuotesCarousel";
 import { ChildProfileProvider } from "@/contexts/ChildProfileContext";
-import { ChildProfileSelector } from "@/components/profile/ChildProfileSelector";
 import { ManageProfilesDialog } from "@/components/profile/ManageProfilesDialog";
 import { AuthModal } from "@/components/auth/AuthModal";
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { LogOut } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { signOut } from "@/utils/auth";
 import { PowerParentIntegratedLanding } from "@/components/PowerParentIntegratedLanding";
@@ -105,34 +102,6 @@ const Index = () => {
       <SchoolAuthorizationProvider>
         <AgeThemeProvider>
           <div className="min-h-screen bg-background">
-            {/* Top navigation area */}
-            <div className="w-full border-b border-gray-200 bg-white">
-              <div className="max-w-[1400px] mx-auto px-4 py-2 flex justify-end items-center gap-2 sm:gap-4">
-                {user ? (
-                  <>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-red-500 hover:bg-red-100 hover:text-red-600"
-                      onClick={handleSignOut}
-                    >
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Sign Out
-                    </Button>
-                    <ChildProfileSelector onManageProfiles={() => setIsProfileDialogOpen(true)} />
-                  </>
-                ) : (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-purple-600 hover:bg-purple-50 hover:text-purple-700"
-                    onClick={() => handleShowAuthModal(true, 'general')}
-                  >
-                    Sign In
-                  </Button>
-                )}
-              </div>
-            </div>
             {/* Main content area */}
             <div className="px-4 sm:px-6 py-4 sm:py-6">
               <div className="max-w-[1400px] mx-auto">
