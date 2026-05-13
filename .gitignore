@@ -38,3 +38,4 @@ test-results/
 playwright-report/
 tests/auth-state.json
 .env.test.local
+.vercel

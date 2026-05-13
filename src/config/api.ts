@@ -1,5 +1,7 @@
-// API configuration — empty string means relative URLs, works on both local Vercel dev and production
-export const API_BASE_URL = '';
+// API configuration
+// Locally: Vite proxies /api/* to localhost:3000 so empty string works
+// Production: set VITE_API_URL to the deployed backend URL
+export const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 // Log which API URL is being used
 console.log('Using API URL:', API_BASE_URL);
