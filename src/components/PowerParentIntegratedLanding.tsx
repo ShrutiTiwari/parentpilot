@@ -111,7 +111,7 @@ export function PowerParentIntegratedLanding() {
           size="lg"
           className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-8 py-4 text-lg shadow-lg"
         >
-          <Link to="/auth">
+          <Link to="/events">
             Get Started Free
           </Link>
         </Button>
