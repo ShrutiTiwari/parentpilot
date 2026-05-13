@@ -1,9 +1,5 @@
-// API configuration
-export const API_BASE_URL = typeof window !== 'undefined'
-  ? (window.location.hostname.includes('localhost')
-      ? 'http://localhost:3000'
-      : 'https://snap-remind-calendar-kid-shrutitiwaris-projects.vercel.app')
-  : '';
+// API configuration — empty string means relative URLs, works on both local Vercel dev and production
+export const API_BASE_URL = '';
 
 // Log which API URL is being used
 console.log('Using API URL:', API_BASE_URL);

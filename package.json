@@ -22,6 +22,7 @@
     "test:report": "playwright show-report"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.95.2",
     "@google-cloud/vision": "^5.1.0",
     "@hookform/resolvers": "^3.9.0",
     "@radix-ui/react-accordion": "^1.2.0",
@@ -55,6 +56,7 @@
     "@tanstack/react-query": "^5.56.2",
     "@types/uuid": "^10.0.0",
     "@vercel/analytics": "^1.5.0",
+    "@vercel/node": "^5.8.0",
     "chart.js": "^4.5.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -64,6 +66,7 @@
     "dotenv": "^16.3.1",
     "embla-carousel-react": "^8.3.0",
     "express": "^4.18.2",
+    "formidable": "^3.5.4",
     "input-otp": "^1.2.4",
     "js-cookie": "^3.0.5",
     "lovable-tagger": "^1.1.8",
@@ -94,6 +97,7 @@
     "@eslint/js": "^9.9.0",
     "@playwright/test": "^1.41.0",
     "@tailwindcss/typography": "^0.5.15",
+    "@types/formidable": "^3.5.1",
     "@types/node": "^22.5.5",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
