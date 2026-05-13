@@ -1,0 +1,633 @@
+[
+
+  {
+    "title": "Summer Term First day of term",
+    "date": "April 23, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "source",
+    "todos": []
+  },
+  {
+    "title": "May Day Holiday",
+    "date": "May 05, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "source",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Summer Term Half Term",
+    "date": "May 26, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "source",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Summer Term Half Term",
+    "date": "May 27, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "source",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Summer Term Half Term",
+    "date": "May 28, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "source",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Summer Term Half Term",
+    "date": "May 29, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "source",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Summer Term Half Term",
+    "date": "May 30, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "source",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Summer Term Last day of term",
+    "date": "July 10, 2025",
+    "time": "00:00 - 12:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "source",
+    "todos": []
+  },
+  {
+    "title": "Bank Holiday",
+    "date": "August 25, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "source",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "New Staff Induction",
+    "date": "August 27, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Staff",
+    "category": "staff",
+    "source": "source",
+    "todos": []
+  },
+  {
+    "title": "Staff Study Day",
+    "date": "August 28, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Staff",
+    "category": "staff",
+    "source": "source",
+    "todos": []
+  },
+  {
+    "title": "Staff Study Day",
+    "date": "August 29, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Staff",
+    "category": "staff",
+    "source": "source",
+    "todos": []
+  },
+  {
+    "title": "Autumn Term First day of term",
+    "date": "September 01, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Junior School, Year 7, Year 12",
+    "category": "general",
+    "source": "source",
+    "todos": []
+  },
+  {
+    "title": "Autumn Term First day of term",
+    "date": "September 02, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Year 8, Year 9, Year 10, Year 11, Year 13",
+    "category": "general",
+    "source": "source",
+    "todos": []
+  },
+  {
+    "title": "School closes at 1pm for students in preparation for Open Morning",
+    "date": "September 26, 2025",
+    "time": "00:00 - 13:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "source",
+    "todos": []
+  },
+  {
+    "title": "Open Morning",
+    "date": "September 27, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "source",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Attend Open Morning",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Autumn Term Half Term",
+    "date": "October 20, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "source",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Autumn Term Half Term",
+    "date": "October 21, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "source",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Autumn Term Half Term",
+    "date": "October 22, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "source",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Autumn Term Half Term",
+    "date": "October 23, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "source",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Autumn Term Half Term",
+    "date": "October 24, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "source",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Autumn Term Half Term",
+    "date": "October 27, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "source",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Autumn Term Half Term",
+    "date": "October 28, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "source",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Autumn Term Half Term",
+    "date": "October 29, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "source",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Autumn Term Half Term",
+    "date": "October 30, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "source",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Autumn Term Half Term",
+    "date": "October 31, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "source",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Autumn Term Last day of term",
+    "date": "December 17, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "source",
+    "todos": []
+  },
+  {
+    "title": "Bank Holiday",
+    "date": "January 01, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "source",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Staff Study Day",
+    "date": "January 05, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Staff",
+    "category": "staff",
+    "source": "source",
+    "todos": []
+  },
+  {
+    "title": "Spring Term First day of term",
+    "date": "January 06, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "source",
+    "todos": []
+  },
+  {
+    "title": "Spring Term Half Term",
+    "date": "February 16, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "source",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Spring Term Half Term",
+    "date": "February 17, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "source",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Spring Term Half Term",
+    "date": "February 18, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "source",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Spring Term Half Term",
+    "date": "February 19, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "source",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Spring Term Half Term",
+    "date": "February 20, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "source",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Spring Term Last day of term",
+    "date": "March 27, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "source",
+    "todos": []
+  },
+  {
+    "title": "Bank Holiday (Good Friday)",
+    "date": "April 03, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "source",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Bank Holiday (Easter Monday)",
+    "date": "April 06, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "source",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Staff Study Day",
+    "date": "April 20, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Staff",
+    "category": "staff",
+    "source": "source",
+    "todos": []
+  },
+  {
+    "title": "Summer Term First day of term",
+    "date": "April 21, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "source",
+    "todos": []
+  },
+  {
+    "title": "Bank Holiday (May Day Holiday)",
+    "date": "May 04, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "source",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Summer Term Half Term",
+    "date": "May 25, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "source",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Summer Term Half Term",
+    "date": "May 26, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "source",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Summer Term Half Term",
+    "date": "May 27, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "source",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Summer Term Half Term",
+    "date": "May 28, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "source",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Summer Term Half Term",
+    "date": "May 29, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "source",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Bank Holiday",
+    "date": "May 25, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "source",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Summer Term Last day of term",
+    "date": "July 08, 2026",
+    "time": "00:00 - 12:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "source",
+    "todos": []
+  }
+]

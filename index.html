@@ -1,0 +1,130 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" id="favicon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎹</text></svg>" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PowerParent - ABRSM Music Practice Tracker</title>
+
+    <!-- Dynamic Favicon, Title, and Social Sharing based on subdomain -->
+    <script>
+      (function() {
+        const hostname = window.location.hostname;
+        const fullUrl = window.location.href;
+        const isEventsMode = hostname.startsWith('events.powerparent.co.uk') ||
+                             hostname.startsWith('events.localhost') ||
+                             window.location.search.includes('mode=events');
+
+        const favicon = document.getElementById('favicon');
+        const title = document.querySelector('title');
+        const ogTitle = document.getElementById('og-title');
+        const ogDescription = document.getElementById('og-description');
+        const ogUrl = document.getElementById('og-url');
+        const ogImage = document.getElementById('og-image');
+        const twitterTitle = document.getElementById('twitter-title');
+        const twitterDescription = document.getElementById('twitter-description');
+        const twitterImage = document.getElementById('twitter-image');
+
+        if (isEventsMode) {
+          // Calendar icon for events subdomain
+          if (favicon) favicon.href = "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📅</text></svg>";
+          if (title) title.textContent = "PowerParent Events - School Calendar & Event Organizer";
+
+          // Social sharing for Events
+          const eventsTitle = "PowerParent Events - Never Miss School Events Again";
+          const eventsDescription = "Automatically sync school calendars, get smart reminders, and organize events across multiple kids. Stop missing permission slips and dress-up days!";
+          const eventsImage = "https://powerparent.co.uk/images/power_parent_problem.png";
+
+          if (ogTitle) ogTitle.setAttribute('content', eventsTitle);
+          if (ogDescription) ogDescription.setAttribute('content', eventsDescription);
+          if (ogUrl) ogUrl.setAttribute('content', fullUrl);
+          if (ogImage) ogImage.setAttribute('content', eventsImage);
+
+          if (twitterTitle) twitterTitle.setAttribute('content', eventsTitle);
+          if (twitterDescription) twitterDescription.setAttribute('content', eventsDescription);
+          if (twitterImage) twitterImage.setAttribute('content', eventsImage);
+        } else {
+          // Piano icon for music subdomain (default)
+          if (favicon) favicon.href = "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎹</text></svg>";
+          if (title) title.textContent = "PowerParent Music - ABRSM Music Practice Tracker";
+
+          // Social sharing for Music
+          const musicTitle = "PowerParent Music - ABRSM Practice Tracker for Piano";
+          const musicDescription = "Track ABRSM music practice (Grade 0-8) with streaks, progress tracking, and teacher sharing. Help kids build consistent practice habits and reach their musical goals!";
+          const musicImage = "https://powerparent.co.uk/images/music_power_parent_scoial.png";
+
+          if (ogTitle) ogTitle.setAttribute('content', musicTitle);
+          if (ogDescription) ogDescription.setAttribute('content', musicDescription);
+          if (ogUrl) ogUrl.setAttribute('content', fullUrl);
+          if (ogImage) ogImage.setAttribute('content', musicImage);
+
+          if (twitterTitle) twitterTitle.setAttribute('content', musicTitle);
+          if (twitterDescription) twitterDescription.setAttribute('content', musicDescription);
+          if (twitterImage) twitterImage.setAttribute('content', musicImage);
+        }
+      })();
+    </script>
+    <meta name="description" content="Track ABRSM music practice (Grade 0-8), scales, pieces, sight reading & aural tests. Organize school events & never miss important dates. Perfect for music students & parents." />
+    <meta name="keywords" content="ABRSM practice tracker, music practice log, grade 0-8 music, scales practice, sight reading, aural tests, music student tracker, school events organizer, parent calendar" />
+    <meta name="author" content="PowerParent" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://powerparent.co.uk/" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:title" id="og-title" content="PowerParent - ABRSM Music Practice Tracker" />
+    <meta property="og:description" id="og-description" content="Track ABRSM music practice (Grade 0-8), scales, pieces, sight reading & aural tests. Organize school events & never miss important dates." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" id="og-url" content="https://powerparent.co.uk/" />
+    <meta property="og:image" id="og-image" content="https://powerparent.co.uk/images/power_parent_thumbnail.png" />
+    <meta property="og:site_name" content="PowerParent" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@powerparent" />
+    <meta name="twitter:title" id="twitter-title" content="PowerParent - ABRSM Music Practice Tracker" />
+    <meta name="twitter:description" id="twitter-description" content="Track ABRSM music practice (Grade 0-8), scales, pieces, sight reading & aural tests." />
+    <meta name="twitter:image" id="twitter-image" content="/images/music_power_parent_scoial.png" />
+    
+    <!-- Google tag (gtag.js) -->
+    <script>
+      // Skip GA4 for localhost development
+      if (window.location.hostname !== 'localhost') {
+        document.write('<script async src="https://www.googletagmanager.com/gtag/js?id=G-75MTLQWJRY"><\/script>');
+      }
+    </script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+
+      if (window.location.hostname !== 'localhost') {
+        gtag('js', new Date());
+        gtag('config', 'G-75MTLQWJRY');
+      } else {
+        // Dummy function for local development
+        window.gtag = function() { console.log('📊 GA4 (dev mode):', arguments); };
+      }
+    </script>
+
+    <!-- Microsoft Clarity -->
+    <script type="text/javascript">
+      // Skip Clarity for localhost development (including subdomains like music.localhost, events.localhost)
+      const isLocalhost = window.location.hostname.includes('localhost');
+
+      if (!isLocalhost) {
+        (function(c,l,a,r,i,t,y){
+          c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+          t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+          y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+        })(window, document, "clarity", "script", "sq1ggxunq1");
+      } else {
+        // Dummy function for local development
+        window.clarity = function() { console.log('🎥 Clarity (dev mode):', arguments); };
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

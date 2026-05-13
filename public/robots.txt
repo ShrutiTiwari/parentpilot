@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://powerparent.co.uk/sitemap.xml
+
+# Disallow admin and private areas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /auth/
+Disallow: /home/
+
+# Allow important pages
+Allow: /abrsm/
+Allow: /music/
+Allow: /events/
+Allow: /shared/

@@ -1,0 +1,1645 @@
+[
+  {
+    "title": "Staff Day",
+    "date": "April 22, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "HH Summer Term 2025 ommences",
+    "date": "April 23, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Homework Club resumes",
+    "date": "April 23, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "No extra-curricular clubs this week",
+    "date": "April 23, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Coffee with Mr Pearce",
+    "date": "April 24, 2025",
+    "time": "08:00 - 08:30",
+    "yearGroup": "All",
+    "category": "parent event",
+    "sourcePdf": "hh_dairy_dates.pdf",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Attend Coffee with Mr Pearce at the Old Library",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Swimming begins at Waterfront",
+    "date": "April 24, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Lower School",
+    "category": "swimming",
+    "sourcePdf": "hh_dairy_dates.pdf",
+    "todos": [
+      {
+        "id": "todo2",
+        "text": "Provide child with appropriate swimming kit",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Indoor Gym begins at Waterfront",
+    "date": "April 24, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Upper School",
+    "category": "sports",
+    "sourcePdf": "hh_dairy_dates.pdf",
+    "todos": [
+      {
+        "id": "todo3",
+        "text": "Provide child with indoor gym kit",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Prep Year 5 exam tutorial sessions resume",
+    "date": "April 24, 2025",
+    "time": "00:00 - 16:45",
+    "yearGroup": "Year 5",
+    "category": "exam",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Prep Year 4 11+ Meeting",
+    "date": "April 25, 2025",
+    "time": "08:30 - 09:30",
+    "yearGroup": "Year 4",
+    "category": "parent event",
+    "sourcePdf": "hh_dairy_dates.pdf",
+    "todos": [
+      {
+        "id": "todo4",
+        "text": "Attend 11+ Meeting at the Old Library",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Extra-curricular clubs start",
+    "date": "April 28, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Guitar lessons start",
+    "date": "April 28, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "music",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Parent Assembly - Running 100 Miles (Mr Campbell)",
+    "date": "April 30, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Upper School",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Parent Visit - Criminal Barrister (Ms Hardcastle)",
+    "date": "April 30, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "EYFS",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Mini Marathon",
+    "date": "April 30, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Upper School",
+    "category": "sports",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Perform Drama Workshop - Jungle Rescue Adventure",
+    "date": "April 30, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Lower School",
+    "category": "drama",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Junior Maths Challenge",
+    "date": "May 1, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": [
+      "Year 5",
+      "Year 6"
+    ],
+    "category": "exam",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Summer Fayre Meeting",
+    "date": "May 1, 2025",
+    "time": "08:30 - 09:30",
+    "yearGroup": "All",
+    "category": "parent event",
+    "sourcePdf": "hh_dairy_dates.pdf",
+    "todos": [
+      {
+        "id": "todo5",
+        "text": "Attend Summer Fayre Meeting at the Old Library",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Bank Holiday",
+    "date": "May 5, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "sourcePdf": "hh_dairy_dates.pdf",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "TFL Safety and Citizenship Presentation",
+    "date": "May 6, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Year 6",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Lunch Tasting Session for Parents",
+    "date": "May 6, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "parent event",
+    "sourcePdf": "hh_dairy_dates.pdf",
+    "todos": [
+      {
+        "id": "todo6",
+        "text": "Sample lunch meals during tasting session",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "ISA U11s Cricket Tournament",
+    "date": "May 9, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Under 11",
+    "category": "sports",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Parent Assembly - Currencies (Mr Sawhney)",
+    "date": "May 12, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Parent Workshop - Pottery (Mrs Lesslie)",
+    "date": "May 12, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": [
+      "Year 5",
+      "Year 6"
+    ],
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "India Day",
+    "date": "May 13, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf",
+    "todos": [
+      {
+        "id": "todo7",
+        "text": "Encourage child to wear traditional Indian clothing or flag colours",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Litter Pick",
+    "date": "May 14, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Upper School",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Sky Academy Studios visit",
+    "date": "May 15, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": [
+      "Year 3",
+      "Year 4"
+    ],
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf",
+    "todos": [
+      {
+        "id": "todo8",
+        "text": "Bring child to Old Library at 7am",
+        "completed": false
+      },
+      {
+        "id": "todo9",
+        "text": "Provide packed lunch & drink (no nuts/sesame seeds)",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Paris Cultural Trip Parent Q&A",
+    "date": "May 15, 2025",
+    "time": "08:00 - 00:00",
+    "yearGroup": "All",
+    "category": "parent event",
+    "sourcePdf": "hh_dairy_dates.pdf",
+    "todos": [
+      {
+        "id": "todo10",
+        "text": "Attend Paris Cultural Trip Parent Q&A at the Old Library",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Agility Festival",
+    "date": "May 16, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": [
+      "Kindergarten",
+      "Reception"
+    ],
+    "category": "sports",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Exam Week",
+    "date": "May 19, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "exam",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Exam Week",
+    "date": "May 20, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "exam",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Exam Week",
+    "date": "May 21, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "exam",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Exam Week",
+    "date": "May 22, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "exam",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Waste Awareness Week",
+    "date": "May 19, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Eco Day",
+    "date": "May 20, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf",
+    "todos": [
+      {
+        "id": "todo11",
+        "text": "Encourage child to wear Earth colours to school",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Coffee with Mr Pearce",
+    "date": "May 20, 2025",
+    "time": "08:00 - 08:30",
+    "yearGroup": "All",
+    "category": "parent event",
+    "sourcePdf": "hh_dairy_dates.pdf",
+    "todos": [
+      {
+        "id": "todo12",
+        "text": "Come to the Old Library between 8am-8.30am",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Walk for Water (Wateraid)",
+    "date": "May 21, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Grandparents’ Tea Party",
+    "date": "May 23, 2025",
+    "time": "13:30 - 15:30",
+    "yearGroup": "Year 6",
+    "category": "parent event",
+    "sourcePdf": "hh_dairy_dates.pdf",
+    "todos": [
+      {
+        "id": "todo13",
+        "text": "RSVP for Grandparents' Tea Party",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "No extra-curricular clubs",
+    "date": "May 23, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Homework Club operates until 5pm",
+    "date": "May 23, 2025",
+    "time": "00:00 - 17:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "HALF TERM",
+    "date": "May 26, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "HALF TERM",
+    "date": "May 27, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "HALF TERM",
+    "date": "May 28, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "HALF TERM",
+    "date": "May 29, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "HALF TERM",
+    "date": "May 30, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Parents’ Evening",
+    "date": "June 3, 2025",
+    "time": "14:00 - 17:30",
+    "yearGroup": [
+      "Year 3",
+      "Year 5"
+    ],
+    "category": "parent event",
+    "sourcePdf": "hh_dairy_dates.pdf",
+    "todos": [
+      {
+        "id": "todo14",
+        "text": "Attend Parents' Evening (details to follow)",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Parents’ Evening",
+    "date": "June 4, 2025",
+    "time": "14:00 - 17:30",
+    "yearGroup": [
+      "Year 4",
+      "Year 6"
+    ],
+    "category": "parent event",
+    "sourcePdf": "hh_dairy_dates.pdf",
+    "todos": [
+      {
+        "id": "todo15",
+        "text": "Attend Parents' Evening (details to follow)",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "School Summer Production Dress Rehearsal",
+    "date": "June 5, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "drama",
+    "sourcePdf": "hh_dairy_dates.pdf",
+    "todos": [
+      {
+        "id": "todo16",
+        "text": "Ensure child comes to school dressed in costume",
+        "completed": false
+      },
+      {
+        "id": "todo17",
+        "text": "Ensure child brings sports kit in PE bag",
+        "completed": false
+      },
+      {
+        "id": "todo18",
+        "text": "Ensure child's costume is named",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Playmakers Award Session 1",
+    "date": "June 6, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Year 6",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Whole School and Class Group Photographs",
+    "date": "June 10, 2025",
+    "time": "09:30 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf",
+    "todos": [
+      {
+        "id": "todo19",
+        "text": "Ensure child wears full school uniform with cravat",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "School Production at Greenwich Theatre",
+    "date": "June 13, 2025",
+    "time": "18:00 - 00:00",
+    "yearGroup": "All",
+    "category": "drama",
+    "sourcePdf": "hh_dairy_dates.pdf",
+    "todos": [
+      {
+        "id": "todo20",
+        "text": "Purchase tickets for School Production",
+        "completed": false
+      },
+      {
+        "id": "todo21",
+        "text": "Collect child promptly at 2.30pm",
+        "completed": false
+      },
+      {
+        "id": "todo22",
+        "text": "Provide costume (details to follow)",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "School closes early for Production",
+    "date": "June 13, 2025",
+    "time": "00:00 - 14:30",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "No extra-curricular clubs or homework club",
+    "date": "June 13, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "11+ Exam Day",
+    "date": "June 14, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Year 5",
+    "category": "exam",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Last week of Waterfront swimming sessions",
+    "date": "June 16, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Lower School",
+    "category": "swimming",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Last week of Waterfront swimming sessions",
+    "date": "June 17, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Lower School",
+    "category": "swimming",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Last week of Waterfront swimming sessions",
+    "date": "June 18, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Lower School",
+    "category": "swimming",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Last week of Waterfront swimming sessions",
+    "date": "June 19, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Lower School",
+    "category": "swimming",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Last week of Waterfront swimming sessions",
+    "date": "June 20, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Lower School",
+    "category": "swimming",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Last week of Waterfront gym sessions",
+    "date": "June 16, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Upper School",
+    "category": "sports",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Last week of Waterfront gym sessions",
+    "date": "June 17, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Upper School",
+    "category": "sports",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Last week of Waterfront gym sessions",
+    "date": "June 18, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Upper School",
+    "category": "sports",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Last week of Waterfront gym sessions",
+    "date": "June 19, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Upper School",
+    "category": "sports",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Last week of Waterfront gym sessions",
+    "date": "June 20, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Upper School",
+    "category": "sports",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Horniman Museum and Aquarium visit",
+    "date": "June 16, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": [
+      "Reception",
+      "Year 1",
+      "Year 2"
+    ],
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf",
+    "todos": [
+      {
+        "id": "todo23",
+        "text": "Provide packed lunch & drink (no nuts/sesame seeds)",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Parents’ Evening",
+    "date": "June 17, 2025",
+    "time": "14:00 - 17:30",
+    "yearGroup": [
+      "Year 1",
+      "Year 2"
+    ],
+    "category": "parent event",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Coffee with Mr Pearce",
+    "date": "June 18, 2025",
+    "time": "08:00 - 08:30",
+    "yearGroup": "All",
+    "category": "parent event",
+    "sourcePdf": "hh_dairy_dates.pdf",
+    "todos": [
+      {
+        "id": "todo25",
+        "text": "Come to the Old Library between 8am-8.30am",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Playmakers Award Delivery (Games for Lower School)",
+    "date": "June 18, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": [
+      "Year 6",
+      "Lower School"
+    ],
+    "category": "sports",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Prep Year 3 Class Assembly",
+    "date": "June 19, 2025",
+    "time": "08:50 - 00:00",
+    "yearGroup": "Year 3",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf",
+    "todos": [
+      {
+        "id": "todo26",
+        "text": "Bring child to Old Library for rehearsal at 8am",
+        "completed": false
+      },
+      {
+        "id": "todo27",
+        "text": "Attend Year 3 Class Assembly at 8:50am",
+        "completed": false
+      },
+      {
+        "id": "todo28",
+        "text": "Stay for tea/coffee after Year 3 Class Assembly",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Dodgeball Tournament",
+    "date": "June 19, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Upper School",
+    "category": "sports",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Founders Day and Sports Day",
+    "date": "June 20, 2025",
+    "time": "13:30 - 00:00",
+    "yearGroup": "All",
+    "category": "sports",
+    "sourcePdf": "hh_dairy_dates.pdf",
+    "todos": [
+      {
+        "id": "todo29",
+        "text": "Ensure child comes to school dressed in sports kit",
+        "completed": false
+      },
+      {
+        "id": "todo30",
+        "text": "Attend Founders Day and Sports Day",
+        "completed": false
+      },
+      {
+        "id": "todo31",
+        "text": "Collect child after Sports Day",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Year 6 Work Showcase",
+    "date": "June 20, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Year 6",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf",
+    "todos": [
+      {
+        "id": "todo32",
+        "text": "See Year 6 Work Showcase at the Old Library",
+        "completed": false
+      },
+      {
+        "id": "todo33",
+        "text": "Ask Year 6 pupils about their work at Showcase",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "No extra-curricular clubs",
+    "date": "June 20, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Homework Club operates until 5pm",
+    "date": "June 20, 2025",
+    "time": "00:00 - 17:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Summer Fayre",
+    "date": "June 21, 2025",
+    "time": "12:30 - 14:30",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf",
+    "todos": [
+      {
+        "id": "todo34",
+        "text": "Come to the Summer Fayre at the Old Library",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Last week of extra-curricular clubs",
+    "date": "June 23, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Last week of extra-curricular clubs",
+    "date": "June 24, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Last week of extra-curricular clubs",
+    "date": "June 25, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Last week of extra-curricular clubs",
+    "date": "June 26, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Last week of extra-curricular clubs",
+    "date": "June 27, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Last week of Guitar sessions",
+    "date": "June 23, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "music",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Last week of Guitar sessions",
+    "date": "June 24, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "music",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Last week of Guitar sessions",
+    "date": "June 25, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "music",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Last week of Guitar sessions",
+    "date": "June 26, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "music",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Last week of Guitar sessions",
+    "date": "June 27, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "music",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Imperial War Museum visit ('We Were There' workshop)",
+    "date": "June 25, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": [
+      "Year 5",
+      "Year 6"
+    ],
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf",
+    "todos": [
+      {
+        "id": "todo35",
+        "text": "Provide packed lunch & drink (no nuts/sesame seeds)",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Grandparent Workshop - Baking (Mrs Birrell)",
+    "date": "June 25, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Year 3",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "No swimming",
+    "date": "June 26, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Lower School",
+    "category": "swimming",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "No Indoor Gym",
+    "date": "June 26, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Upper School",
+    "category": "sports",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Guitar Assembly",
+    "date": "June 27, 2025",
+    "time": "09:00 - 00:00",
+    "yearGroup": "All",
+    "category": "music",
+    "sourcePdf": "hh_dairy_dates.pdf",
+    "todos": [
+      {
+        "id": "todo36",
+        "text": "Bring Guitar Club child to Old Library for rehearsal at 8am",
+        "completed": false
+      },
+      {
+        "id": "todo37",
+        "text": "Attend Guitar Assembly at 9am",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Parent Visit - Mock Trial (Ms Hardcastle)",
+    "date": "June 27, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": [
+      "Year 5",
+      "Year 6"
+    ],
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "NO Waterfront swimming sessions",
+    "date": "June 30, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Lower School",
+    "category": "swimming",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "NO Waterfront swimming sessions",
+    "date": "July 1, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Lower School",
+    "category": "swimming",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "NO Waterfront swimming sessions",
+    "date": "July 2, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Lower School",
+    "category": "swimming",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "NO Waterfront swimming sessions",
+    "date": "July 3, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Lower School",
+    "category": "swimming",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "NO Waterfront swimming sessions",
+    "date": "July 4, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Lower School",
+    "category": "swimming",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "NO Waterfront gym sessions",
+    "date": "June 30, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Upper School",
+    "category": "sports",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "NO Waterfront gym sessions",
+    "date": "July 1, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Upper School",
+    "category": "sports",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "NO Waterfront gym sessions",
+    "date": "July 2, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Upper School",
+    "category": "sports",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "NO Waterfront gym sessions",
+    "date": "July 3, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Upper School",
+    "category": "sports",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "NO Waterfront gym sessions",
+    "date": "July 4, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Upper School",
+    "category": "sports",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "NO Extra Curricular Clubs",
+    "date": "June 30, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Kindergarten & Reception Class Assembly",
+    "date": "July 1, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Kindergarten & Reception",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Prep Year 6 Final Class Assembly",
+    "date": "July 2, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Prep Year 6",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Teddy Bears’ Picnic",
+    "date": "July 2, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Kindergarten, Reception, Year 1 & 2",
+    "category": "trip",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "NO Extra Curricular Clubs",
+    "date": "July 4, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Homework Club operates",
+    "date": "June 30, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Homework Club operates",
+    "date": "July 1, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Homework Club operates",
+    "date": "July 2, 2025",
+    "time": "15:15 - 16:30",
+    "yearGroup": "All",
+    "category": "dance",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "No Swimming (Lower School) or Gym (Upper School)",
+    "date": "July 3, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Homework Club operates",
+    "date": "July 4, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Exam Prep sessions operate",
+    "date": "June 30, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Year 5",
+    "category": "exam",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Exam Prep sessions operate",
+    "date": "July 1, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Year 5",
+    "category": "exam",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Exam Prep sessions operate",
+    "date": "July 2, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Year 5",
+    "category": "exam",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Exam Prep sessions operate",
+    "date": "July 3, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Year 5",
+    "category": "exam",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Exam Prep sessions operate",
+    "date": "July 4, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Year 5",
+    "category": "exam",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Kindergarten and Reception Class Assembly",
+    "date": "July 1, 2025",
+    "time": "08:50 - 00:00",
+    "yearGroup": [
+      "Kindergarten",
+      "Reception"
+    ],
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf",
+    "todos": [
+      {
+        "id": "todo38",
+        "text": "Bring child to Old Library for rehearsal at 8am",
+        "completed": false
+      },
+      {
+        "id": "todo39",
+        "text": "Attend K/R Class Assembly at 8:50am",
+        "completed": false
+      },
+      {
+        "id": "todo40",
+        "text": "Stay for chat after K/R Class Assembly",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Prep Year 6 Final Class Assembly",
+    "date": "July 2, 2025",
+    "time": "08:50 - 00:00",
+    "yearGroup": "Year 6",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf",
+    "todos": [
+      {
+        "id": "todo41",
+        "text": "Bring child to Old Library for rehearsal at 8am",
+        "completed": false
+      },
+      {
+        "id": "todo42",
+        "text": "Attend Year 6 Final Class Assembly at 8:50am",
+        "completed": false
+      },
+      {
+        "id": "todo43",
+        "text": "Stay for chat after Year 6 Final Class Assembly",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Teddy Bears’ Picnic in Greenwich Park",
+    "date": "July 2, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": [
+      "Kindergarten",
+      "Reception",
+      "Year 1",
+      "Year 2"
+    ],
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf",
+    "todos": [
+      {
+        "id": "todo44",
+        "text": "Bring child in P.E kit",
+        "completed": false
+      },
+      {
+        "id": "todo45",
+        "text": "Provide child with teddy bear (not too huge)",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Disco (Lower School)",
+    "date": "July 2, 2025",
+    "time": "15:15 - 15:45",
+    "yearGroup": "Lower School",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf",
+    "todos": [
+      {
+        "id": "todo46",
+        "text": "Pay disco entry fee (details to follow)",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Disco (Upper School)",
+    "date": "July 2, 2025",
+    "time": "15:45 - 16:30",
+    "yearGroup": "Upper School",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf",
+    "todos": [
+      {
+        "id": "todo47",
+        "text": "Pay disco entry fee (details to follow)",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "No swimming",
+    "date": "July 3, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Lower School",
+    "category": "swimming",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "No Indoor Gym",
+    "date": "July 3, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Upper School",
+    "category": "sports",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Awards Ceremony",
+    "date": "July 3, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf",
+    "todos": [
+      {
+        "id": "todo48",
+        "text": "Ensure child wears full school uniform with cravat",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "End of Term",
+    "date": "July 4, 2025",
+    "time": "00:00 - 12:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "sourcePdf": "hh_dairy_dates.pdf",
+    "todos": [
+      {
+        "id": "todo49",
+        "text": "Collect child promptly at 12pm",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "End of Term Leavers’ Service",
+    "date": "July 4, 2025",
+    "time": "11:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf",
+    "todos": [
+      {
+        "id": "todo50",
+        "text": "Attend End of Term Leavers' Service",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "No Homework Club",
+    "date": "July 4, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Leavers’ Afternoon Tea at One Aldwych",
+    "date": "July 4, 2025",
+    "time": "13:00 - 00:00",
+    "yearGroup": "Year 6",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Summer School (Week 1)",
+    "date": "July 7, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Summer School (Week 1)",
+    "date": "July 8, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Summer School (Week 1)",
+    "date": "July 9, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Summer School (Week 1)",
+    "date": "July 10, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Summer School (Week 1)",
+    "date": "July 11, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Summer School (Week 2)",
+    "date": "July 14, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Summer School (Week 2)",
+    "date": "July 15, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Summer School (Week 2)",
+    "date": "July 16, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Summer School (Week 2)",
+    "date": "July 17, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Summer School (Week 2)",
+    "date": "July 18, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Cultural Trip to Paris",
+    "date": "July 7, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Trip Participants",
+    "category": "trip",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Cultural Trip to Paris",
+    "date": "July 8, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Upper School",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Cultural Trip to Paris",
+    "date": "July 9, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Upper School",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Cultural Trip to Paris",
+    "date": "July 10, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Upper School",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "New Parents Meeting (Sept 2025 Intake)",
+    "date": "July 11, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": [
+      "Kindergarten",
+      "Reception"
+    ],
+    "category": "parent event",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Staff Day",
+    "date": "September 1, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Staff Day",
+    "date": "September 2, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Autumn Term 2025 begins",
+    "date": "September 3, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "PGL adventure trip",
+    "date": "October 15, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Upper School",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "PGL adventure trip",
+    "date": "October 16, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Upper School",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "PGL adventure trip",
+    "date": "October 17, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Upper School",
+    "category": "general",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Half Term",
+    "date": "October 20, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Half Term",
+    "date": "October 21, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Half Term",
+    "date": "October 22, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Half Term",
+    "date": "October 23, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Half Term",
+    "date": "October 24, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Half Term",
+    "date": "October 25, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Half Term",
+    "date": "October 26, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Half Term",
+    "date": "October 27, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Half Term",
+    "date": "October 28, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Half Term",
+    "date": "October 29, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Half Term",
+    "date": "October 30, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  },
+  {
+    "title": "Half Term",
+    "date": "October 31, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "sourcePdf": "hh_dairy_dates.pdf"
+  }
+]

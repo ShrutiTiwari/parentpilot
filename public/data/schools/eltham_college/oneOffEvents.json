@@ -1,0 +1,347 @@
+[
+  {
+    "title": "INSED Day",
+    "date": "August 28, 2024",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "Eltham College Term Dates",
+    "todos": []
+  },
+  {
+    "title": "INSED Day",
+    "date": "August 29, 2024",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "Eltham College Term Dates",
+    "todos": []
+  },
+  {
+    "title": "Induction Day",
+    "date": "August 30, 2024",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Year 3, Year 7, Year 9, Year 12",
+    "category": "general",
+    "source": "Eltham College Term Dates",
+    "todos": []
+  },
+  {
+    "title": "Michaelmas Term Starts",
+    "date": "September 2, 2024",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "Eltham College Term Dates",
+    "todos": []
+  },
+  {
+    "title": "Half Term Holiday (2 weeks)",
+    "date": "October 21, 2024",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "Eltham College Term Dates",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Michaelmas Term Ends",
+    "date": "December 13, 2024",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "Eltham College Term Dates",
+    "todos": []
+  },
+  {
+    "title": "INSED Day",
+    "date": "January 3, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "Eltham College Term Dates",
+    "todos": []
+  },
+  {
+    "title": "Entrance exam",
+    "date": "January 6, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "exam",
+    "source": "Eltham College Term Dates",
+    "todos": []
+  },
+  {
+    "title": "Entrance exam",
+    "date": "January 7, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "exam",
+    "source": "Eltham College Term Dates",
+    "todos": []
+  },
+  {
+    "title": "Lent Term Starts",
+    "date": "January 8, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "Eltham College Term Dates",
+    "todos": []
+  },
+  {
+    "title": "Half Term Holiday (1 week)",
+    "date": "February 17, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "Eltham College Term Dates",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Lent Term Ends",
+    "date": "March 28, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "Eltham College Term Dates",
+    "todos": []
+  },
+  {
+    "title": "INSED Day",
+    "date": "April 22, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "Eltham College Term Dates",
+    "todos": []
+  },
+  {
+    "title": "Summer Term Starts",
+    "date": "April 23, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "Eltham College Term Dates",
+    "todos": []
+  },
+  {
+    "title": "Bank Holiday",
+    "date": "May 5, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "Eltham College Term Dates",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Half Term Holiday (1 week)",
+    "date": "May 26, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "Eltham College Term Dates",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Summer Term Ends",
+    "date": "July 4, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "Eltham College Term Dates",
+    "todos": []
+  },
+  {
+    "title": "INSED Day",
+    "date": "August 27, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "Eltham College Term Dates",
+    "todos": []
+  },
+  {
+    "title": "INSED Day",
+    "date": "August 28, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "Eltham College Term Dates",
+    "todos": []
+  },
+  {
+    "title": "Induction Day",
+    "date": "August 29, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Year 7, Year 9, Year 12",
+    "category": "general",
+    "source": "Eltham College Term Dates",
+    "todos": []
+  },
+  {
+    "title": "Michaelmas Term Starts",
+    "date": "September 1, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "Eltham College Term Dates",
+    "todos": []
+  },
+  {
+    "title": "Half Term Holiday (2 weeks)",
+    "date": "October 20, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "Eltham College Term Dates",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Michaelmas Term Ends",
+    "date": "December 12, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "Eltham College Term Dates",
+    "todos": []
+  },
+  {
+    "title": "11+ Entrance Exam and INSED Day",
+    "date": "January 5, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "exam",
+    "source": "Eltham College Term Dates",
+    "todos": []
+  },
+  {
+    "title": "11+ Entrance Exam and INSED Day",
+    "date": "January 6, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "exam",
+    "source": "Eltham College Term Dates",
+    "todos": []
+  },
+  {
+    "title": "Lent Term Starts",
+    "date": "January 7, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "Eltham College Term Dates",
+    "todos": []
+  },
+  {
+    "title": "Half Term Holiday (1 week)",
+    "date": "February 16, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "Eltham College Term Dates",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Lent Term Ends",
+    "date": "March 27, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "Eltham College Term Dates",
+    "todos": []
+  },
+  {
+    "title": "INSED Day",
+    "date": "April 20, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "Eltham College Term Dates",
+    "todos": []
+  },
+  {
+    "title": "Summer Term Starts",
+    "date": "April 21, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "Eltham College Term Dates",
+    "todos": []
+  },
+  {
+    "title": "Bank Holiday",
+    "date": "May 4, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "Eltham College Term Dates",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Half Term Holiday (1 week)",
+    "date": "May 25, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "Eltham College Term Dates",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Summer Term Ends",
+    "date": "July 3, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "Eltham College Term Dates",
+    "todos": []
+  }
+]

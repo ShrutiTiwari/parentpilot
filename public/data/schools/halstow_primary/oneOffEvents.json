@@ -1,0 +1,128 @@
+[
+  {
+    "title": "Easter break begins",
+    "date": "April 7, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "wingfield_2024_2025.png",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "First day of 1st half of summer term",
+    "date": "April 22, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "wingfield_2024_2025.png",
+    "todos": []
+  },
+  {
+    "title": "Bank Holiday",
+    "date": "May 5, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "wingfield_2024_2025.png",
+    "todos": [
+      {
+        "id": "todo2",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Last day of 1st half of summer term",
+    "date": "May 23, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "wingfield_2024_2025.png",
+    "todos": []
+  },
+  {
+    "title": "Half-term holiday begins",
+    "date": "May 26, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "wingfield_2024_2025.png",
+    "todos": [
+      {
+        "id": "todo3",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "First day of 2nd half of summer term",
+    "date": "June 2, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "wingfield_2024_2025.png",
+    "todos": []
+  },
+  {
+    "title": "Last day of 2nd half of summer term",
+    "date": "July 18, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "wingfield_2024_2025.png",
+    "todos": []
+  },
+  {
+    "title": "INSET Day – School closed to children",
+    "date": "July 21, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "wingfield_2024_2025.png",
+    "todos": [
+      {
+        "id": "todo4",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "INSET Day – School closed to children",
+    "date": "July 22, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "wingfield_2024_2025.png",
+    "todos": [
+      {
+        "id": "todo5",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Summer holiday begins",
+    "date": "July 23, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "wingfield_2024_2025.png",
+    "todos": [
+      {
+        "id": "todo6",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  }
+]

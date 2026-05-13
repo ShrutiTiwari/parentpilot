@@ -1,0 +1,410 @@
+[
+  {
+    "title": "Staff Training Day",
+    "date": "August 27, 2024",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "Crofton Infant School Term Dates",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Staff Training Day",
+    "date": "August 28, 2024",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "Crofton Infant School Term Dates",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Autumn Term Starts",
+    "date": "August 29, 2024",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "Crofton Infant School Term Dates",
+    "todos": []
+  },
+  {
+    "title": "Autumn Half Term Holiday",
+    "date": "October 21, 2024",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "Crofton Infant School Term Dates",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Autumn Term Ends",
+    "date": "December 20, 2024",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "Crofton Infant School Term Dates",
+    "todos": []
+  },
+  {
+    "title": "Winter Holidays",
+    "date": "December 21, 2024",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "Crofton Infant School Term Dates",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Spring Term Starts",
+    "date": "January 6, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "Crofton Infant School Term Dates",
+    "todos": []
+  },
+  {
+    "title": "Spring Half Term Holiday",
+    "date": "February 17, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "Crofton Infant School Term Dates",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Spring Term Ends",
+    "date": "April 4, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "Crofton Infant School Term Dates",
+    "todos": []
+  },
+  {
+    "title": "Easter/Spring Holidays",
+    "date": "April 5, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "Crofton Infant School Term Dates",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Summer Term Starts",
+    "date": "April 22, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "Crofton Infant School Term Dates",
+    "todos": []
+  },
+  {
+    "title": "Bank Holiday (School Closed)",
+    "date": "May 5, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "Crofton Infant School Term Dates",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Summer Half Term Holiday",
+    "date": "May 26, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "Crofton Infant School Term Dates",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Summer Term Ends",
+    "date": "July 18, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "Crofton Infant School Term Dates",
+    "todos": []
+  },
+  {
+    "title": "Staff Training Day",
+    "date": "July 21, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "Crofton Infant School Term Dates",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Staff Training Day",
+    "date": "July 22, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "Crofton Infant School Term Dates",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Staff Training Day",
+    "date": "July 23, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "Crofton Infant School Term Dates",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Staff Training Day",
+    "date": "August 28, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "Crofton Infant School Term Dates",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Staff Training Day",
+    "date": "August 29, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "Crofton Infant School Term Dates",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Autumn Term Starts",
+    "date": "September 1, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "Crofton Infant School Term Dates",
+    "todos": []
+  },
+  {
+    "title": "Autumn Half Term Holiday",
+    "date": "October 20, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "Crofton Infant School Term Dates",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Autumn Term Ends",
+    "date": "December 19, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "Crofton Infant School Term Dates",
+    "todos": []
+  },
+  {
+    "title": "Winter Holidays",
+    "date": "December 20, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "Crofton Infant School Term Dates",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Staff Training Day",
+    "date": "January 5, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "Crofton Infant School Term Dates",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Spring Term Starts",
+    "date": "January 6, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "Crofton Infant School Term Dates",
+    "todos": []
+  },
+  {
+    "title": "Spring Half Term Holiday",
+    "date": "February 16, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "Crofton Infant School Term Dates",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Spring Term Ends",
+    "date": "March 27, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "Crofton Infant School Term Dates",
+    "todos": []
+  },
+  {
+    "title": "Easter/Spring Holidays",
+    "date": "March 28, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "Crofton Infant School Term Dates",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Summer Term Starts",
+    "date": "April 13, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "Crofton Infant School Term Dates",
+    "todos": []
+  },
+  {
+    "title": "Bank Holiday (School Closed)",
+    "date": "May 4, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "Crofton Infant School Term Dates",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Summer Half Term Holiday",
+    "date": "May 25, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "Crofton Infant School Term Dates",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Summer Term Ends",
+    "date": "July 21, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "Crofton Infant School Term Dates",
+    "todos": []
+  }
+]

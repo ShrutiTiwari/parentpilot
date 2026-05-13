@@ -1,0 +1,195 @@
+[
+    {
+      "title": "First Day of Summer Term",
+      "date": "April 23, 2025",
+      "time": "00:00 - 00:00",
+      "yearGroup": "All",
+      "category": "general",
+      "sourcePdf": "pointer_school_term_dates.pdf",
+      "todos": []
+    },
+    {
+      "title": "Summer Half Term Starts",
+      "date": "May 26, 2025",
+      "time": "00:00 - 00:00",
+      "yearGroup": "All",
+      "category": "holiday",
+      "sourcePdf": "pointer_school_term_dates.pdf",
+      "todos": [
+        {
+          "id": "todo1",
+          "text": "plan child care for holiday",
+          "completed": false
+        }
+      ]
+    },
+    {
+      "title": "Summer Half Term Ends",
+      "date": "May 30, 2025",
+      "time": "00:00 - 00:00",
+      "yearGroup": "All",
+      "category": "holiday",
+      "sourcePdf": "pointer_school_term_dates.pdf",
+      "todos": []
+    },
+    {
+      "title": "Last Day of Summer Term",
+      "date": "July 9, 2025",
+      "time": "00:00 - 00:00",
+      "yearGroup": "All",
+      "category": "holiday",
+      "sourcePdf": "pointer_school_term_dates.pdf",
+      "todos": [
+        {
+          "id": "todo1",
+          "text": "plan child care for holiday",
+          "completed": false
+        }
+      ]
+    },
+    {
+      "title": "First Day of Autumn Term",
+      "date": "September 2, 2025",
+      "time": "00:00 - 00:00",
+      "yearGroup": "All",
+      "category": "general",
+      "sourcePdf": "pointer_school_term_dates.pdf",
+      "todos": []
+    },
+    {
+      "title": "Autumn Half Term Starts",
+      "date": "October 20, 2025",
+      "time": "00:00 - 00:00",
+      "yearGroup": "All",
+      "category": "holiday",
+      "sourcePdf": "pointer_school_term_dates.pdf",
+      "todos": [
+        {
+          "id": "todo1",
+          "text": "plan child care for holiday",
+          "completed": false
+        }
+      ]
+    },
+    {
+      "title": "Autumn Half Term Ends",
+      "date": "October 31, 2025",
+      "time": "00:00 - 00:00",
+      "yearGroup": "All",
+      "category": "holiday",
+      "sourcePdf": "pointer_school_term_dates.pdf",
+      "todos": []
+    },
+    {
+      "title": "Last Day of Autumn Term",
+      "date": "December 12, 2025",
+      "time": "00:00 - 00:00",
+      "yearGroup": "All",
+      "category": "holiday",
+      "sourcePdf": "pointer_school_term_dates.pdf",
+      "todos": [
+        {
+          "id": "todo1",
+          "text": "plan child care for holiday",
+          "completed": false
+        }
+      ]
+    },
+    {
+      "title": "First Day of Spring Term",
+      "date": "January 6, 2026",
+      "time": "00:00 - 00:00",
+      "yearGroup": "All",
+      "category": "general",
+      "sourcePdf": "pointer_school_term_dates.pdf",
+      "todos": []
+    },
+    {
+      "title": "Spring Half Term Starts",
+      "date": "February 16, 2026",
+      "time": "00:00 - 00:00",
+      "yearGroup": "All",
+      "category": "holiday",
+      "sourcePdf": "pointer_school_term_dates.pdf",
+      "todos": [
+        {
+          "id": "todo1",
+          "text": "plan child care for holiday",
+          "completed": false
+        }
+      ]
+    },
+    {
+      "title": "Spring Half Term Ends",
+      "date": "February 20, 2026",
+      "time": "00:00 - 00:00",
+      "yearGroup": "All",
+      "category": "holiday",
+      "sourcePdf": "pointer_school_term_dates.pdf",
+      "todos": []
+    },
+    {
+      "title": "Last Day of Spring Term",
+      "date": "March 27, 2026",
+      "time": "00:00 - 00:00",
+      "yearGroup": "All",
+      "category": "holiday",
+      "sourcePdf": "pointer_school_term_dates.pdf",
+      "todos": [
+        {
+          "id": "todo1",
+          "text": "plan child care for holiday",
+          "completed": false
+        }
+      ]
+    },
+    {
+      "title": "First Day of Summer Term",
+      "date": "April 21, 2026",
+      "time": "00:00 - 00:00",
+      "yearGroup": "All",
+      "category": "general",
+      "sourcePdf": "pointer_school_term_dates.pdf",
+      "todos": []
+    },
+    {
+      "title": "Summer Half Term Starts",
+      "date": "May 25, 2026",
+      "time": "00:00 - 00:00",
+      "yearGroup": "All",
+      "category": "holiday",
+      "sourcePdf": "pointer_school_term_dates.pdf",
+      "todos": [
+        {
+          "id": "todo1",
+          "text": "plan child care for holiday",
+          "completed": false
+        }
+      ]
+    },
+    {
+      "title": "Summer Half Term Ends",
+      "date": "May 29, 2026",
+      "time": "00:00 - 00:00",
+      "yearGroup": "All",
+      "category": "holiday",
+      "sourcePdf": "pointer_school_term_dates.pdf",
+      "todos": []
+    },
+    {
+      "title": "Last Day of Summer Term",
+      "date": "July 3, 2026",
+      "time": "00:00 - 00:00",
+      "yearGroup": "All",
+      "category": "holiday",
+      "sourcePdf": "pointer_school_term_dates.pdf",
+      "todos": [
+        {
+          "id": "todo1",
+          "text": "plan child care for holiday",
+          "completed": false
+        }
+      ]
+    }
+  ]
+  

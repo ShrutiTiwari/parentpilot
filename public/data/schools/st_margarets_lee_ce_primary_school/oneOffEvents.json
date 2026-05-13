@@ -1,0 +1,191 @@
+[
+  {
+    "title": "INSET DAY",
+    "date": "September 01, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "School Term Dates 2025-2026",
+    "todos": [
+      {
+        "id": "todo12",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "INSET DAY",
+    "date": "September 02, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "School Term Dates 2025-2026",
+    "todos": [
+      {
+        "id": "todo13",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Autumn term starts for children",
+    "date": "September 03, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "School Term Dates 2025-2026",
+    "todos": []
+  },
+  {
+    "title": "Half Term",
+    "date": "October 27, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "School Term Dates 2025-2026",
+    "todos": [
+      {
+        "id": "todo14",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "INSET DAY",
+    "date": "November 03, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "School Term Dates 2025-2026",
+    "todos": [
+      {
+        "id": "todo15",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Autumn term ends",
+    "date": "December 19, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "School Term Dates 2025-2026",
+    "todos": []
+  },
+  {
+    "title": "INSET DAY",
+    "date": "January 05, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "School Term Dates 2025-2026",
+    "todos": [
+      {
+        "id": "todo16",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Spring term starts for children",
+    "date": "January 06, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "School Term Dates 2025-2026",
+    "todos": []
+  },
+  {
+    "title": "Half Term",
+    "date": "February 16, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "School Term Dates 2025-2026",
+    "todos": [
+      {
+        "id": "todo17",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "INSET DAY",
+    "date": "February 23, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "School Term Dates 2025-2026",
+    "todos": [
+      {
+        "id": "todo18",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Spring term ends",
+    "date": "March 27, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "School Term Dates 2025-2026",
+    "todos": []
+  },
+  {
+    "title": "Summer term starts for children",
+    "date": "April 13, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "School Term Dates 2025-2026",
+    "todos": []
+  },
+  {
+    "title": "BANK HOLIDAY",
+    "date": "May 04, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "School Term Dates 2025-2026",
+    "todos": [
+      {
+        "id": "todo19",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Half Term",
+    "date": "May 25, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "source": "School Term Dates 2025-2026",
+    "todos": [
+      {
+        "id": "todo20",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Summer term ends",
+    "date": "July 17, 2026",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "source": "School Term Dates 2025-2026",
+    "todos": []
+  }
+]

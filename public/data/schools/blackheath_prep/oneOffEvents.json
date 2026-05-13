@@ -1,0 +1,528 @@
+[
+  {
+    "title": "New starter parents coffee morning",
+    "date": "April 28, 2025",
+    "time": "08:30 - 09:30",
+    "yearGroup": "All",
+    "category": "parent event",
+    "sourcePdf": "Blackheath Prep events list.pdf",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Attend event",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Summer Term Clubs Begin",
+    "date": "April 28, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "bh_publication.pdf",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Make any changes, requests or cancellations before this date",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Parent Event - Ms Vikki Lloyd Introduction",
+    "date": "May 01, 2025",
+    "time": "17:15 - 18:00",
+    "yearGroup": "All",
+    "category": "parent event",
+    "sourcePdf": "Blackheath Prep events list.pdf",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Confirm attendance using the attached form by Friday 25 April",
+        "completed": false
+      },
+      {
+        "id": "todo2",
+        "text": "Attend event",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Parent Event - Ms Vikki Lloyd Introduction",
+    "date": "May 01, 2025",
+    "time": "18:15 - 19:00",
+    "yearGroup": "All",
+    "category": "parent event",
+    "sourcePdf": "Blackheath Prep events list.pdf",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Confirm attendance using the attached form by Friday 25 April",
+        "completed": false
+      },
+      {
+        "id": "todo2",
+        "text": "Attend event",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "May Bank Holiday",
+    "date": "May 05, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "sourcePdf": "Blackheath Prep events list.pdf",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Plan child care for holiday",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Pupils Return",
+    "date": "May 06, 2025",
+    "time": "08:30 - 08:35",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "Blackheath Prep events list.pdf"
+  },
+  {
+    "title": "Parent Event - Ms Vikki Lloyd Introduction",
+    "date": "May 06, 2025",
+    "time": "17:15 - 18:00",
+    "yearGroup": "All",
+    "category": "parent event",
+    "sourcePdf": "Blackheath Prep events list.pdf, bh_publication.pdf",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Confirm attendance using the attached form by Friday 25 April",
+        "completed": false
+      },
+      {
+        "id": "todo2",
+        "text": "Attend event",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Parent Event : Ms Vikki Lloyd Introduction",
+    "date": "May 06, 2025",
+    "time": "18:15 - 19:00",
+    "yearGroup": "All",
+    "category": "parent event",
+    "sourcePdf": "Blackheath Prep events list.pdf, bh_publication.pdf",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Confirm attendance using the attached form by Friday 25 April",
+        "completed": false
+      },
+      {
+        "id": "todo2",
+        "text": "Attend event",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Y4 Swimming (4MS group)",
+    "date": "May 12, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Year 4",
+    "category": "swimming",
+    "sourcePdf": "bh_publication.pdf"
+  },
+  {
+    "title": "Y3 Swimming (3B group)",
+    "date": "May 12, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Year 3",
+    "category": "swimming",
+    "sourcePdf": "bh_publication.pdf"
+  },
+  {
+    "title": "School Health Check (Vision and Hearing)",
+    "date": "May 12, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "bh_publication.pdf",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Book online by Friday 9th May 2025 at 12pm",
+        "completed": false
+      },
+      {
+        "id": "todo2",
+        "text": "Pay online (£35 for vision, £35 for hearing) directly to School Health Check",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Class Photos",
+    "date": "May 14, 2025",
+    "time": "09:00 - 15:30",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "Blackheath Prep events list.pdf"
+  },
+  {
+    "title": "Year 3 Cricket Vs Colfes",
+    "date": "May 14, 2025",
+    "time": "15:15 - 16:30",
+    "yearGroup": "Year 3",
+    "category": "sports",
+    "sourcePdf": "Blackheath Prep events list.pdf",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Parents welcome to support",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Y4 Swimming (4MS group)",
+    "date": "May 19, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Year 4",
+    "category": "swimming",
+    "sourcePdf": "bh_publication.pdf"
+  },
+  {
+    "title": "Flying Seagull Fun Day - (Nursery-Y6)",
+    "date": "May 22, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general"
+  },
+  {
+    "title": "Ensembles Concert (Y3-Y6)",
+    "date": "May 22, 2025",
+    "time": "18:30 - 20:00",
+    "yearGroup": "All",
+    "category": "music",
+    "sourcePdf": "Blackheath Prep events list.pdf",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Pupils arrive 6pm",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Y3 Trip to Hindleap Warren (all day)",
+    "date": "May 23, 2025",
+    "time": "08:30 - 15:30",
+    "yearGroup": "Year 3",
+    "category": "trip",
+    "sourcePdf": "Blackheath Prep events list.pdf"
+  },
+  {
+    "title": "PTFA Friday Ice Cream Sale!",
+    "date": "May 23, 2025",
+    "time": "15:35 - 16:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "Blackheath Prep events list.pdf"
+  },
+  {
+    "title": "Half Term Day 1",
+    "date": "May 26, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "sourcePdf": "Blackheath Prep events list.pdf"
+  },
+  {
+    "title": "Half Term Day 2",
+    "date": "May 27, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "sourcePdf": "Blackheath Prep events list.pdf"
+  },
+  {
+    "title": "Half Term Day 3",
+    "date": "May 28, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "sourcePdf": "Blackheath Prep events list.pdf"
+  },
+  {
+    "title": "Half Term Day 4",
+    "date": "May 29, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "sourcePdf": "Blackheath Prep events list.pdf"
+  },
+  {
+    "title": "Half Term Day 5",
+    "date": "May 30, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "holiday",
+    "sourcePdf": "Blackheath Prep events list.pdf"
+  },
+  {
+    "title": "w/c 2 June RE week Day 1",
+    "date": "June 02, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "Blackheath Prep events list.pdf"
+  },
+  {
+    "title": "Pupils Return",
+    "date": "June 02, 2025",
+    "time": "08:30 - 08:35",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "Blackheath Prep events list.pdf"
+  },
+  {
+    "title": "Y3 Swimming (3B group)",
+    "date": "June 2, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Year 3",
+    "category": "swimming",
+    "sourcePdf": "bh_publication.pdf"
+  },
+  {
+    "title": "Y4 Swimming (4MS group)",
+    "date": "June 2, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Year 4",
+    "category": "swimming",
+    "sourcePdf": "bh_publication.pdf"
+  },
+  {
+    "title": "w/c 2 June RE week Day 2",
+    "date": "June 03, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "Blackheath Prep events list.pdf"
+  },
+  {
+    "title": "w/c 2 June RE week Day 3",
+    "date": "June 04, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "Blackheath Prep events list.pdf"
+  },
+  {
+    "title": "w/c 2 June RE week Day 4",
+    "date": "June 05, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "Blackheath Prep events list.pdf"
+  },
+  {
+    "title": "w/c 2 June RE week Day 5",
+    "date": "June 06, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "Blackheath Prep events list.pdf"
+  },
+  {
+    "title": "Y1-6 Window into Learning",
+    "date": "June 06, 2025",
+    "time": "08:30 - 09:10",
+    "yearGroup": "Year 1-Year 6",
+    "category": "general",
+    "sourcePdf": "Blackheath Prep events list.pdf",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Attend event",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "PTFA Friday Ice Cream Sale!",
+    "date": "June 13, 2025",
+    "time": "15:35 - 16:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "Blackheath Prep events list.pdf"
+  },
+  {
+    "title": "Prep Sports Day/PTFA Refreshments",
+    "date": "June 16, 2025",
+    "time": "09:35 - 15:30",
+    "yearGroup": "All",
+    "category": "sports",
+    "sourcePdf": "Blackheath Prep events list.pdf",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Parents attend from 13:00",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Year 3 Cricket Vs Eltham College",
+    "date": "June 18, 2025",
+    "time": "14:30 - 15:45",
+    "yearGroup": "Year 3",
+    "category": "sports",
+    "sourcePdf": "Blackheath Prep events list.pdf",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Wear full PE kit with suitable trainers",
+        "completed": false
+      },
+      {
+        "id": "todo2",
+        "text": "Parents welcome to support",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Y2-Y6 Choral Concert",
+    "date": "June 03, 2025",
+    "time": "18:30 - 19:30",
+    "yearGroup": "All",
+    "category": "music",
+    "sourcePdf": "Blackheath Prep events list.pdf",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Pupils in choirs attend morning rehearsal",
+        "completed": false
+      },
+      {
+        "id": "todo2",
+        "text": "Parents attend concert",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "PTFA Summer Fair",
+    "date": "June 21, 2025",
+    "time": "11:00 - 14:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "Blackheath Prep events list.pdf",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Attend event",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Y3 String Concert",
+    "date": "June 26, 2025",
+    "time": "09:30 - 10:30",
+    "yearGroup": "Year 3",
+    "category": "music",
+    "sourcePdf": "Blackheath Prep events list.pdf",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Attend event",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Summer Term Clubs Conclude",
+    "date": "June 27, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "bh_publication.pdf"
+  },
+  {
+    "title": "N, Y1-6 reports sent to parents/carers",
+    "date": "June 30, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "report",
+    "sourcePdf": "Blackheath Prep events list.pdf",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Check reports when sent",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Y2,3,4 data shared with parents/carers",
+    "date": "June 30, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "Year 2-4",
+    "category": "report",
+    "sourcePdf": "Blackheath Prep events list.pdf",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Check data when shared",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Moving Up afternoon - inc new starters (PP&P)",
+    "date": "July 02, 2025",
+    "time": "13:45 - 15:15",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "Blackheath Prep events list.pdf",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Attend if parent of new starter",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Non-uniform Day",
+    "date": "July 04, 2025",
+    "time": "00:00 - 00:00",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "Blackheath Prep events list.pdf",
+    "todos": [
+      {
+        "id": "todo1",
+        "text": "Dress in non-uniform",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "title": "Term Ends",
+    "date": "July 04, 2025",
+    "time": "12:00 - 12:05",
+    "yearGroup": "All",
+    "category": "general",
+    "sourcePdf": "Blackheath Prep events list.pdf"
+  }
+]
