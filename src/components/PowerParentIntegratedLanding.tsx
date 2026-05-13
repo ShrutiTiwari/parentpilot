@@ -15,20 +15,16 @@ export function PowerParentIntegratedLanding() {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Redirect after login if a return path was stored
+  // Redirect authenticated users to events (or stored return path)
   useEffect(() => {
     if (user) {
       const storedReturnTo = localStorage.getItem('authReturnTo');
       if (storedReturnTo && storedReturnTo !== 'null') {
         localStorage.removeItem('authReturnTo');
-        setTimeout(() => {
-          navigate(storedReturnTo);
-        }, 100);
-      } else {
-        if (storedReturnTo === 'null') {
-          localStorage.removeItem('authReturnTo');
-        }
       }
+      setTimeout(() => {
+        navigate(storedReturnTo && storedReturnTo !== 'null' ? storedReturnTo : '/events');
+      }, 100);
     }
   }, [user, navigate]);
 

@@ -91,7 +91,7 @@ export default function Auth() {
         const storedReturnTo = localStorage.getItem('authReturnTo');
         const storedOrigin = localStorage.getItem('authOrigin');
 
-        const returnTo = urlParams.get('returnTo') || cookieReturnTo || storedReturnTo || '/home';
+        const returnTo = urlParams.get('returnTo') || cookieReturnTo || storedReturnTo || '/events';
         const targetOrigin = cookieOrigin || storedOrigin;
 
         console.log('🔍 Auth.tsx existing session redirect:', { returnTo, targetOrigin, currentOrigin: window.location.origin });
@@ -126,7 +126,7 @@ export default function Auth() {
           const urlParams = new URLSearchParams(window.location.search);
           const storedReturnTo = localStorage.getItem('authReturnTo');
           const storedOrigin = localStorage.getItem('authOrigin');
-          const returnTo = urlParams.get('returnTo') || storedReturnTo || '/';
+          const returnTo = urlParams.get('returnTo') || storedReturnTo || '/events';
 
           console.log('🔍 Auth.tsx auth state change redirect:', {
             fromUrl: urlParams.get('returnTo'),
