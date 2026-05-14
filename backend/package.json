@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.56.0",
+    "@elastic/elasticsearch": "^9.4.0",
     "@google/generative-ai": "^0.24.1",
     "@supabase/supabase-js": "^2.53.0",
     "cheerio": "^1.1.2",

@@ -12,6 +12,7 @@ const schoolDiscoveryService = require('./services/schoolDiscoveryService');
 const termDatesService = require('./services/termDatesService');
 const { CLAUDE_CONFIG, OPENAI_CONFIG } = require('./config/llmConfig');
 const { extractEventsFromEmail } = require('./services/geminiService');
+const { indexEvent, findConflicts, findDuplicates } = require('./services/elasticService');
 require('dotenv').config();
 
 const app = express();
@@ -425,6 +426,23 @@ app.get('/api/inbound-email/pending', async (req, res) => {
   res.json({ items: data });
 });
 
+// ─── Elastic conflict check ───────────────────────────────────────────────────
+app.post('/api/events/check-conflicts', async (req, res) => {
+  const { date, year_group, exclude_id } = req.body;
+  if (!date || !year_group) return res.status(400).json({ error: 'date and year_group required' });
+
+  try {
+    const [conflicts, duplicates] = await Promise.all([
+      findConflicts({ date, year_group, exclude_id }),
+      exclude_id ? Promise.resolve([]) : Promise.resolve([]),
+    ]);
+    res.json({ conflicts, has_conflicts: conflicts.length > 0 });
+  } catch (err) {
+    console.error('Conflict check failed:', err.message);
+    res.json({ conflicts: [], has_conflicts: false }); // fail open — don't block confirm
+  }
+});
+
 // ─── Pipeline status / observability (admin only) ────────────────────────────
 app.get('/api/inbound-email/pipeline-status', async (req, res) => {
   const adminSecret = process.env.ADMIN_SECRET;
@@ -516,6 +534,11 @@ app.post('/api/inbound-email/:id/confirm', async (req, res) => {
       .from('email_ingestion_queue')
       .update({ status: 'confirmed', user_id: user_id || null, updated_at: new Date().toISOString() })
       .eq('id', id);
+
+    // Index confirmed events in Elastic (non-blocking — don't fail confirm if Elastic is down)
+    for (const event of inserted) {
+      indexEvent(event).catch(err => console.error('Elastic index failed:', err.message));
+    }
 
     res.json({ success: true, events: inserted });
   } catch (error) {

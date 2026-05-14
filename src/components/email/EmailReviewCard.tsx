@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
-import { CheckCircle, XCircle, Mail, Calendar, Clock, MapPin, Users, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
+import { CheckCircle, XCircle, Mail, Calendar, Clock, MapPin, Users, ChevronDown, ChevronUp, AlertCircle, AlertTriangle } from 'lucide-react';
 import { API_ENDPOINTS } from '@/config/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
@@ -52,9 +52,25 @@ export function EmailReviewCard({ item, onConfirmed, onDiscarded }: EmailReviewC
   const [expanded, setExpanded] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [discarding, setDiscarding] = useState(false);
+  const [conflicts, setConflicts] = useState<any[]>([]);
+  const [conflictsChecked, setConflictsChecked] = useState(false);
 
   const events = item.extracted_data?.events || [];
   const firstEvent = events[0];
+
+  // Check conflicts on mount
+  useEffect(() => {
+    if (!firstEvent?.date || !firstEvent?.year_group) return;
+    fetch(API_ENDPOINTS.events.checkConflicts, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ date: firstEvent.date, year_group: firstEvent.year_group }),
+    })
+      .then(r => r.json())
+      .then(data => { setConflicts(data.conflicts || []); setConflictsChecked(true); })
+      .catch(() => setConflictsChecked(true));
+  }, [firstEvent?.date, firstEvent?.year_group]);
+
   if (!firstEvent) return null;
 
   const handleConfirm = async () => {
@@ -176,6 +192,21 @@ export function EmailReviewCard({ item, onConfirmed, onDiscarded }: EmailReviewC
           <p className="text-xs text-gray-500">{ev.date} · {ev.year_group}</p>
         </div>
       ))}
+
+      {/* Conflict warning */}
+      {conflictsChecked && conflicts.length > 0 && (
+        <div className="mx-4 mb-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+          <div className="flex items-center gap-2 mb-1.5">
+            <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+            <span className="text-sm font-semibold text-amber-800">Clash detected</span>
+          </div>
+          {conflicts.map((c, i) => (
+            <p key={i} className="text-xs text-amber-700 ml-6">
+              {c.title} · {c.year_group}
+            </p>
+          ))}
+        </div>
+      )}
 
       {/* CTA row */}
       <div className="flex gap-2 p-4 border-t border-gray-100 bg-gray-50">

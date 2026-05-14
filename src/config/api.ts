@@ -21,6 +21,9 @@ export const API_ENDPOINTS = {
     byShareToken: (shareToken: string) => `${API_BASE_URL}/api/learners/${shareToken}`,
     summary: (shareToken: string) => `${API_BASE_URL}/api/learners/${shareToken}/summary`,
   },
+  events: {
+    checkConflicts: `${API_BASE_URL}/api/events/check-conflicts`,
+  },
   inboundEmail: {
     pending: `${API_BASE_URL}/api/inbound-email/pending`,
     confirm: (id: string) => `${API_BASE_URL}/api/inbound-email/${id}/confirm`,
