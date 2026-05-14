@@ -11,6 +11,7 @@ const { devLog, devWarn, devError } = require('./utils/logger');
 const schoolDiscoveryService = require('./services/schoolDiscoveryService');
 const termDatesService = require('./services/termDatesService');
 const { CLAUDE_CONFIG, OPENAI_CONFIG } = require('./config/llmConfig');
+const { extractEventsFromEmail } = require('./services/geminiService');
 require('dotenv').config();
 
 const app = express();
@@ -312,6 +313,189 @@ app.post('/api/schools/create-with-events', async (req, res) => {
     console.error('create-with-events error:', error);
     res.status(500).json({ success: false, error: error.message });
   }
+});
+
+// ─── Postmark inbound email webhook ───────────────────────────────────────────
+// Postmark posts JSON to this endpoint when an email is received
+// Set this URL in Postmark: https://parentpilot-g1oj.vercel.app/api/inbound-email
+app.post('/api/inbound-email', async (req, res) => {
+  console.log('=== INBOUND EMAIL RECEIVED ===');
+
+  // Acknowledge immediately so Postmark doesn't retry
+  res.status(200).json({ received: true });
+
+  try {
+    const {
+      Subject: subject,
+      TextBody: body,
+      HtmlBody: html,
+      From: fromAddress,
+      ToFull,
+      OriginalRecipient,
+    } = req.body;
+
+    console.log('From:', fromAddress, 'Subject:', subject);
+
+    // Extract user_id from the To address
+    // Parents forward to: {userId}@inbound.postmarkapp.com or we use a lookup
+    // For now store without user_id — parent can claim it from review queue
+    const toAddress = OriginalRecipient || (ToFull?.[0]?.Email) || '';
+
+    if (!supabase) {
+      console.error('Supabase not configured — cannot store inbound email');
+      return;
+    }
+
+    // Store raw email in queue
+    const { data: queued, error: insertError } = await supabase
+      .from('email_ingestion_queue')
+      .insert({
+        raw_subject: subject,
+        raw_body: body,
+        raw_html: html,
+        from_address: fromAddress,
+        status: 'processing',
+        user_id: null, // will be linked when parent reviews
+      })
+      .select()
+      .single();
+
+    if (insertError) {
+      console.error('Failed to insert into queue:', insertError);
+      return;
+    }
+
+    console.log('Stored in queue:', queued.id);
+
+    // Run Gemini extraction
+    try {
+      const { events, confidence_score } = await extractEventsFromEmail({ subject, body, html });
+      console.log(`Extracted ${events.length} events, confidence: ${confidence_score}`);
+
+      await supabase
+        .from('email_ingestion_queue')
+        .update({
+          status: 'pending_review',
+          extracted_data: { events },
+          confidence_score,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', queued.id);
+
+      console.log('Queue updated to pending_review');
+    } catch (extractError) {
+      console.error('Extraction failed:', extractError.message);
+      await supabase
+        .from('email_ingestion_queue')
+        .update({
+          status: 'failed',
+          error_message: extractError.message,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', queued.id);
+    }
+  } catch (error) {
+    console.error('Inbound email handler error:', error);
+  }
+});
+
+// ─── Get pending review items for a user ──────────────────────────────────────
+app.get('/api/inbound-email/pending', async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: 'Database unavailable' });
+
+  const { user_id } = req.query;
+  if (!user_id) return res.status(400).json({ error: 'user_id required' });
+
+  const { data, error } = await supabase
+    .from('email_ingestion_queue')
+    .select('*')
+    .eq('user_id', user_id)
+    .eq('status', 'pending_review')
+    .order('received_at', { ascending: false });
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ items: data });
+});
+
+// ─── Confirm a review item → create events ────────────────────────────────────
+app.post('/api/inbound-email/:id/confirm', async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: 'Database unavailable' });
+
+  const { id } = req.params;
+  const { events, user_id, school_id } = req.body;
+
+  if (!events?.length) return res.status(400).json({ error: 'events array required' });
+
+  try {
+    // Insert confirmed events
+    const toInsert = events.map(e => ({
+      title: e.title,
+      date: e.date,
+      time_start: e.time_start || null,
+      time_end: e.time_end || null,
+      year_group: e.year_group || 'All',
+      year_groups: [e.year_group || 'All'],
+      category: e.category || 'general',
+      description: e.description || null,
+      venue: e.venue || null,
+      event_type: school_id ? 'school' : 'personal',
+      visibility: school_id ? 'school' : 'private',
+      school_id: school_id || null,
+      created_by_user_id: user_id || null,
+      status: 'confirmed',
+      ingestion_queue_id: id,
+      source: 'email',
+    }));
+
+    const { data: inserted, error: insertError } = await supabase
+      .from('events')
+      .insert(toInsert)
+      .select();
+
+    if (insertError) throw insertError;
+
+    // Insert todos/actions
+    for (const [i, event] of inserted.entries()) {
+      const actions = events[i]?.actions || [];
+      if (actions.length) {
+        await supabase.from('todos').insert(
+          actions.map(a => ({
+            event_id: event.id,
+            text: a.text,
+            todo_type: 'action',
+            deadline: a.deadline || null,
+            completed: false,
+            created_by_user_id: user_id || null,
+          }))
+        );
+      }
+    }
+
+    // Mark queue item as confirmed
+    await supabase
+      .from('email_ingestion_queue')
+      .update({ status: 'confirmed', updated_at: new Date().toISOString() })
+      .eq('id', id);
+
+    res.json({ success: true, events: inserted });
+  } catch (error) {
+    console.error('confirm error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ─── Discard a review item ────────────────────────────────────────────────────
+app.post('/api/inbound-email/:id/discard', async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: 'Database unavailable' });
+
+  const { id } = req.params;
+  const { error } = await supabase
+    .from('email_ingestion_queue')
+    .update({ status: 'discarded', updated_at: new Date().toISOString() })
+    .eq('id', id);
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ success: true });
 });
 
 // ─── Start ─────────────────────────────────────────────────────────────────────
