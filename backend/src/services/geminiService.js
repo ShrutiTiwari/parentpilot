@@ -1,4 +1,5 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const Anthropic = require('@anthropic-ai/sdk');
 
 const EXTRACTION_PROMPT = `You are an AI assistant helping parents manage school events.
 
@@ -32,34 +33,63 @@ Rules:
 - actions should be concrete parent tasks (e.g. "Return permission slip", "Pay £5 online")
 `;
 
-async function extractEventsFromEmail({ subject, body, html }) {
+function parseEventsJson(text) {
+  const cleaned = text.trim()
+    .replace(/^```json\n?/, '').replace(/\n?```$/, '');
+  let events;
+  try {
+    events = JSON.parse(cleaned);
+  } catch (e) {
+    throw new Error('Failed to parse AI response as JSON: ' + cleaned.substring(0, 200));
+  }
+  if (!Array.isArray(events)) events = [events];
+  const avgConfidence = events.reduce((sum, e) => sum + (e.confidence_score || 0.8), 0) / events.length;
+  return { events, confidence_score: Math.round(avgConfidence * 100) / 100 };
+}
+
+async function extractWithGemini(emailContent) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error('GEMINI_API_KEY not configured');
-
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+  const result = await model.generateContent(EXTRACTION_PROMPT + '\n\nEmail:\n' + emailContent);
+  return result.response.text();
+}
 
+async function extractWithClaude(emailContent) {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured');
+  const client = new Anthropic({ apiKey });
+  const message = await client.messages.create({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 2048,
+    messages: [{
+      role: 'user',
+      content: EXTRACTION_PROMPT + '\n\nEmail:\n' + emailContent
+    }]
+  });
+  return message.content[0].text;
+}
+
+async function extractEventsFromEmail({ subject, body, html }) {
   const emailContent = `Subject: ${subject || '(no subject)'}
 
 ${body || html || '(no content)'}`;
 
-  const result = await model.generateContent(EXTRACTION_PROMPT + '\n\nEmail:\n' + emailContent);
-  const text = result.response.text().trim()
-    .replace(/^```json\n?/, '').replace(/\n?```$/, '');
-
-  let events;
+  // Try Gemini first, fall back to Claude if quota exceeded
+  let text;
   try {
-    events = JSON.parse(text);
-  } catch (e) {
-    throw new Error('Failed to parse Gemini response as JSON: ' + text.substring(0, 200));
+    text = await extractWithGemini(emailContent);
+  } catch (err) {
+    if (err.message && err.message.includes('429')) {
+      console.warn('Gemini quota exceeded, falling back to Claude');
+      text = await extractWithClaude(emailContent);
+    } else {
+      throw err;
+    }
   }
 
-  if (!Array.isArray(events)) events = [events];
-
-  // Overall confidence = average of individual scores
-  const avgConfidence = events.reduce((sum, e) => sum + (e.confidence_score || 0.8), 0) / events.length;
-
-  return { events, confidence_score: Math.round(avgConfidence * 100) / 100 };
+  return parseEventsJson(text);
 }
 
 module.exports = { extractEventsFromEmail };
