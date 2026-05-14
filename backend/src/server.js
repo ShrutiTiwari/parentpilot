@@ -406,10 +406,11 @@ app.get('/api/inbound-email/pending', async (req, res) => {
   const { user_id } = req.query;
   if (!user_id) return res.status(400).json({ error: 'user_id required' });
 
+  // Return items belonging to the user OR unclaimed (user_id IS NULL)
   const { data, error } = await supabase
     .from('email_ingestion_queue')
     .select('*')
-    .eq('user_id', user_id)
+    .or(`user_id.eq.${user_id},user_id.is.null`)
     .eq('status', 'pending_review')
     .order('received_at', { ascending: false });
 
