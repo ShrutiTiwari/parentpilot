@@ -425,8 +425,14 @@ app.get('/api/inbound-email/pending', async (req, res) => {
   res.json({ items: data });
 });
 
-// ─── Pipeline status / observability ─────────────────────────────────────────
+// ─── Pipeline status / observability (admin only) ────────────────────────────
 app.get('/api/inbound-email/pipeline-status', async (req, res) => {
+  const adminSecret = process.env.ADMIN_SECRET;
+  const provided = req.headers['x-admin-secret'] || req.query.secret;
+  if (!adminSecret || provided !== adminSecret) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
   const db = supabaseAdmin || supabase;
   if (!db) return res.status(503).json({ error: 'Database unavailable' });
 
