@@ -25,6 +25,7 @@ import { PdfUploadSection } from './dashboard/PdfUploadSection';
 import { isFeatureEnabled } from '../config/features';
 import { DonationModal } from './donation/DonationModal';
 import { displayEvent } from '@/utils/visbilityControl';
+import { EmailInboxPanel } from './email/EmailInboxPanel';
 
 interface DashboardProps {
   showAuthModal?: boolean;
@@ -256,6 +257,12 @@ export function Dashboard({ showAuthModal, setShowAuthModal, onSignOut, initialA
               )}
             </div>
           </div>
+
+          {user && (
+            <div className="px-4 pt-2">
+              <EmailInboxPanel />
+            </div>
+          )}
 
           <div className="space-y-6">
             <EventsTab

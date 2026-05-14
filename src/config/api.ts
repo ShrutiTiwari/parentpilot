@@ -21,6 +21,11 @@ export const API_ENDPOINTS = {
     byShareToken: (shareToken: string) => `${API_BASE_URL}/api/learners/${shareToken}`,
     summary: (shareToken: string) => `${API_BASE_URL}/api/learners/${shareToken}/summary`,
   },
+  inboundEmail: {
+    pending: `${API_BASE_URL}/api/inbound-email/pending`,
+    confirm: (id: string) => `${API_BASE_URL}/api/inbound-email/${id}/confirm`,
+    discard: (id: string) => `${API_BASE_URL}/api/inbound-email/${id}/discard`,
+  },
   schools: {
     discoverWebsite: `${API_BASE_URL}/api/schools/discover-website`,
     discoverTermDatesPage: `${API_BASE_URL}/api/schools/discover-term-dates-page`,
