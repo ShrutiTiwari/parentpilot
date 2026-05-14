@@ -321,9 +321,6 @@ app.post('/api/schools/create-with-events', async (req, res) => {
 app.post('/api/inbound-email', async (req, res) => {
   console.log('=== INBOUND EMAIL RECEIVED ===');
 
-  // Acknowledge immediately so Postmark doesn't retry
-  res.status(200).json({ received: true });
-
   try {
     const {
       Subject: subject,
@@ -336,16 +333,14 @@ app.post('/api/inbound-email', async (req, res) => {
 
     console.log('From:', fromAddress, 'Subject:', subject);
 
-    // Extract user_id from the To address
-    // Parents forward to: {userId}@inbound.postmarkapp.com or we use a lookup
-    // For now store without user_id — parent can claim it from review queue
     const toAddress = OriginalRecipient || (ToFull?.[0]?.Email) || '';
 
     // Use service role key — webhook has no user session, RLS would block inserts
     const db = supabaseAdmin || supabase;
+    console.log('Using db client:', supabaseAdmin ? 'service_role' : 'anon');
     if (!db) {
       console.error('Supabase not configured — cannot store inbound email');
-      return;
+      return res.status(200).json({ received: true });
     }
 
     // Store raw email in queue
@@ -399,6 +394,9 @@ app.post('/api/inbound-email', async (req, res) => {
   } catch (error) {
     console.error('Inbound email handler error:', error);
   }
+
+  // Respond after all processing — Vercel kills the function on res.send()
+  res.status(200).json({ received: true });
 });
 
 // ─── Get pending review items for a user ──────────────────────────────────────
