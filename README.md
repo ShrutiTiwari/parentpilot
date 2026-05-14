@@ -1,70 +1,125 @@
-# Power Parent
+# Power Parent Agent
 
-AI agent that turns school emails into calendar events — so parents never miss a sports day, trip deadline, or costume day again.
+> The mental load of parenting is invisible. The agent makes it manageable.
 
-🌐 [Live Demo](https://www.powerparent.co.uk)
+An AI agent that turns school emails into calendar events, tracks every action they demand, and reminds parents at the right moment — so they can be the parent they want to be.
+
+🌐 [Live Demo](https://www.powerparent.co.uk) · [Google Cloud Rapid Agent Hackathon 2026 — Elastic Partner Track]
+
+---
+
+## The problem
+
+Schools send home a constant stream of emails, letters, and WhatsApp messages. Trip permissions. Costume days. Sports days. Payment deadlines. Each event lives in a different silo. Nobody checks for clashes. Reminders either don't exist, or fire too late.
+
+The result: a parent who cares deeply — but is let down by the tools around them.
+
+> *Sports day. Every parent was there. He looked around the field. Then sat down alone.*
+> *You found out that evening. This isn't a memory problem. It's a systems problem.*
+
+**The parent is not failing. The tools are failing them.**
 
 ---
 
 ## What it does
 
-Schools send home a constant stream of letters and emails — sports days, trip permissions, costume days, exam dates, payment deadlines. Parents are expected to manually track all of it across multiple children, year groups, and schools.
+Power Parent Agent catches everything — so parents can show up every time.
 
-Power Parent removes that entirely. A parent forwards a school email to their unique inbox address. An AI agent extracts every event and action, shows a review card, and on confirmation adds it to the family calendar with reminders.
+```
+1 Extract  →  2 Review  →  3 Save  →  4 Remind  →  5 Surface
+```
 
-**The agent loop:**
-1. Parent forwards email → Postmark inbound webhook fires
-2. Gemini extracts structured event data (title, date, time, year group, venue, actions + deadlines)
-3. Claude acts as fallback when Gemini quota is exceeded
-4. Review card surfaces on the dashboard — parent sees extracted details + confidence score
-5. One tap to confirm → event saved, todos created, reminders scheduled
+**Forward a school email.** The agent extracts every event and action, checks for clashes, saves to the family calendar, and reminds at the right moment for each action — not just the day before.
 
-**Core features already live:**
-- School event calendar (700+ events seeded across primary school year groups)
+**One event. Many actions. Every one tracked.**
+
+| Event | Action | Reminders |
+|-------|--------|-----------|
+| World Book Day (Thu 6 Mar) | Choose character & costume | 3w · 2w before |
+| | Buy costume | 3w · 2w · 1w before |
+| | Return permission slip | 1w · 5d · 3d before |
+| | Pack bag the night before | 1d · morning of |
+
+The agent doesn't just save the date — it maps every action the event demands, then reminds you at the right moment for each one.
+
+---
+
+## Agent loop
+
+```
+Parent forwards school email
+        │
+        ▼
+Postmark inbound webhook → Express backend
+        │
+        ├─► Supabase: store raw email (status: processing)
+        │
+        ├─► Gemini 2.0 Flash extraction
+        │   (title · date · year group · venue · todos + deadlines · confidence score)
+        │   └─► Claude Haiku fallback on quota exceeded
+        │
+        ├─► Supabase: update (status: pending_review)
+        │
+        ▼
+Review card on dashboard (human-in-loop approval)
+        │
+        ├─► Elastic: semantic conflict detection across 700+ events
+        │
+        └─► Confirm → events + todos saved → reminder cadence scheduled
+                       (7d · 3d · 1d · morning-of per action deadline)
+```
+
+*"Forward me that school email. I'll extract the event, check for clashes, save it, and remind you 3 days before — you just confirm."*
+
+---
+
+## Elastic: the intelligence layer
+
+Supabase stores. Elastic understands.
+
+| Capability | How |
+|-----------|-----|
+| **Semantic conflict detection** | Date range queries across 700+ events — finds clashes at save time, before they become a problem |
+| **Smart duplicate detection** | Vector search catches "Sports Day" = "Annual Sports Morning" — no double entries |
+| **RAG-powered resource search** | Parent types a concern, Elastic surfaces NHS guides, local services, school contacts |
+| **Natural language timeline** | "What's on next week for Aisha?" — full-text + semantic across all event types |
+
+**Elastic MCP indexes:**
+- `school-events` — 700+ events with date fields
+- `local-services` — NHS, dentists, tutors by postcode
+- `family-history` — past tasks and resolutions
+- `parenting-guides` — NHS and CAMHS resources (RAG)
+
+---
+
+## What's already live
+
+**Built before the hackathon:**
+- School event calendar (700+ events seeded)
 - Multi-child profiles per family
 - School and personal event views with filtering
 - Todo/task tracking per event
+- Supabase backend with RLS
+
+**Built for the hackathon:**
 - Email ingestion pipeline (Postmark → Gemini/Claude → review card → confirm)
+- Human-in-loop review UI with confidence scoring
+- Elastic semantic search + conflict detection
+- Email reminder engine with per-action cadence
 
 ---
 
-## Why I built this
+## Tech stack
 
-I have two children in UK primary school. The amount of organisational overhead that falls on parents — particularly working parents — is genuinely significant. A single school week can generate 4–6 emails requiring action: permission slips, payments, kit requirements, date changes.
-
-The problem isn't calendar apps or reminder apps. It's the extraction step — getting unstructured school communications into a structured, actionable format without manual data entry. That's exactly what LLMs are good at.
-
-I also wanted to explore what a genuinely useful agentic loop looks like in a real-world family context: not a chatbot, but a background agent that perceives (email arrives), reasons (extracts structured data, assesses confidence), and acts (surfaces for review, confirms, schedules reminders).
-
----
-
-## How AI is used
-
-AI involvement is architectural, not cosmetic.
-
-**Extraction agent (Gemini 2.0 Flash → Claude Haiku fallback)**
-The core extraction prompt is carefully designed to return a structured JSON array covering all events in a single email — including implicit events ("children may wear non-uniform on the last day of term"), not just explicitly announced ones. Confidence scoring is part of the prompt contract: the model rates each extracted event, and the review card surfaces this to the parent so they can judge borderline extractions.
-
-**Fallback chain for reliability**
-Gemini free tier quota exhausts quickly during development. Rather than failing, the system automatically falls back to Claude Haiku. This was a deliberate reliability decision — the pipeline should never return a 500 to Postmark (which would trigger retries), so the fallback chain keeps extraction working even under quota pressure.
-
-**Structured pipeline with observable state**
-Each email moves through explicit states in the database: `processing → pending_review → confirmed / failed`. Every step emits structured JSON logs. A pipeline status endpoint shows the last 20 emails and their states. This makes the agent's reasoning auditable — a judge (or a parent) can see exactly what the AI extracted and why it was confident or uncertain.
-
-**What I learned building this**
-The hardest part wasn't the extraction — it was designing the review UX. The agent needs to surface enough detail that a parent can make a quick confirm/discard decision without reading the original email. Getting the card layout right (title prominent, confidence badge, actions with deadlines called out) took more iteration than the prompt engineering.
-
----
-
-## Technical decisions
-
-- **React + TypeScript + Vite + shadcn/ui** — fast iteration on UI components; shadcn gives production-quality accessible components without a design system overhead
-- **Express.js backend on Vercel** — deployed as a serverless function; response is sent only after all DB writes complete (Vercel kills the function on `res.send()`, a subtle gotcha with async webhook handlers)
-- **Supabase (PostgreSQL + Auth + RLS)** — row-level security means school data is isolated per user; service role key used for server-side webhook operations that have no user session
-- **Postmark inbound** — reliable inbound email webhook; processes forwarded emails within seconds
-- **Gemini 2.0 Flash** — chosen for extraction over GPT-4 because it handles long school newsletter HTML without truncation and the structured JSON output is more consistent
-- **Claude Haiku as fallback** — fast, cheap, reliable for structured extraction tasks; acts as the safety net when Gemini quota is hit
-- **`email_ingestion_queue` table** — the agent's working memory. Stores raw email, extracted data, confidence score, and status. Decouples ingestion from review — the webhook returns 200 immediately, processing happens async
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React + TypeScript + Vite + shadcn/ui (PWA, installable) |
+| Agent brain | Gemini 2.0 Flash — reasoning, extraction, vision |
+| Partner MCP | Elastic MCP Server — semantic search + conflict detection + RAG |
+| Database | Supabase — events, todos, family profiles, cron |
+| Email ingest | Postmark inbound webhooks |
+| Reminders | Supabase Edge Functions — daily cron, progressive cadence |
+| Hosting | Vercel (frontend + backend as separate projects) |
 
 ---
 
@@ -88,64 +143,55 @@ npm run dev        # Express on http://localhost:3000
 
 Vite proxies `/api/*` to `localhost:3000` — no CORS config needed locally.
 
-**Required environment variables** (see `backend/.env.example`):
+**Required environment variables** (`backend/.env.example`):
 
 | Variable | Description |
 |----------|-------------|
 | `VITE_SUPABASE_URL` | Supabase project URL |
 | `VITE_SUPABASE_ANON_KEY` | Supabase anon key |
-| `SUPABASE_SERVICE_ROLE_KEY` | Service role key — required for webhook inserts |
-| `GEMINI_API_KEY` | Google AI Studio |
-| `ANTHROPIC_API_KEY` | Claude fallback for extraction |
+| `SUPABASE_SERVICE_ROLE_KEY` | Service role key — required for webhook inserts that bypass RLS |
+| `GEMINI_API_KEY` | Google AI Studio — primary extraction model |
+| `ANTHROPIC_API_KEY` | Claude Haiku — fallback when Gemini quota exceeded |
 | `ADMIN_SECRET` | Protects `/api/inbound-email/pipeline-status` |
 
-**Database:** Run `supabase/migrations/20260514000000_add_agent_tables.sql` in your Supabase SQL editor to create the `email_ingestion_queue` and `reminder_schedules` tables.
+**Database:** Run `supabase/migrations/20260514000000_add_agent_tables.sql` in Supabase SQL editor.
+
+**Test the pipeline:**
+Forward any school email to `6ab6321a948b3ee4872cf3ae8393baaf@inbound.postmarkapp.com` and watch the review card appear on the dashboard within ~10 seconds.
 
 ---
 
-## What I'd build next
+## Technical decisions
 
-**Elastic semantic search + conflict detection** — index all events in Elastic; when a new email arrives, vector-search for conflicts before the review card is shown ("You already have swimming on this date for Year 3"). This is the next track in progress.
+**Why respond before processing in the webhook handler** — Vercel serverless functions terminate immediately on `res.send()`. The inbound email handler must complete all DB writes and AI extraction before responding. This was a non-obvious gotcha: all async work after `res.json()` is killed silently.
 
-**Reminder engine** — the `reminder_schedules` table schema is in place. A daily cron job would query confirmed events, generate reminder rows at configurable cadences (3 weeks, 1 week, 1 day, morning-of), and fire via email or push. The cadence logic maps to how parents actually think: costume deadline reminders need to land a week before, not the night before.
+**Why service role key for the webhook** — Postmark webhooks arrive with no user session. Supabase RLS policies require `auth.uid() = user_id`, which fails for server-side inserts with `user_id = null`. The service role key bypasses RLS for backend operations, while the anon key enforces it for client-side queries.
 
-**Gmail native integration** — replace the forwarding step with a Gmail OAuth connection that watches the inbox for school emails automatically. The forwarding flow works for a hackathon demo but adds friction for real users.
+**Why a fallback chain (Gemini → Claude)** — Gemini free tier quota exhausts quickly during development. Rather than returning errors to Postmark (which would trigger retries), the system falls back to Claude Haiku automatically. The extraction prompt is identical — both models return the same JSON contract.
 
-**Multi-school conflict view** — families with children at different schools see overlapping events (two sports days on the same day). Conflict detection across schools requires semantic matching, not just date matching.
+**Why observable state in the DB** — Each email moves through explicit states: `processing → pending_review → confirmed / failed`. Every pipeline step emits structured JSON logs. Pipeline health visible at `/api/inbound-email/pipeline-status` (admin-secured). This makes the agent auditable — a judge can see exactly what the AI extracted and its confidence.
+
+**Why human-in-loop review** — Full automation would require very high confidence thresholds and still produce errors that erode trust fast. A review card takes 2 seconds to confirm and gives the parent full visibility into what the agent extracted. For parenting use cases, trust is everything — an agent that occasionally gets it wrong and tells you is far better than one that silently gets it wrong.
 
 ---
 
-## Architecture
+## Roadmap
 
-```
-Parent's email client
-        │ forward
-        ▼
-Postmark inbound webhook
-        │ POST /api/inbound-email
-        ▼
-Express backend (Vercel)
-        │
-        ├─► Supabase: insert row (status: processing)
-        │
-        ├─► Gemini 2.0 Flash ──(quota exceeded)──► Claude Haiku
-        │         extract structured events + confidence score
-        │
-        └─► Supabase: update row (status: pending_review)
-
-React dashboard
-        │ polls /api/inbound-email/pending
-        ▼
-Email review card
-        │ parent taps "Add to calendar"
-        ▼
-Express: insert events + todos → update queue (status: confirmed)
-```
+**After the hackathon:**
+- WhatsApp bot intake (parent sends photo of school letter)
+- Push notifications (PWA)
+- School portal integrations
+- Multi-parent household support
+- Voice input
+- WhatsApp reminder delivery
+- Agent completes actions autonomously — surfaces top Amazon picks for costumes, drafts reply emails, books appointments. Parent just approves.
 
 ---
 
 ## About the builder
 
 Built by Shruti Tiwari — independent AI product builder (2023–present), 20 years backend engineering, former VP at Goldman Sachs. I build AI-native tools rooted in my own experience as a parent of two children in UK primary school.
+
+The will and the intent are there. Every parent has them. Power Parent is the Robin.
 
 [![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
