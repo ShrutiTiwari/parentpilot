@@ -341,13 +341,15 @@ app.post('/api/inbound-email', async (req, res) => {
     // For now store without user_id — parent can claim it from review queue
     const toAddress = OriginalRecipient || (ToFull?.[0]?.Email) || '';
 
-    if (!supabase) {
+    // Use service role key — webhook has no user session, RLS would block inserts
+    const db = supabaseAdmin || supabase;
+    if (!db) {
       console.error('Supabase not configured — cannot store inbound email');
       return;
     }
 
     // Store raw email in queue
-    const { data: queued, error: insertError } = await supabase
+    const { data: queued, error: insertError } = await db
       .from('email_ingestion_queue')
       .insert({
         raw_subject: subject,
@@ -355,7 +357,7 @@ app.post('/api/inbound-email', async (req, res) => {
         raw_html: html,
         from_address: fromAddress,
         status: 'processing',
-        user_id: null, // will be linked when parent reviews
+        user_id: null, // will be linked when parent confirms
       })
       .select()
       .single();
@@ -367,12 +369,12 @@ app.post('/api/inbound-email', async (req, res) => {
 
     console.log('Stored in queue:', queued.id);
 
-    // Run Gemini extraction
+    // Run Gemini/Claude extraction
     try {
       const { events, confidence_score } = await extractEventsFromEmail({ subject, body, html });
       console.log(`Extracted ${events.length} events, confidence: ${confidence_score}`);
 
-      await supabase
+      await db
         .from('email_ingestion_queue')
         .update({
           status: 'pending_review',
@@ -385,7 +387,7 @@ app.post('/api/inbound-email', async (req, res) => {
       console.log('Queue updated to pending_review');
     } catch (extractError) {
       console.error('Extraction failed:', extractError.message);
-      await supabase
+      await db
         .from('email_ingestion_queue')
         .update({
           status: 'failed',
@@ -401,13 +403,14 @@ app.post('/api/inbound-email', async (req, res) => {
 
 // ─── Get pending review items for a user ──────────────────────────────────────
 app.get('/api/inbound-email/pending', async (req, res) => {
-  if (!supabase) return res.status(503).json({ error: 'Database unavailable' });
+  const db = supabaseAdmin || supabase;
+  if (!db) return res.status(503).json({ error: 'Database unavailable' });
 
   const { user_id } = req.query;
   if (!user_id) return res.status(400).json({ error: 'user_id required' });
 
   // Return items belonging to the user OR unclaimed (user_id IS NULL)
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('email_ingestion_queue')
     .select('*')
     .or(`user_id.eq.${user_id},user_id.is.null`)
