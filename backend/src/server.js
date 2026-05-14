@@ -421,7 +421,8 @@ app.get('/api/inbound-email/pending', async (req, res) => {
 
 // ─── Confirm a review item → create events ────────────────────────────────────
 app.post('/api/inbound-email/:id/confirm', async (req, res) => {
-  if (!supabase) return res.status(503).json({ error: 'Database unavailable' });
+  const db = supabaseAdmin || supabase;
+  if (!db) return res.status(503).json({ error: 'Database unavailable' });
 
   const { id } = req.params;
   const { events, user_id, school_id } = req.body;
@@ -449,7 +450,7 @@ app.post('/api/inbound-email/:id/confirm', async (req, res) => {
       source: 'email',
     }));
 
-    const { data: inserted, error: insertError } = await supabase
+    const { data: inserted, error: insertError } = await db
       .from('events')
       .insert(toInsert)
       .select();
@@ -460,7 +461,7 @@ app.post('/api/inbound-email/:id/confirm', async (req, res) => {
     for (const [i, event] of inserted.entries()) {
       const actions = events[i]?.actions || [];
       if (actions.length) {
-        await supabase.from('todos').insert(
+        await db.from('todos').insert(
           actions.map(a => ({
             event_id: event.id,
             text: a.text,
@@ -473,10 +474,10 @@ app.post('/api/inbound-email/:id/confirm', async (req, res) => {
       }
     }
 
-    // Mark queue item as confirmed
-    await supabase
+    // Mark queue item as confirmed and set user_id
+    await db
       .from('email_ingestion_queue')
-      .update({ status: 'confirmed', updated_at: new Date().toISOString() })
+      .update({ status: 'confirmed', user_id: user_id || null, updated_at: new Date().toISOString() })
       .eq('id', id);
 
     res.json({ success: true, events: inserted });
@@ -488,10 +489,11 @@ app.post('/api/inbound-email/:id/confirm', async (req, res) => {
 
 // ─── Discard a review item ────────────────────────────────────────────────────
 app.post('/api/inbound-email/:id/discard', async (req, res) => {
-  if (!supabase) return res.status(503).json({ error: 'Database unavailable' });
+  const db = supabaseAdmin || supabase;
+  if (!db) return res.status(503).json({ error: 'Database unavailable' });
 
   const { id } = req.params;
-  const { error } = await supabase
+  const { error } = await db
     .from('email_ingestion_queue')
     .update({ status: 'discarded', updated_at: new Date().toISOString() })
     .eq('id', id);
