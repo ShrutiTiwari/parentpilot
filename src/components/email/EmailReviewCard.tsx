@@ -195,10 +195,13 @@ export function EmailReviewCard({ item, onConfirmed, onDiscarded }: EmailReviewC
 
       {/* Conflict / duplicate warning */}
       {conflictsChecked && conflicts.length > 0 && (() => {
-        const isDuplicate = conflicts.some(c =>
-          c.title.toLowerCase().includes(firstEvent.title.toLowerCase().slice(0, 10)) ||
-          firstEvent.title.toLowerCase().includes(c.title.toLowerCase().slice(0, 10))
-        );
+        // Check if any conflict shares significant words with the incoming event title
+        const incomingWords = new Set(firstEvent.title.toLowerCase().split(/\W+/).filter(w => w.length > 3));
+        const isDuplicate = conflicts.some(c => {
+          const conflictWords = c.title.toLowerCase().split(/\W+/).filter((w: string) => w.length > 3);
+          const shared = conflictWords.filter((w: string) => incomingWords.has(w));
+          return shared.length >= 2;
+        });
         return (
           <div className={`mx-4 mb-3 p-3 rounded-lg border ${isDuplicate ? 'bg-orange-50 border-orange-200' : 'bg-amber-50 border-amber-200'}`}>
             <div className="flex items-center gap-2 mb-1.5">
