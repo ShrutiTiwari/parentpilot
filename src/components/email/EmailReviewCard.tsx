@@ -193,20 +193,28 @@ export function EmailReviewCard({ item, onConfirmed, onDiscarded }: EmailReviewC
         </div>
       ))}
 
-      {/* Conflict warning */}
-      {conflictsChecked && conflicts.length > 0 && (
-        <div className="mx-4 mb-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-          <div className="flex items-center gap-2 mb-1.5">
-            <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0" />
-            <span className="text-sm font-semibold text-amber-800">Clash detected</span>
+      {/* Conflict / duplicate warning */}
+      {conflictsChecked && conflicts.length > 0 && (() => {
+        const isDuplicate = conflicts.some(c =>
+          c.title.toLowerCase().includes(firstEvent.title.toLowerCase().slice(0, 10)) ||
+          firstEvent.title.toLowerCase().includes(c.title.toLowerCase().slice(0, 10))
+        );
+        return (
+          <div className={`mx-4 mb-3 p-3 rounded-lg border ${isDuplicate ? 'bg-orange-50 border-orange-200' : 'bg-amber-50 border-amber-200'}`}>
+            <div className="flex items-center gap-2 mb-1.5">
+              <AlertTriangle className={`w-4 h-4 flex-shrink-0 ${isDuplicate ? 'text-orange-600' : 'text-amber-600'}`} />
+              <span className={`text-sm font-semibold ${isDuplicate ? 'text-orange-800' : 'text-amber-800'}`}>
+                {isDuplicate ? 'Already in your calendar' : 'Clash detected'}
+              </span>
+            </div>
+            {conflicts.map((c, i) => (
+              <p key={i} className={`text-xs ml-6 ${isDuplicate ? 'text-orange-700' : 'text-amber-700'}`}>
+                {c.title} · {c.year_group}
+              </p>
+            ))}
           </div>
-          {conflicts.map((c, i) => (
-            <p key={i} className="text-xs text-amber-700 ml-6">
-              {c.title} · {c.year_group}
-            </p>
-          ))}
-        </div>
-      )}
+        );
+      })()}
 
       {/* CTA row */}
       <div className="flex gap-2 p-4 border-t border-gray-100 bg-gray-50">
