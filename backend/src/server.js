@@ -319,7 +319,10 @@ app.post('/api/schools/create-with-events', async (req, res) => {
 // Postmark posts JSON to this endpoint when an email is received
 // Set this URL in Postmark: https://parentpilot-g1oj.vercel.app/api/inbound-email
 app.post('/api/inbound-email', async (req, res) => {
-  console.log('=== INBOUND EMAIL RECEIVED ===');
+  const startTime = Date.now();
+  const log = (step, data) => console.log(JSON.stringify({ step, ...data, ts: new Date().toISOString() }));
+
+  log('webhook_received', { headers: req.headers['x-postmark-signature'] ? 'signed' : 'unsigned' });
 
   try {
     const {
@@ -331,19 +334,17 @@ app.post('/api/inbound-email', async (req, res) => {
       OriginalRecipient,
     } = req.body;
 
-    console.log('From:', fromAddress, 'Subject:', subject);
-
-    const toAddress = OriginalRecipient || (ToFull?.[0]?.Email) || '';
+    log('email_parsed', { from: fromAddress, subject, hasBody: !!body, hasHtml: !!html });
 
     // Use service role key — webhook has no user session, RLS would block inserts
     const db = supabaseAdmin || supabase;
-    console.log('Using db client:', supabaseAdmin ? 'service_role' : 'anon');
+    log('db_client', { type: supabaseAdmin ? 'service_role' : 'anon_WARN' });
     if (!db) {
-      console.error('Supabase not configured — cannot store inbound email');
+      log('error', { step: 'db_init', message: 'No Supabase client available' });
       return res.status(200).json({ received: true });
     }
 
-    // Store raw email in queue
+    // Step 1: Store raw email
     const { data: queued, error: insertError } = await db
       .from('email_ingestion_queue')
       .insert({
@@ -352,24 +353,25 @@ app.post('/api/inbound-email', async (req, res) => {
         raw_html: html,
         from_address: fromAddress,
         status: 'processing',
-        user_id: null, // will be linked when parent confirms
+        user_id: null,
       })
       .select()
       .single();
 
     if (insertError) {
-      console.error('Failed to insert into queue:', insertError);
+      log('error', { step: 'db_insert', code: insertError.code, message: insertError.message });
       return;
     }
 
-    console.log('Stored in queue:', queued.id);
+    log('db_insert_ok', { id: queued.id });
 
-    // Run Gemini/Claude extraction
+    // Step 2: AI extraction
     try {
       const { events, confidence_score } = await extractEventsFromEmail({ subject, body, html });
-      console.log(`Extracted ${events.length} events, confidence: ${confidence_score}`);
+      log('ai_extraction_ok', { eventCount: events.length, confidence: confidence_score, durationMs: Date.now() - startTime });
 
-      await db
+      // Step 3: Update queue row
+      const { error: updateError } = await db
         .from('email_ingestion_queue')
         .update({
           status: 'pending_review',
@@ -379,9 +381,13 @@ app.post('/api/inbound-email', async (req, res) => {
         })
         .eq('id', queued.id);
 
-      console.log('Queue updated to pending_review');
+      if (updateError) {
+        log('error', { step: 'db_update_pending', code: updateError.code, message: updateError.message });
+      } else {
+        log('pipeline_complete', { id: queued.id, totalMs: Date.now() - startTime });
+      }
     } catch (extractError) {
-      console.error('Extraction failed:', extractError.message);
+      log('error', { step: 'ai_extraction', message: extractError.message });
       await db
         .from('email_ingestion_queue')
         .update({
@@ -392,7 +398,7 @@ app.post('/api/inbound-email', async (req, res) => {
         .eq('id', queued.id);
     }
   } catch (error) {
-    console.error('Inbound email handler error:', error);
+    log('error', { step: 'handler', message: error.message });
   }
 
   // Respond after all processing — Vercel kills the function on res.send()
@@ -417,6 +423,31 @@ app.get('/api/inbound-email/pending', async (req, res) => {
 
   if (error) return res.status(500).json({ error: error.message });
   res.json({ items: data });
+});
+
+// ─── Pipeline status / observability ─────────────────────────────────────────
+app.get('/api/inbound-email/pipeline-status', async (req, res) => {
+  const db = supabaseAdmin || supabase;
+  if (!db) return res.status(503).json({ error: 'Database unavailable' });
+
+  const { data, error } = await db
+    .from('email_ingestion_queue')
+    .select('id, raw_subject, from_address, status, confidence_score, error_message, received_at, updated_at')
+    .order('received_at', { ascending: false })
+    .limit(20);
+
+  if (error) return res.status(500).json({ error: error.message });
+
+  const summary = {
+    total: data.length,
+    by_status: data.reduce((acc, row) => {
+      acc[row.status] = (acc[row.status] || 0) + 1;
+      return acc;
+    }, {}),
+    recent: data,
+  };
+
+  res.json(summary);
 });
 
 // ─── Confirm a review item → create events ────────────────────────────────────
