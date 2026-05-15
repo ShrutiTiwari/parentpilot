@@ -95,9 +95,10 @@ export default function ReviewPreview() {
                   setEmailDismissed(true);
                 }}
                 onDiscard={async () => {
-                  toast({ title: 'Discarded' });
+                  toast({ title: 'Dismissed' });
                   setEmailDismissed(true);
                 }}
+                onViewInCalendar={() => toast({ title: 'Navigate to calendar' })}
               />
             )}
           </div>

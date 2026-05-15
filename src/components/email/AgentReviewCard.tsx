@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import {
   Calendar, Clock, MapPin, Users, AlertTriangle,
   Mail, FileImage, Pencil, CheckCircle, XCircle,
-  ChevronDown, ChevronUp, AlertCircle, Tag, Trash2, Plus
+  ChevronDown, ChevronUp, AlertCircle, Tag, Trash2, Plus, ExternalLink
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -41,6 +41,7 @@ export interface AgentReviewCardProps {
   // Callbacks
   onConfirm: (events: AgentExtractedEvent[]) => Promise<void>;
   onDiscard: () => Promise<void>;
+  onViewInCalendar?: () => void;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -309,6 +310,7 @@ export function AgentReviewCard({
   isDuplicate = false,
   onConfirm,
   onDiscard,
+  onViewInCalendar,
 }: AgentReviewCardProps) {
   const [events, setEvents] = useState<AgentExtractedEvent[]>(initialEvents);
   const [confirming, setConfirming] = useState(false);
@@ -380,25 +382,54 @@ export function AgentReviewCard({
 
       {/* CTA row */}
       <div className="flex gap-2 px-4 py-3 border-t border-gray-100 bg-gray-50">
-        <Button
-          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-xl"
-          size="sm"
-          onClick={handleConfirm}
-          disabled={confirming || discarding}
-        >
-          <CheckCircle className="w-4 h-4 mr-1.5" />
-          {confirming ? 'Adding…' : `Add to calendar${events.length > 1 ? ` (${events.length})` : ''}`}
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleDiscard}
-          disabled={confirming || discarding}
-          className="text-gray-500 rounded-xl"
-        >
-          <XCircle className="w-4 h-4 mr-1.5" />
-          {discarding ? 'Discarding…' : 'Discard'}
-        </Button>
+        {isDuplicate ? (
+          // Duplicate — don't offer to add again
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1 text-blue-600 border-blue-200 hover:bg-blue-50 rounded-xl"
+              onClick={onViewInCalendar}
+              disabled={discarding}
+            >
+              <ExternalLink className="w-4 h-4 mr-1.5" />
+              View in calendar
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDiscard}
+              disabled={discarding}
+              className="text-gray-500 rounded-xl"
+            >
+              <XCircle className="w-4 h-4 mr-1.5" />
+              {discarding ? 'Discarding…' : 'Dismiss'}
+            </Button>
+          </>
+        ) : (
+          // New event — offer to confirm or discard
+          <>
+            <Button
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-xl"
+              size="sm"
+              onClick={handleConfirm}
+              disabled={confirming || discarding}
+            >
+              <CheckCircle className="w-4 h-4 mr-1.5" />
+              {confirming ? 'Adding…' : `Add to calendar${events.length > 1 ? ` (${events.length})` : ''}`}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDiscard}
+              disabled={confirming || discarding}
+              className="text-gray-500 rounded-xl"
+            >
+              <XCircle className="w-4 h-4 mr-1.5" />
+              {discarding ? 'Discarding…' : 'Discard'}
+            </Button>
+          </>
+        )}
       </div>
     </div>
   );
