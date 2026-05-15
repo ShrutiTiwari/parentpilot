@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import {
   Calendar, Clock, MapPin, Users, AlertTriangle,
   Mail, FileImage, Pencil, CheckCircle, XCircle,
-  ChevronDown, ChevronUp, AlertCircle, Tag
+  ChevronDown, ChevronUp, AlertCircle, Tag, Trash2, Plus
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -230,35 +230,69 @@ function EventForm({
         </p>
       )}
 
-      {/* Actions */}
-      {event.actions?.length > 0 && (
-        <div className="mt-3">
-          <button
-            className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 hover:text-gray-700"
-            onClick={() => setActionsExpanded(!actionsExpanded)}
-          >
-            {actionsExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-            Actions needed ({event.actions.length})
-          </button>
-          {actionsExpanded && (
-            <ul className="space-y-1.5">
-              {event.actions.map((a, i) => (
-                <li key={i} className="flex items-start gap-2 bg-amber-50 rounded-lg px-3 py-2">
-                  <AlertCircle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-700">{a.text}</p>
-                    {a.deadline && (
-                      <p className="text-xs text-amber-600 mt-0.5">
-                        by {(() => { try { return format(new Date(a.deadline), 'd MMM'); } catch { return a.deadline; } })()}
-                      </p>
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )}
+      {/* Actions — editable */}
+      <div className="mt-3">
+        <button
+          className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 hover:text-gray-700"
+          onClick={() => setActionsExpanded(!actionsExpanded)}
+        >
+          {actionsExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+          Actions needed ({event.actions?.length || 0})
+        </button>
+
+        {actionsExpanded && (
+          <div className="space-y-2">
+            {(event.actions || []).map((a, i) => (
+              <div key={i} className="flex items-start gap-2 bg-amber-50 rounded-lg px-3 py-2">
+                <AlertCircle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0 mt-2" />
+                <div className="flex-1 min-w-0 space-y-1">
+                  <Input
+                    className="h-7 text-sm bg-white border-amber-200 focus:border-amber-400 px-2"
+                    value={a.text}
+                    placeholder="Action description"
+                    onChange={e => {
+                      const updated = [...(event.actions || [])];
+                      updated[i] = { ...updated[i], text: e.target.value };
+                      onChange('actions', updated);
+                    }}
+                  />
+                  <Input
+                    className="h-6 text-xs bg-white border-amber-200 focus:border-amber-400 px-2"
+                    type="date"
+                    value={a.deadline || ''}
+                    onChange={e => {
+                      const updated = [...(event.actions || [])];
+                      updated[i] = { ...updated[i], deadline: e.target.value || null };
+                      onChange('actions', updated);
+                    }}
+                  />
+                </div>
+                <button
+                  className="mt-1.5 text-gray-300 hover:text-red-400 transition-colors flex-shrink-0"
+                  onClick={() => {
+                    const updated = (event.actions || []).filter((_, idx) => idx !== i);
+                    onChange('actions', updated);
+                  }}
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ))}
+
+            {/* Add action */}
+            <button
+              className="flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 font-medium mt-1 px-1"
+              onClick={() => {
+                const updated = [...(event.actions || []), { text: '', deadline: null }];
+                onChange('actions', updated);
+              }}
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Add action
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
