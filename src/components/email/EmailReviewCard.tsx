@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
-import { CheckCircle, XCircle, Mail, Calendar, Clock, MapPin, Users, ChevronDown, ChevronUp, AlertCircle, AlertTriangle } from 'lucide-react';
+import { CheckCircle, XCircle, Mail, Calendar, Clock, MapPin, Users, ChevronDown, ChevronUp, AlertCircle, AlertTriangle, ExternalLink } from 'lucide-react';
 import { API_ENDPOINTS } from '@/config/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
@@ -39,6 +39,7 @@ interface EmailReviewCardProps {
   item: QueueItem;
   onConfirmed: (id: string) => void;
   onDiscarded: (id: string) => void;
+  onViewInCalendar?: (event: any) => void;
 }
 
 function ConfidenceBadge({ score }: { score: number }) {
@@ -47,13 +48,14 @@ function ConfidenceBadge({ score }: { score: number }) {
   return <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${color}`}>{pct}% confident</span>;
 }
 
-export function EmailReviewCard({ item, onConfirmed, onDiscarded }: EmailReviewCardProps) {
+export function EmailReviewCard({ item, onConfirmed, onDiscarded, onViewInCalendar }: EmailReviewCardProps) {
   const { user } = useAuth();
   const [expanded, setExpanded] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [discarding, setDiscarding] = useState(false);
   const [conflicts, setConflicts] = useState<any[]>([]);
   const [conflictsChecked, setConflictsChecked] = useState(false);
+  const [confirmedEvent, setConfirmedEvent] = useState<any | null>(null);
 
   const events = item.extracted_data?.events || [];
   const firstEvent = events[0];
@@ -83,6 +85,9 @@ export function EmailReviewCard({ item, onConfirmed, onDiscarded }: EmailReviewC
         body: JSON.stringify({ user_id: user.id, events }),
       });
       if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      const inserted = data.events?.[0] || null;
+      setConfirmedEvent(inserted);
       toast({ title: 'Event added to calendar', description: firstEvent.title });
       onConfirmed(item.id);
     } catch (e: any) {
@@ -221,15 +226,27 @@ export function EmailReviewCard({ item, onConfirmed, onDiscarded }: EmailReviewC
 
       {/* CTA row */}
       <div className="flex gap-2 p-4 border-t border-gray-100 bg-gray-50">
-        <Button
-          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
-          size="sm"
-          onClick={handleConfirm}
-          disabled={confirming || discarding}
-        >
-          <CheckCircle className="w-4 h-4 mr-1.5" />
-          {confirming ? 'Adding…' : 'Add to calendar'}
-        </Button>
+        {confirmedEvent && onViewInCalendar ? (
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1 text-blue-600 border-blue-200 hover:bg-blue-50"
+            onClick={() => onViewInCalendar(confirmedEvent)}
+          >
+            <ExternalLink className="w-4 h-4 mr-1.5" />
+            View in calendar
+          </Button>
+        ) : (
+          <Button
+            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+            size="sm"
+            onClick={handleConfirm}
+            disabled={confirming || discarding}
+          >
+            <CheckCircle className="w-4 h-4 mr-1.5" />
+            {confirming ? 'Adding…' : 'Add to calendar'}
+          </Button>
+        )}
         <Button
           variant="outline"
           size="sm"

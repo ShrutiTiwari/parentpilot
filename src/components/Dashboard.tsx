@@ -260,7 +260,25 @@ export function Dashboard({ showAuthModal, setShowAuthModal, onSignOut, initialA
 
           {user && (
             <div className="px-4 pt-2">
-              <EmailInboxPanel />
+              <EmailInboxPanel
+                onViewInCalendar={(event) => {
+                  setNewEvent({
+                    title: event.title || '',
+                    date: event.date || '',
+                    category: event.category || '',
+                    yearGroup: event.year_group || 'All',
+                    event_type: event.event_type || 'personal',
+                    visibility: event.visibility || 'private',
+                    time_start: event.time_start || '',
+                    time_end: event.time_end || '',
+                    venue: event.venue || '',
+                    todos: [],
+                    created_by_user_id: event.created_by_user_id || null,
+                    school_id: event.school_id || null,
+                  });
+                  setShowEventDialog(true);
+                }}
+              />
             </div>
           )}
 

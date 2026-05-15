@@ -29,6 +29,7 @@ export interface AgentReviewCardProps {
   source: 'email' | 'screenshot';
   sourceLabel: string;        // e.g. "skierti@gmail.com" or "school_letter.jpg"
   sourceSubject?: string;     // email subject or filename
+  sourceBody?: string;        // raw email body or image caption (shown in collapsible)
 
   // Extracted data
   events: AgentExtractedEvent[];
@@ -88,15 +89,36 @@ function EventForm({
   onChange,
   index,
   total,
+  conflicts,
+  isDuplicate,
+  onConfirm,
+  onDiscard,
+  onViewInCalendar,
 }: {
   event: AgentExtractedEvent;
   onChange: (field: keyof AgentExtractedEvent, value: any) => void;
   index: number;
   total: number;
+  conflicts: { title: string; year_group: string }[];
+  isDuplicate: boolean;
+  onConfirm: () => Promise<void>;
+  onDiscard: () => Promise<void>;
+  onViewInCalendar?: () => void;
 }) {
   const [editingField, setEditingField] = useState<string | null>(null);
   const [actionsExpanded, setActionsExpanded] = useState(true);
   const [descExpanded, setDescExpanded] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+  const [discarding, setDiscarding] = useState(false);
+
+  const handleConfirm = async () => {
+    setConfirming(true);
+    try { await onConfirm(); } finally { setConfirming(false); }
+  };
+  const handleDiscard = async () => {
+    setDiscarding(true);
+    try { await onDiscard(); } finally { setDiscarding(false); }
+  };
 
   const Field = ({
     icon: Icon,
@@ -190,7 +212,7 @@ function EventForm({
         <div className="flex items-center gap-2">
           <Users className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
           <select
-            className="text-sm text-gray-700 bg-transparent border-0 border-b border-dashed border-gray-300 focus:border-blue-400 focus:outline-none cursor-pointer py-0.5 pr-6 flex-1"
+            className="text-sm text-gray-700 bg-transparent border-0 border-b border-dashed border-gray-300 focus:border-gray-400 focus:outline-none cursor-pointer py-0.5 pr-6 flex-1"
             value={event.year_group}
             onChange={e => onChange('year_group', e.target.value)}
           >
@@ -205,7 +227,7 @@ function EventForm({
       <div className="flex items-center gap-2 mb-3">
         <Tag className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
         <select
-          className="text-xs bg-blue-50 text-blue-700 border border-blue-100 rounded-full px-2 py-0.5 font-medium focus:outline-none focus:border-blue-400 cursor-pointer"
+          className="text-xs bg-gray-100 text-gray-600 border border-gray-200 rounded-full px-2 py-0.5 font-medium focus:outline-none focus:border-gray-400 cursor-pointer"
           value={event.category}
           onChange={e => onChange('category', e.target.value)}
         >
@@ -294,78 +316,10 @@ function EventForm({
           </div>
         )}
       </div>
-    </div>
-  );
-}
 
-// ─── Main card ────────────────────────────────────────────────────────────────
-
-export function AgentReviewCard({
-  source,
-  sourceLabel,
-  sourceSubject,
-  events: initialEvents,
-  confidenceScore,
-  conflicts = [],
-  isDuplicate = false,
-  onConfirm,
-  onDiscard,
-  onViewInCalendar,
-}: AgentReviewCardProps) {
-  const [events, setEvents] = useState<AgentExtractedEvent[]>(initialEvents);
-  const [confirming, setConfirming] = useState(false);
-  const [discarding, setDiscarding] = useState(false);
-
-  const handleFieldChange = (eventIdx: number, field: keyof AgentExtractedEvent, value: any) => {
-    setEvents(prev => prev.map((ev, i) => i === eventIdx ? { ...ev, [field]: value } : ev));
-  };
-
-  const handleConfirm = async () => {
-    setConfirming(true);
-    try { await onConfirm(events); } finally { setConfirming(false); }
-  };
-
-  const handleDiscard = async () => {
-    setDiscarding(true);
-    try { await onDiscard(); } finally { setDiscarding(false); }
-  };
-
-  const SourceIcon = source === 'email' ? Mail : FileImage;
-
-  return (
-    <div className="border border-gray-200 rounded-2xl bg-white shadow-sm overflow-hidden">
-
-      {/* Source strip */}
-      <div className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 border-b border-gray-100">
-        <SourceIcon className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-        <span className="text-xs text-gray-500 truncate flex-1">
-          {source === 'email' ? 'Forwarded email' : 'Screenshot'} · {sourceLabel}
-          {sourceSubject && <span className="ml-1 text-gray-400">· {sourceSubject}</span>}
-        </span>
-        <ConfidenceBadge score={confidenceScore} />
-      </div>
-
-      {/* Events */}
-      <div className="px-4 py-4 space-y-6 divide-y divide-gray-100">
-        {events.map((event, idx) => (
-          <div key={idx} className={idx > 0 ? 'pt-6' : ''}>
-            <EventForm
-              event={event}
-              onChange={(field, value) => handleFieldChange(idx, field, value)}
-              index={idx}
-              total={events.length}
-            />
-          </div>
-        ))}
-      </div>
-
-      {/* Intelligence warning */}
+      {/* Per-event conflict warning */}
       {conflicts.length > 0 && (
-        <div className={`mx-4 mb-3 p-3 rounded-xl border ${
-          isDuplicate
-            ? 'bg-orange-50 border-orange-200'
-            : 'bg-amber-50 border-amber-200'
-        }`}>
+        <div className={`mt-3 p-3 rounded-xl border ${isDuplicate ? 'bg-orange-50 border-orange-200' : 'bg-amber-50 border-amber-200'}`}>
           <div className="flex items-center gap-2 mb-1">
             <AlertTriangle className={`w-4 h-4 flex-shrink-0 ${isDuplicate ? 'text-orange-500' : 'text-amber-500'}`} />
             <span className={`text-sm font-semibold ${isDuplicate ? 'text-orange-800' : 'text-amber-800'}`}>
@@ -380,10 +334,9 @@ export function AgentReviewCard({
         </div>
       )}
 
-      {/* CTA row */}
-      <div className="flex gap-2 px-4 py-3 border-t border-gray-100 bg-gray-50">
+      {/* Per-event CTA */}
+      <div className="flex gap-2 mt-4 pt-3 border-t border-gray-100">
         {isDuplicate ? (
-          // Duplicate — don't offer to add again
           <>
             <Button
               variant="outline"
@@ -395,19 +348,12 @@ export function AgentReviewCard({
               <ExternalLink className="w-4 h-4 mr-1.5" />
               View in calendar
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleDiscard}
-              disabled={discarding}
-              className="text-gray-500 rounded-xl"
-            >
+            <Button variant="outline" size="sm" onClick={handleDiscard} disabled={discarding} className="text-gray-500 rounded-xl">
               <XCircle className="w-4 h-4 mr-1.5" />
-              {discarding ? 'Discarding…' : 'Dismiss'}
+              {discarding ? 'Dismissing…' : 'Dismiss'}
             </Button>
           </>
         ) : (
-          // New event — offer to confirm or discard
           <>
             <Button
               className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-xl"
@@ -416,20 +362,114 @@ export function AgentReviewCard({
               disabled={confirming || discarding}
             >
               <CheckCircle className="w-4 h-4 mr-1.5" />
-              {confirming ? 'Adding…' : `Add to calendar${events.length > 1 ? ` (${events.length})` : ''}`}
+              {confirming ? 'Adding…' : 'Add to calendar'}
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleDiscard}
-              disabled={confirming || discarding}
-              className="text-gray-500 rounded-xl"
-            >
+            <Button variant="outline" size="sm" onClick={handleDiscard} disabled={confirming || discarding} className="text-gray-500 rounded-xl">
               <XCircle className="w-4 h-4 mr-1.5" />
               {discarding ? 'Discarding…' : 'Discard'}
             </Button>
           </>
         )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Main card ────────────────────────────────────────────────────────────────
+
+export function AgentReviewCard({
+  source,
+  sourceLabel,
+  sourceSubject,
+  sourceBody,
+  events: initialEvents,
+  confidenceScore,
+  conflicts = [],
+  isDuplicate = false,
+  onConfirm,
+  onDiscard,
+  onViewInCalendar,
+}: AgentReviewCardProps) {
+  const [events, setEvents] = useState<AgentExtractedEvent[]>(initialEvents);
+  // Track which event indices have been dismissed (confirmed or discarded)
+  const [dismissedIndices, setDismissedIndices] = useState<Set<number>>(new Set());
+  const [sourceExpanded, setSourceExpanded] = useState(false);
+
+  const handleFieldChange = (eventIdx: number, field: keyof AgentExtractedEvent, value: any) => {
+    setEvents(prev => prev.map((ev, i) => i === eventIdx ? { ...ev, [field]: value } : ev));
+  };
+
+  const handleEventConfirm = async (idx: number) => {
+    await onConfirm([events[idx]]);
+    const next = new Set(dismissedIndices).add(idx);
+    setDismissedIndices(next);
+    // If all events dismissed, close the whole card
+    if (next.size === events.length) await onDiscard();
+  };
+
+  const handleEventDiscard = async (idx: number) => {
+    const next = new Set(dismissedIndices).add(idx);
+    setDismissedIndices(next);
+    // If all events dismissed, close the whole card
+    if (next.size === events.length) await onDiscard();
+  };
+
+  const SourceIcon = source === 'email' ? Mail : FileImage;
+  const visibleEvents = events.filter((_, i) => !dismissedIndices.has(i));
+
+  if (visibleEvents.length === 0) return null;
+
+  return (
+    <div className="border border-gray-200 rounded-2xl bg-white shadow-sm overflow-hidden">
+
+      {/* Source strip */}
+      <div className="bg-gray-50 border-b border-gray-100">
+        <button
+          className="w-full flex items-center gap-2 px-4 py-2.5 text-left"
+          onClick={() => sourceBody && setSourceExpanded(v => !v)}
+          style={{ cursor: sourceBody ? 'pointer' : 'default' }}
+        >
+          <SourceIcon className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+          <span className="text-xs text-gray-500 truncate flex-1">
+            {source === 'email' ? 'Forwarded email' : 'Screenshot'} · {sourceLabel}
+            {sourceSubject && <span className="ml-1 text-gray-400">· {sourceSubject}</span>}
+          </span>
+          <ConfidenceBadge score={confidenceScore} />
+          {sourceBody && (
+            sourceExpanded
+              ? <ChevronUp className="w-3.5 h-3.5 text-gray-400 flex-shrink-0 ml-1" />
+              : <ChevronDown className="w-3.5 h-3.5 text-gray-400 flex-shrink-0 ml-1" />
+          )}
+        </button>
+        {sourceExpanded && sourceBody && (
+          <div className="px-4 pb-3">
+            <pre className="text-xs text-gray-500 whitespace-pre-wrap font-sans bg-white border border-gray-100 rounded-lg px-3 py-2 max-h-48 overflow-y-auto">
+              {sourceBody}
+            </pre>
+          </div>
+        )}
+      </div>
+
+      {/* Events — each with its own CTA */}
+      <div className="divide-y divide-gray-100">
+        {events.map((event, idx) => {
+          if (dismissedIndices.has(idx)) return null;
+          return (
+            <div key={idx} className="px-4 py-4">
+              <EventForm
+                event={event}
+                onChange={(field, value) => handleFieldChange(idx, field, value)}
+                index={idx}
+                total={visibleEvents.length}
+                conflicts={conflicts}
+                isDuplicate={isDuplicate}
+                onConfirm={() => handleEventConfirm(idx)}
+                onDiscard={() => handleEventDiscard(idx)}
+                onViewInCalendar={onViewInCalendar}
+              />
+            </div>
+          );
+        })}
       </div>
     </div>
   );

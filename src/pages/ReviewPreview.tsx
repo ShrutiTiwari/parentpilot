@@ -86,6 +86,18 @@ export default function ReviewPreview() {
                 source="email"
                 sourceLabel="skierti@gmail.com"
                 sourceSubject="Fwd: Provisional Exam Date"
+                sourceBody={`Dear Parent,
+
+We are pleased to confirm a provisional exam date for your child.
+
+Exam: RSL Graded Music Exam – Vocals Grade 1
+Provisional Date: Tuesday 1 July 2026
+Venue: DeRosa Music Academy
+
+Please confirm your availability by 1 June 2026. An official appointment slip with the confirmed location, date and time will be provided no later than 2 weeks before the exam.
+
+Kind regards,
+RSL Awards`}
                 events={[EMAIL_EVENT]}
                 confidenceScore={0.95}
                 conflicts={[{ title: 'Vocals - Grade 1 Exam (Pihu)', year_group: 'All' }]}

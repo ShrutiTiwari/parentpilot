@@ -15,7 +15,11 @@ interface QueueItem {
   status: string;
 }
 
-export function EmailInboxPanel() {
+interface EmailInboxPanelProps {
+  onViewInCalendar?: (event: any) => void;
+}
+
+export function EmailInboxPanel({ onViewInCalendar }: EmailInboxPanelProps = {}) {
   const { user } = useAuth();
   const [items, setItems] = useState<QueueItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -76,6 +80,7 @@ export function EmailInboxPanel() {
               item={item}
               onConfirmed={handleConfirmed}
               onDiscarded={handleDiscarded}
+              onViewInCalendar={onViewInCalendar}
             />
           ))}
         </div>
