@@ -12,6 +12,7 @@ import AuthCallback from "./pages/auth/callback";
 import ResetPassword from "./pages/ResetPassword";
 import SharedCalendar from "./pages/shared/[shareToken]";
 import NotFound from "./pages/NotFound";
+import ReviewPreview from "./pages/ReviewPreview";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +37,7 @@ const App = () => (
                 <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/shared/:shareToken" element={<SharedCalendar />} />
+                <Route path="/review-preview" element={<ReviewPreview />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </SchoolAuthorizationProvider>
