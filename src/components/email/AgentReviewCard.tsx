@@ -59,11 +59,26 @@ function ConfidenceBadge({ score }: { score: number }) {
   );
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
-  sports: '🏅 Sports', swimming: '🏊 Swimming', music: '🎵 Music',
-  exam: '📝 Exam', trip: '🚌 Trip', parent: '👨‍👩‍👧 Parents',
-  holiday: '🏖️ Holiday', report: '📄 Report', general: '📌 General',
-};
+const CATEGORY_OPTIONS = [
+  { value: 'sports',   label: '🏅 Sports' },
+  { value: 'swimming', label: '🏊 Swimming' },
+  { value: 'music',    label: '🎵 Music' },
+  { value: 'exam',     label: '📝 Exam' },
+  { value: 'trip',     label: '🚌 Trip' },
+  { value: 'parent',   label: '👨‍👩‍👧 Parents' },
+  { value: 'holiday',  label: '🏖️ Holiday' },
+  { value: 'report',   label: '📄 Report' },
+  { value: 'general',  label: '📌 General' },
+];
+
+const YEAR_GROUP_OPTIONS = [
+  'All', 'Reception',
+  'Year 1', 'Year 2', 'Year 3', 'Year 4', 'Year 5', 'Year 6',
+];
+
+const CATEGORY_LABELS: Record<string, string> = Object.fromEntries(
+  CATEGORY_OPTIONS.map(o => [o.value, o.label])
+);
 
 // ─── Single event form (inline editable) ──────────────────────────────────────
 
@@ -169,15 +184,34 @@ function EventForm({
             : ''}
         />
         <Field icon={MapPin} field="venue" label="Venue" display={event.venue || ''} />
-        <Field icon={Users} field="year_group" label="Year group" display={event.year_group} />
+
+        {/* Year group — select */}
+        <div className="flex items-center gap-2">
+          <Users className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+          <select
+            className="text-sm text-gray-700 bg-transparent border-0 border-b border-dashed border-gray-300 focus:border-blue-400 focus:outline-none cursor-pointer py-0.5 pr-6 flex-1"
+            value={event.year_group}
+            onChange={e => onChange('year_group', e.target.value)}
+          >
+            {YEAR_GROUP_OPTIONS.map(yg => (
+              <option key={yg} value={yg}>{yg}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
-      {/* Category pill */}
+      {/* Category — dropdown pill */}
       <div className="flex items-center gap-2 mb-3">
-        <Tag className="w-3.5 h-3.5 text-gray-400" />
-        <span className="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full border border-blue-100 font-medium">
-          {CATEGORY_LABELS[event.category] || event.category}
-        </span>
+        <Tag className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+        <select
+          className="text-xs bg-blue-50 text-blue-700 border border-blue-100 rounded-full px-2 py-0.5 font-medium focus:outline-none focus:border-blue-400 cursor-pointer"
+          value={event.category}
+          onChange={e => onChange('category', e.target.value)}
+        >
+          {CATEGORY_OPTIONS.map(o => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </select>
       </div>
 
       {/* Description (collapsible) */}
