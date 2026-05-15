@@ -93,7 +93,10 @@ export const dataService = {
         created_by_user_id: event_type === 'personal' ? eventData.created_by_user_id : null, // Only set created_by_user_id for personal events
         // Remove any school_id for personal events
         ...(event_type === 'personal' ? { school_id: null } : {}),
-        venue: event.venue || null
+        venue: event.venue || null,
+        // DB time columns reject empty strings — coerce to null
+        time_start: eventData.time_start || null,
+        time_end: eventData.time_end || null,
       };
 
       console.log('Event data for DB:', eventDataForDb);
