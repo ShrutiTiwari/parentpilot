@@ -26,6 +26,7 @@ import { isFeatureEnabled } from '../config/features';
 import { DonationModal } from './donation/DonationModal';
 import { displayEvent } from '@/utils/visbilityControl';
 import { EmailInboxPanel } from './email/EmailInboxPanel';
+import { AgentReviewCard, AgentExtractedEvent } from './email/AgentReviewCard';
 
 interface DashboardProps {
   showAuthModal?: boolean;
@@ -81,6 +82,35 @@ export function Dashboard({ showAuthModal, setShowAuthModal, onSignOut, initialA
   const [personalSearchTerm, setPersonalSearchTerm] = useState('');
   const [personalShowUpcomingOnly, setPersonalShowUpcomingOnly] = useState(true);
   const [personalSelectedCategories, setPersonalSelectedCategories] = useState<string[]>([]);
+
+  // Screenshot extraction review — shows AgentReviewCard instead of EventDialog
+  const [screenshotReview, setScreenshotReview] = useState<{
+    events: AgentExtractedEvent[];
+    sourceLabel: string;
+  } | null>(null);
+
+  const handleScreenshotExtractSuccess = (extractedData: any) => {
+    const eventsArray = Array.isArray(extractedData) ? extractedData
+      : extractedData?.events ? extractedData.events
+      : [extractedData];
+
+    const mapped: AgentExtractedEvent[] = eventsArray.map((e: any) => ({
+      title: e.title || '',
+      date: e.date || '',
+      time_start: e.time_start || null,
+      time_end: e.time_end || null,
+      venue: e.venue || null,
+      year_group: e.year_group || e.yearGroup || 'All',
+      category: e.category || 'general',
+      description: e.description || '',
+      actions: e.actions
+        ? e.actions
+        : (e.todos || []).map((t: any) => ({ text: t.text, deadline: t.deadline || null })),
+      confidence_score: e.confidence_score || 0.8,
+    }));
+
+    setScreenshotReview({ events: mapped, sourceLabel: eventsArray[0]?.source || 'screenshot' });
+  };
 
   const selectedSchoolId = authorizedSchools.find(
     auth => auth.schools?.name === selectedProfile?.schoolName
@@ -225,7 +255,7 @@ export function Dashboard({ showAuthModal, setShowAuthModal, onSignOut, initialA
                   <div className="flex-1 max-w-md mx-auto lg:mx-0">
                     <AddEventTabs
                       eventType={!user ? 'personal' : (selectedProfile ? 'school' : 'personal')}
-                      onExtractSuccess={handleExtractSuccess}
+                      onExtractSuccess={handleScreenshotExtractSuccess}
                       onAddEventClick={() => handleAddEventClick(!user ? 'personal' : (selectedProfile ? 'school' : 'personal'))}
                       className="h-full"
                       selectedProfile={selectedProfile}
@@ -234,7 +264,7 @@ export function Dashboard({ showAuthModal, setShowAuthModal, onSignOut, initialA
                   </div>
                   <div className="flex-1 max-w-md mx-auto lg:mx-0">
                     <PdfUploadSection
-                      onExtractSuccess={handleExtractSuccess}
+                      onExtractSuccess={handleScreenshotExtractSuccess}
                       showPdfUpload={isFeatureEnabled('PDF_UPLOAD_ENABLED')}
                       className="h-full"
                       selectedProfile={selectedProfile}
@@ -248,7 +278,7 @@ export function Dashboard({ showAuthModal, setShowAuthModal, onSignOut, initialA
                   <div className="max-w-md w-full">
                     <AddEventTabs
                       eventType={!user ? 'personal' : (selectedProfile ? 'school' : 'personal')}
-                      onExtractSuccess={handleExtractSuccess}
+                      onExtractSuccess={handleScreenshotExtractSuccess}
                       onAddEventClick={() => handleAddEventClick(!user ? 'personal' : (selectedProfile ? 'school' : 'personal'))}
                       className="h-full"
                     />
@@ -257,6 +287,40 @@ export function Dashboard({ showAuthModal, setShowAuthModal, onSignOut, initialA
               )}
             </div>
           </div>
+
+          {user && screenshotReview && (
+            <div className="px-4 pt-2 mb-2">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+                Screenshot · {screenshotReview.events.length} event{screenshotReview.events.length > 1 ? 's' : ''} extracted
+              </p>
+              <AgentReviewCard
+                source="screenshot"
+                sourceLabel={screenshotReview.sourceLabel}
+                events={screenshotReview.events}
+                confidenceScore={screenshotReview.events[0]?.confidence_score ?? 0.8}
+                onConfirm={async (eventsToSave) => {
+                  for (const ev of eventsToSave) {
+                    await handleSaveEvent({
+                      title: ev.title,
+                      date: ev.date,
+                      category: ev.category,
+                      yearGroup: ev.year_group,
+                      event_type: selectedProfile ? 'school' : 'personal',
+                      visibility: selectedProfile ? 'private' : 'private',
+                      time_start: ev.time_start || '',
+                      time_end: ev.time_end || '',
+                      venue: ev.venue || '',
+                      description: ev.description || '',
+                      todos: ev.actions.map(a => ({ text: a.text, completed: false, deadline: a.deadline || null })),
+                      created_by_user_id: user?.id || null,
+                      school_id: selectedProfile?.schoolId || null,
+                    });
+                  }
+                }}
+                onDiscard={async () => setScreenshotReview(null)}
+              />
+            </div>
+          )}
 
           {user && (
             <div className="px-4 pt-2">
