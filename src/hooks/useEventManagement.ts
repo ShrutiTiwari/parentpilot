@@ -395,17 +395,27 @@ export function useEventManagement(showAuthModal?: boolean, setShowAuthModal?: (
       // Parse and format the date
       const formattedDate = event.date ? convertToInputFormat(event.date) : '';
 
+      // Support both snake_case (new unified prompt) and camelCase (legacy)
+      const yearGroup = event.year_group || event.yearGroup || '';
+
+      // New prompt returns actions [{text, deadline}]; legacy returned todos [{id, text, completed}]
+      // Normalise to the shape the rest of the app expects
+      const todos = event.actions
+        ? event.actions.map((a: any) => ({ text: a.text, completed: false, deadline: a.deadline || null }))
+        : (event.todos || []);
+
       const formattedEvent = {
         title: event.title || '',
         date: formattedDate,
         category: event.category || '',
-        yearGroup: event.yearGroup || '',
+        yearGroup,
         event_type: event.event_type || 'school',
         visibility: event.visibility || 'private',
         time_start: event.time_start ? parseTimeForInput(event.time_start) : '',
         time_end: event.time_end ? parseTimeForInput(event.time_end) : '',
         venue: event.venue || '',
-        todos: event.todos || [],
+        description: event.description || '',
+        todos,
         created_by_user_id: user?.id || null,
         school_id: selectedProfile?.schoolId || null
       };

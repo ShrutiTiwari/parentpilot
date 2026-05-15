@@ -5,7 +5,6 @@ const rateLimit = require('express-rate-limit');
 const fs = require('fs').promises;
 const multer = require('multer');
 const { extractDataFromImage } = require('./services/imageService');
-const { IMAGE_EXTRACTION_PROMPT } = require('./config/prompts');
 const { createClient } = require('@supabase/supabase-js');
 const { devLog, devWarn, devError } = require('./utils/logger');
 const schoolDiscoveryService = require('./services/schoolDiscoveryService');
@@ -88,7 +87,6 @@ app.post('/api/extract-event', uploadLimiter, upload.single('image'), async (req
     console.log('extract-event: mimetype:', mimeType, 'size:', req.file.size);
 
     const extractedEvent = await extractDataFromImage(
-      IMAGE_EXTRACTION_PROMPT,
       req.file.buffer,
       req.file.originalname,
       mimeType

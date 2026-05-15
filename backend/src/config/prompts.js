@@ -1,122 +1,57 @@
-const IMAGE_EXTRACTION_PROMPT = `
-You are a helpful assistant that extracts structured event data from school notices or invitations shown in images.
+// ─── Unified extraction prompt ────────────────────────────────────────────────
+// Used for both email text and image/PDF extraction.
+// Output schema matches the events + todos DB tables directly.
 
+const EXTRACTION_PROMPT = `You are an AI assistant helping parents manage school events.
 
-# EXAMPLE 1
+Extract ALL school events from the content provided. For each event return a JSON object.
 
-Image contains this text:
-"""
-Stage 2 - 09:15 - July 7th - 8th 2026
-Class
-Active
-Mon
-Tue
-13:30PM - 14:00PM
-13:30PM - 14:00PM
-13:30PM - 14:00PM
-13:30PM - 14:00PM
-13:30PM - 14:00PM
-Program:
-Start Date:
-Drop Date:
-Intensive Group Swimming Lessons (45 minute lessons)
-7 Jul 2026
-8 Jul 2026
-"""
-
-Expected output:
-[
-  {
-    "title": "Intensive Private Lessons",
-    "date": "July 7, 2026",
-    "time": "13:30 - 14:00",
-    "venue": "",
-    "yearGroup": "All",
-    "category": "music",
-    "source": "example1.png",
-    "todos": [
-      {
-        "id": "music-1",
-        "text": "Prepare musical instruments",
-        "completed": false
-      }
-    ]
-  },
-  {
-    "title": "Intensive Private Lessons",
-    "date": "July 8, 2026",
-    "time": "13:30 - 14:00",
-    "venue": "",
-    "yearGroup": "All",
-    "category": "music",
-    "source": "example1.png",
-    "todos": [
-      {
-        "id": "music-2",
-        "text": "Prepare musical instruments",
-        "completed": false
-      }
-    ]
-  }
-]
-
-# END OF EXAMPLE
-
-Your task:
-- **CRITICAL**: Extract **ALL future events** listed in the image. Do not miss any events.
-- **MANDATORY**: If the image contains multiple events, you MUST extract every single one.
-- **VERIFICATION**: Count the events in the image and ensure your response matches that count.
-- If there is only one event, return a JSON array with one object.
-- Interpret dates **precisely as written**, without adjusting or assuming a day earlier.
-- **YEAR HANDLING**:
-  * If a year is explicitly shown in the image, use that year exactly
-  * If NO year is specified, use the current year (2026) for dates that haven't passed yet this year
-  * If NO year is specified and the date has already passed this year, use next year (2027)
-  * Context example: Today is February 2026, if event says "June 8-19", use "June 8, 2026" since June hasn't occurred yet this year
-- If a day name is used (e.g., "next Friday"), interpret it **accurately as the next upcoming** instance of that day **after today's date**.
-- Use date and time information exactly as shown, unless missing or ambiguous.
-- Output a **valid JSON array**, one object per event.
-- **Do NOT skip** any events. Go line by line if needed.
-- **ALWAYS include todos** for each event based on its category.
-- Only return data in the structure shown below, and **nothing else**.
+Return ONLY a valid JSON array, nothing else. No markdown, no explanation.
 
 Required format:
 [
   {
     "title": "string",
-    "date": "Month DD, YYYY",   // e.g. June 3, 2026
-    "time": "HH:MM - HH:MM",    // Use 24-hr format, e.g. 14:00 - 17:30
-    "venue": "string", // The event venue (if available)
-    "yearGroup": "Year 1" | "Year 2" | "Year 3" | "Year 4" | "Year 5" | "Year 6" | "All",
-    "category": "holiday" | "birthday" | "sports" | "swimming" | "music" | "parent" | "report" | "exam" | "general",
-    "source": "string",  // Use the filename or source image label
-    "todos": [
-      {
-        "id": "string",
-        "text": "string",
-        "completed": false
-      }
-    ]
+    "date": "YYYY-MM-DD",
+    "time_start": "HH:MM" or null,
+    "time_end": "HH:MM" or null,
+    "venue": "string or null",
+    "year_group": "Reception" | "Year 1" | "Year 2" | "Year 3" | "Year 4" | "Year 5" | "Year 6" | "All",
+    "category": "holiday" | "sports" | "swimming" | "music" | "parent" | "report" | "exam" | "trip" | "general",
+    "description": "any extra context e.g. bring £5, wear PE kit, selected by PE staff",
+    "actions": [
+      { "text": "concrete action the parent needs to take", "deadline": "YYYY-MM-DD or null" }
+    ],
+    "confidence_score": 0.0-1.0
   }
 ]
 
 Rules:
-- Use "00:00 - 00:00" for all-day events or if time is not specified.
-- **ALWAYS include the appropriate todos** for each event:
-  - For holidays: Add todo "Plan child care for holiday"
-  - For birthdays: Add todo "Buy gift for birthday"
-  - For sports events: Add todo "Prepare sports equipment"
-  - For swimming events: Add todo "Pack swimming gear"
-  - For music events: Add todo "Prepare musical instruments"
-  - For parent events: Add todo "Arrange childcare"
-  - For reports: Add todo "Review report with child"
-  - For exams: Add todo "Help with exam preparation"
-  - For general events: Add todo "Prepare for event"
-  - Match the JSON schema exactly — do not include markdown, bullets, commentary, or any explanation.
-
-  
+- Extract EVERY event mentioned, even if briefly referenced
+- date must be YYYY-MM-DD — if no year is specified use 2026 for future dates, 2027 for dates that have already passed
+- time_start / time_end in 24-hr HH:MM format; use null if not specified
+- year_group: use "All" if not specified or applies to whole school
+- actions must be concrete parent tasks with realistic deadlines, e.g.:
+    "Return permission slip" deadline 1 week before event
+    "Pay £5 online" deadline 2 weeks before event
+    "Pack swimming kit" deadline day before event
+- description captures freetext detail from the source that doesn't fit other fields
+- confidence_score: how certain you are about the extracted date and details (0.0–1.0)
 `;
 
+// ─── Legacy image-only prompt (retired) ───────────────────────────────────────
+// Replaced by EXTRACTION_PROMPT above. Kept for reference only.
+// Issues: non-standard date format, single time string, camelCase yearGroup,
+//         hardcoded todos instead of extracted actions, no description field,
+//         bad example (swimming lesson labelled as music category).
+//
+// const IMAGE_EXTRACTION_PROMPT = `
+// You are a helpful assistant that extracts structured event data from school notices...
+// [full old prompt omitted for brevity — see git history]
+// `;
+
 module.exports = {
-  IMAGE_EXTRACTION_PROMPT
+  EXTRACTION_PROMPT,
+  // Re-export under old name so any other callers don't break immediately
+  IMAGE_EXTRACTION_PROMPT: EXTRACTION_PROMPT,
 };

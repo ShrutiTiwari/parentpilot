@@ -1,56 +1,24 @@
 const ImageExtractionStrategyFactory = require('./strategies/ImageExtractionStrategyFactory');
-const { IMAGE_EXTRACTION_PROMPT } = require('../config/prompts');
+const { EXTRACTION_PROMPT } = require('../config/prompts');
 const fs = require('fs').promises;
 const path = require('path');
 
 // Initialize the strategy factory
 const strategyFactory = new ImageExtractionStrategyFactory();
 
-async function extractDataFromImage(prompt, fileBuffer, sourceFilename, mimeType = 'image/jpeg') {
+async function extractDataFromImage(fileBuffer, sourceFilename, mimeType = 'image/jpeg') {
   console.log('=== IMAGE SERVICE: Starting file extraction ===');
-  console.log('Parameters received:', {
-    promptLength: prompt.length,
-    bufferSize: fileBuffer.length,
-    sourceFilename,
-    mimeType
-  });
-  
-  // Get the appropriate strategy
+  console.log('Parameters received:', { bufferSize: fileBuffer.length, sourceFilename, mimeType });
+
   const strategy = strategyFactory.getStrategy();
   console.log(`=== IMAGE SERVICE: Using ${strategy.getStrategyName()} ===`);
-  
-  try {
-    // Use the strategy to extract events
-    const result = await strategy.extractEventsFromImage(prompt, fileBuffer, sourceFilename, mimeType);
-    
-    // Ensure each event has todos array
-    if (Array.isArray(result)) {
-      result.forEach(event => {
-        if (!event.todos) {
-          event.todos = [];
-          // Add default todos based on event type
-          if (event.category === 'holiday') {
-            event.todos.push({
-              id: crypto.randomUUID(),
-              text: 'Plan child care for holiday',
-              completed: false
-            });
-          } else if (event.category === 'birthday') {
-            event.todos.push({
-              id: crypto.randomUUID(),
-              text: 'Buy gift for birthday',
-              completed: false
-            });
-          }
-        }
-      });
-    }
 
+  try {
+    const result = await strategy.extractEventsFromImage(EXTRACTION_PROMPT, fileBuffer, sourceFilename, mimeType);
     console.log('=== IMAGE SERVICE: Extraction completed successfully ===');
     return result;
   } catch (error) {
-    console.error('=== IMAGE SERVICE: Error in extraction ===');
-    console.error('Error extracting data from image:', error);
+    console.error('=== IMAGE SERVICE: Error in extraction ===', error);
     throw error;
   }
 }
