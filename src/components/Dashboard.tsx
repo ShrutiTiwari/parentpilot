@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { EventsTab } from './dashboard/tabs/EventsTab';
@@ -111,6 +111,24 @@ export function Dashboard({ showAuthModal, setShowAuthModal, onSignOut, initialA
 
     setScreenshotReview({ events: mapped, sourceLabel: eventsArray[0]?.source || 'screenshot' });
   };
+
+  const handleViewInCalendar = useCallback((event: any) => {
+    setNewEvent({
+      title: event.title || '',
+      date: event.date || '',
+      category: event.category || '',
+      yearGroup: event.year_group || 'All',
+      event_type: event.event_type || 'personal',
+      visibility: event.visibility || 'private',
+      time_start: event.time_start || '',
+      time_end: event.time_end || '',
+      venue: event.venue || '',
+      todos: [],
+      created_by_user_id: event.created_by_user_id || null,
+      school_id: event.school_id || null,
+    });
+    setShowEventDialog(true);
+  }, [setNewEvent, setShowEventDialog]);
 
   const selectedSchoolId = authorizedSchools.find(
     auth => auth.schools?.name === selectedProfile?.schoolName
@@ -325,23 +343,7 @@ export function Dashboard({ showAuthModal, setShowAuthModal, onSignOut, initialA
           {user && (
             <div className="px-4 pt-2">
               <EmailInboxPanel
-                onViewInCalendar={(event) => {
-                  setNewEvent({
-                    title: event.title || '',
-                    date: event.date || '',
-                    category: event.category || '',
-                    yearGroup: event.year_group || 'All',
-                    event_type: event.event_type || 'personal',
-                    visibility: event.visibility || 'private',
-                    time_start: event.time_start || '',
-                    time_end: event.time_end || '',
-                    venue: event.venue || '',
-                    todos: [],
-                    created_by_user_id: event.created_by_user_id || null,
-                    school_id: event.school_id || null,
-                  });
-                  setShowEventDialog(true);
-                }}
+                onViewInCalendar={handleViewInCalendar}
               />
             </div>
           )}

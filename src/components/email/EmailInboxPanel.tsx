@@ -42,7 +42,8 @@ export function EmailInboxPanel({ onViewInCalendar }: EmailInboxPanelProps = {})
     }
   }, [user]);
 
-  useEffect(() => { fetchPending(); }, [fetchPending]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchPending(); }, [user]);
 
   const removeItem = (id: string) => setItems(prev => prev.filter(i => i.id !== id));
 
