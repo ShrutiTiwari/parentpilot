@@ -57,7 +57,13 @@ export function EmailReviewCard({ item, onConfirmed, onDiscarded, onViewInCalend
   const [conflictsChecked, setConflictsChecked] = useState(false);
   const [confirmedEvent, setConfirmedEvent] = useState<any | null>(null);
 
-  const events = item.extracted_data?.events || [];
+  // Handle both shapes: { events: [...] } (new) and a bare object (legacy)
+  const raw = item.extracted_data;
+  const events: ExtractedEvent[] = Array.isArray(raw?.events)
+    ? raw.events
+    : raw && raw.title
+    ? [raw as ExtractedEvent]
+    : [];
   const firstEvent = events[0];
 
   // Check conflicts on mount
@@ -72,8 +78,6 @@ export function EmailReviewCard({ item, onConfirmed, onDiscarded, onViewInCalend
       .then(data => { setConflicts(data.conflicts || []); setConflictsChecked(true); })
       .catch(() => setConflictsChecked(true));
   }, [firstEvent?.date, firstEvent?.year_group]);
-
-  if (!firstEvent) return null;
 
   const handleConfirm = async () => {
     if (!user) return;
@@ -113,6 +117,22 @@ export function EmailReviewCard({ item, onConfirmed, onDiscarded, onViewInCalend
       setDiscarding(false);
     }
   };
+
+  // extracted_data missing or malformed — show minimal error card so user can dismiss
+  if (!firstEvent) {
+    return (
+      <div className="border border-gray-200 rounded-xl bg-white shadow-sm p-4 flex items-center justify-between gap-3">
+        <div className="text-sm text-gray-500">
+          <span className="font-medium text-gray-700">{item.raw_subject || 'Email'}</span>
+          <span className="ml-2 text-xs text-red-400">· extraction failed</span>
+        </div>
+        <Button variant="outline" size="sm" onClick={handleDiscard} disabled={discarding} className="text-gray-500 flex-shrink-0">
+          <XCircle className="w-4 h-4 mr-1.5" />
+          {discarding ? 'Discarding…' : 'Dismiss'}
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="border border-blue-200 rounded-xl bg-white shadow-sm overflow-hidden">
