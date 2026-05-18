@@ -31,8 +31,9 @@ interface QueueItem {
   from_address: string;
   received_at: string;
   confidence_score: number;
-  extracted_data: { events: ExtractedEvent[] };
+  extracted_data: { events: ExtractedEvent[] } | null;
   status: string;
+  error_message?: string | null;
 }
 
 interface EmailReviewCardProps {
@@ -121,15 +122,20 @@ export function EmailReviewCard({ item, onConfirmed, onDiscarded, onViewInCalend
   // extracted_data missing or malformed — show minimal error card so user can dismiss
   if (!firstEvent) {
     return (
-      <div className="border border-gray-200 rounded-xl bg-white shadow-sm p-4 flex items-center justify-between gap-3">
-        <div className="text-sm text-gray-500">
-          <span className="font-medium text-gray-700">{item.raw_subject || 'Email'}</span>
-          <span className="ml-2 text-xs text-red-400">· extraction failed</span>
+      <div className="border border-red-100 rounded-xl bg-white shadow-sm p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-gray-700 truncate">{item.raw_subject || 'Email'}</p>
+            <p className="text-xs text-gray-400 mt-0.5">{item.from_address}</p>
+            <p className="text-xs text-red-500 mt-1">
+              Could not extract event{item.error_message ? `: ${item.error_message}` : ' — no events found in this email'}
+            </p>
+          </div>
+          <Button variant="outline" size="sm" onClick={handleDiscard} disabled={discarding} className="text-gray-500 flex-shrink-0">
+            <XCircle className="w-4 h-4 mr-1.5" />
+            {discarding ? 'Discarding…' : 'Dismiss'}
+          </Button>
         </div>
-        <Button variant="outline" size="sm" onClick={handleDiscard} disabled={discarding} className="text-gray-500 flex-shrink-0">
-          <XCircle className="w-4 h-4 mr-1.5" />
-          {discarding ? 'Discarding…' : 'Dismiss'}
-        </Button>
       </div>
     );
   }

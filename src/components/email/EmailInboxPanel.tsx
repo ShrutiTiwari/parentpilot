@@ -11,8 +11,9 @@ interface QueueItem {
   from_address: string;
   received_at: string;
   confidence_score: number;
-  extracted_data: { events: any[] };
+  extracted_data: { events: any[] } | null;
   status: string;
+  error_message?: string | null;
 }
 
 interface EmailInboxPanelProps {
