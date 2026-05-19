@@ -369,7 +369,28 @@ app.post('/api/inbound-email', async (req, res) => {
       const { events, confidence_score } = await extractEventsFromEmail({ subject, body, html });
       log('ai_extraction_ok', { eventCount: events.length, confidence: confidence_score, durationMs: Date.now() - startTime });
 
-      // Step 3: Update queue row
+      // Step 3: Insert each extracted event into event_staging
+      const stagingRows = events.map(e => ({
+        queue_id: queued.id,
+        title: e.title,
+        date: e.date,
+        time_start: e.time_start || null,
+        time_end: e.time_end || null,
+        venue: e.venue || null,
+        year_group: e.year_group || 'All',
+        category: e.category || 'general',
+        description: e.description || null,
+        actions: e.actions || [],
+        confidence_score: e.confidence_score ?? confidence_score,
+        status: 'pending',
+      }));
+
+      const { error: stagingError } = await db.from('event_staging').insert(stagingRows);
+      if (stagingError) {
+        log('error', { step: 'db_staging_insert', code: stagingError.code, message: stagingError.message });
+      }
+
+      // Step 4: Update queue row to pending_review (keep extracted_data for audit)
       const { error: updateError } = await db
         .from('email_ingestion_queue')
         .update({
@@ -383,7 +404,7 @@ app.post('/api/inbound-email', async (req, res) => {
       if (updateError) {
         log('error', { step: 'db_update_pending', code: updateError.code, message: updateError.message });
       } else {
-        log('pipeline_complete', { id: queued.id, totalMs: Date.now() - startTime });
+        log('pipeline_complete', { id: queued.id, stagingCount: stagingRows.length, totalMs: Date.now() - startTime });
       }
     } catch (extractError) {
       log('error', { step: 'ai_extraction', message: extractError.message });
@@ -412,16 +433,42 @@ app.get('/api/inbound-email/pending', async (req, res) => {
   const { user_id } = req.query;
   if (!user_id) return res.status(400).json({ error: 'user_id required' });
 
-  // Return items belonging to the user OR unclaimed (user_id IS NULL)
-  const { data, error } = await db
+  // Fetch queue items that still have at least one pending staging event
+  const { data: queueItems, error: queueError } = await db
     .from('email_ingestion_queue')
-    .select('*')
+    .select('id, raw_subject, raw_body, from_address, received_at, confidence_score, status, error_message')
     .or(`user_id.eq.${user_id},user_id.is.null`)
     .eq('status', 'pending_review')
     .order('received_at', { ascending: false });
 
-  if (error) return res.status(500).json({ error: error.message });
-  res.json({ items: data });
+  if (queueError) return res.status(500).json({ error: queueError.message });
+
+  if (!queueItems.length) return res.json({ items: [] });
+
+  // Fetch all pending staging events for these queue items
+  const queueIds = queueItems.map(q => q.id);
+  const { data: stagingEvents, error: stagingError } = await db
+    .from('event_staging')
+    .select('*')
+    .in('queue_id', queueIds)
+    .eq('status', 'pending')
+    .order('created_at', { ascending: true });
+
+  if (stagingError) return res.status(500).json({ error: stagingError.message });
+
+  // Group staging events by queue_id and attach to queue items
+  const stagingByQueue = {};
+  for (const ev of stagingEvents) {
+    if (!stagingByQueue[ev.queue_id]) stagingByQueue[ev.queue_id] = [];
+    stagingByQueue[ev.queue_id].push(ev);
+  }
+
+  // Only return queue items that still have pending staging events
+  const items = queueItems
+    .map(q => ({ ...q, staging_events: stagingByQueue[q.id] || [] }))
+    .filter(q => q.staging_events.length > 0);
+
+  res.json({ items });
 });
 
 // ─── Elastic conflict check ───────────────────────────────────────────────────
@@ -472,92 +519,170 @@ app.get('/api/inbound-email/pipeline-status', async (req, res) => {
   res.json(summary);
 });
 
-// ─── Confirm a review item → create events ────────────────────────────────────
-app.post('/api/inbound-email/:id/confirm', async (req, res) => {
+// ─── Confirm a single staging event → create confirmed event ─────────────────
+app.post('/api/inbound-email/staging/:stagingId/confirm', async (req, res) => {
   const db = supabaseAdmin || supabase;
   if (!db) return res.status(503).json({ error: 'Database unavailable' });
 
-  const { id } = req.params;
-  const { events, user_id, school_id } = req.body;
-
-  if (!events?.length) return res.status(400).json({ error: 'events array required' });
+  const { stagingId } = req.params;
+  const { user_id, school_id, event: eventOverride } = req.body;
 
   try {
-    // Insert confirmed events
-    const toInsert = events.map(e => ({
-      title: e.title,
-      date: e.date,
-      time_start: e.time_start || null,
-      time_end: e.time_end || null,
-      year_group: e.year_group || 'All',
-      year_groups: [e.year_group || 'All'],
-      category: e.category || 'general',
-      description: e.description || null,
-      venue: e.venue || null,
-      event_type: school_id ? 'school' : 'personal',
-      visibility: school_id ? 'school' : 'private',
-      school_id: school_id || null,
-      created_by_user_id: user_id || null,
-      status: 'confirmed',
-      ingestion_queue_id: id,
-      source: 'email',
-    }));
+    // Fetch the staging row
+    const { data: staging, error: fetchError } = await db
+      .from('event_staging')
+      .select('*')
+      .eq('id', stagingId)
+      .single();
 
+    if (fetchError || !staging) return res.status(404).json({ error: 'Staging event not found' });
+
+    // Merge any inline edits from the UI (eventOverride) with the staging row
+    const e = { ...staging, ...(eventOverride || {}) };
+
+    // Insert into events table
     const { data: inserted, error: insertError } = await db
       .from('events')
-      .insert(toInsert)
-      .select();
+      .insert({
+        title: e.title,
+        date: e.date,
+        time_start: e.time_start || null,
+        time_end: e.time_end || null,
+        year_group: e.year_group || 'All',
+        year_groups: [e.year_group || 'All'],
+        category: e.category || 'general',
+        description: e.description || null,
+        venue: e.venue || null,
+        event_type: school_id ? 'school' : 'personal',
+        visibility: school_id ? 'school' : 'private',
+        school_id: school_id || null,
+        created_by_user_id: user_id || null,
+        status: 'confirmed',
+        ingestion_queue_id: staging.queue_id,
+        source: 'email',
+      })
+      .select()
+      .single();
 
     if (insertError) throw insertError;
 
-    // Insert todos/actions
-    for (const [i, event] of inserted.entries()) {
-      const actions = events[i]?.actions || [];
-      if (actions.length) {
-        await db.from('todos').insert(
-          actions.map(a => ({
-            event_id: event.id,
-            text: a.text,
-            todo_type: 'action',
-            deadline: a.deadline || null,
-            completed: false,
-            created_by_user_id: user_id || null,
-          }))
-        );
-      }
+    // Insert actions as todos
+    const actions = e.actions || [];
+    if (actions.length) {
+      await db.from('todos').insert(
+        actions.map(a => ({
+          event_id: inserted.id,
+          text: a.text,
+          todo_type: 'action',
+          deadline: a.deadline || null,
+          completed: false,
+          created_by_user_id: user_id || null,
+        }))
+      );
     }
 
-    // Mark queue item as confirmed and set user_id
+    // Mark staging row as confirmed
+    await db
+      .from('event_staging')
+      .update({ status: 'confirmed', event_id: inserted.id, updated_at: new Date().toISOString() })
+      .eq('id', stagingId);
+
+    // Claim the queue item for this user if still unclaimed
     await db
       .from('email_ingestion_queue')
-      .update({ status: 'confirmed', user_id: user_id || null, updated_at: new Date().toISOString() })
-      .eq('id', id);
+      .update({ user_id: user_id || null, updated_at: new Date().toISOString() })
+      .eq('id', staging.queue_id)
+      .is('user_id', null);
 
-    // Index confirmed events in Elastic (non-blocking — don't fail confirm if Elastic is down)
-    for (const event of inserted) {
-      indexEvent(event).catch(err => console.error('Elastic index failed:', err.message));
+    // Close queue item if all staging events are resolved
+    const { data: remaining } = await db
+      .from('event_staging')
+      .select('id')
+      .eq('queue_id', staging.queue_id)
+      .eq('status', 'pending');
+
+    if (!remaining?.length) {
+      await db
+        .from('email_ingestion_queue')
+        .update({ status: 'confirmed', updated_at: new Date().toISOString() })
+        .eq('id', staging.queue_id);
     }
 
-    res.json({ success: true, events: inserted });
+    // Index in Elastic (non-blocking)
+    indexEvent(inserted).catch(err => console.error('Elastic index failed:', err.message));
+
+    res.json({ success: true, event: inserted });
   } catch (error) {
-    console.error('confirm error:', error);
+    console.error('staging confirm error:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// ─── Discard a review item ────────────────────────────────────────────────────
+// ─── Discard a single staging event ──────────────────────────────────────────
+app.post('/api/inbound-email/staging/:stagingId/discard', async (req, res) => {
+  const db = supabaseAdmin || supabase;
+  if (!db) return res.status(503).json({ error: 'Database unavailable' });
+
+  const { stagingId } = req.params;
+
+  try {
+    const { data: staging, error: fetchError } = await db
+      .from('event_staging')
+      .select('queue_id')
+      .eq('id', stagingId)
+      .single();
+
+    if (fetchError || !staging) return res.status(404).json({ error: 'Staging event not found' });
+
+    await db
+      .from('event_staging')
+      .update({ status: 'discarded', updated_at: new Date().toISOString() })
+      .eq('id', stagingId);
+
+    // Close queue item if all staging events are resolved
+    const { data: remaining } = await db
+      .from('event_staging')
+      .select('id')
+      .eq('queue_id', staging.queue_id)
+      .eq('status', 'pending');
+
+    if (!remaining?.length) {
+      await db
+        .from('email_ingestion_queue')
+        .update({ status: 'discarded', updated_at: new Date().toISOString() })
+        .eq('id', staging.queue_id);
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('staging discard error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ─── Discard all staging events for a queue item (dismiss whole email) ────────
 app.post('/api/inbound-email/:id/discard', async (req, res) => {
   const db = supabaseAdmin || supabase;
   if (!db) return res.status(503).json({ error: 'Database unavailable' });
 
   const { id } = req.params;
-  const { error } = await db
-    .from('email_ingestion_queue')
-    .update({ status: 'discarded', updated_at: new Date().toISOString() })
-    .eq('id', id);
 
-  if (error) return res.status(500).json({ error: error.message });
-  res.json({ success: true });
+  try {
+    await db
+      .from('event_staging')
+      .update({ status: 'discarded', updated_at: new Date().toISOString() })
+      .eq('queue_id', id)
+      .eq('status', 'pending');
+
+    await db
+      .from('email_ingestion_queue')
+      .update({ status: 'discarded', updated_at: new Date().toISOString() })
+      .eq('id', id);
+
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // ─── Start ─────────────────────────────────────────────────────────────────────

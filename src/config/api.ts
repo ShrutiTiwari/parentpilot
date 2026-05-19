@@ -26,8 +26,9 @@ export const API_ENDPOINTS = {
   },
   inboundEmail: {
     pending: `${API_BASE_URL}/api/inbound-email/pending`,
-    confirm: (id: string) => `${API_BASE_URL}/api/inbound-email/${id}/confirm`,
     discard: (id: string) => `${API_BASE_URL}/api/inbound-email/${id}/discard`,
+    stagingConfirm: (stagingId: string) => `${API_BASE_URL}/api/inbound-email/staging/${stagingId}/confirm`,
+    stagingDiscard: (stagingId: string) => `${API_BASE_URL}/api/inbound-email/staging/${stagingId}/discard`,
   },
   schools: {
     discoverWebsite: `${API_BASE_URL}/api/schools/discover-website`,

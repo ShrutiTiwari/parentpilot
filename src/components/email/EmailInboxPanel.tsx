@@ -6,6 +6,22 @@ import { API_ENDPOINTS } from '@/config/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 
+interface StagingEvent {
+  id: string;
+  queue_id: string;
+  title: string;
+  date: string;
+  time_start: string | null;
+  time_end: string | null;
+  venue: string | null;
+  year_group: string;
+  category: string;
+  description: string | null;
+  actions: { text: string; deadline: string | null }[];
+  confidence_score: number;
+  status: string;
+}
+
 interface QueueItem {
   id: string;
   raw_subject: string;
@@ -13,9 +29,14 @@ interface QueueItem {
   from_address: string;
   received_at: string;
   confidence_score: number;
-  extracted_data: { events: any[] } | null;
   status: string;
   error_message?: string | null;
+  staging_events: StagingEvent[];
+}
+
+interface ConflictResult {
+  title: string;
+  year_group: string;
 }
 
 interface EmailInboxPanelProps {
@@ -26,6 +47,8 @@ export function EmailInboxPanel({ onViewInCalendar }: EmailInboxPanelProps = {})
   const { user } = useAuth();
   const [items, setItems] = useState<QueueItem[]>([]);
   const [loading, setLoading] = useState(false);
+  // conflicts keyed by staging event id
+  const [conflictsMap, setConflictsMap] = useState<Record<string, ConflictResult[]>>({});
 
   const fetchPending = useCallback(async () => {
     if (!user) return;
@@ -34,7 +57,30 @@ export function EmailInboxPanel({ onViewInCalendar }: EmailInboxPanelProps = {})
       const res = await fetch(`${API_ENDPOINTS.inboundEmail.pending}?user_id=${user.id}`);
       if (!res.ok) return;
       const data = await res.json();
-      setItems(data.items || []);
+      const fetchedItems: QueueItem[] = data.items || [];
+      setItems(fetchedItems);
+
+      // Fetch conflicts for all pending staging events
+      const allStagingEvents = fetchedItems.flatMap(i => i.staging_events);
+      const conflictChecks = allStagingEvents.map(async (ev) => {
+        try {
+          const r = await fetch(API_ENDPOINTS.events.checkConflicts, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ date: ev.date, year_group: ev.year_group }),
+          });
+          if (!r.ok) return { id: ev.id, conflicts: [] };
+          const d = await r.json();
+          return { id: ev.id, conflicts: d.conflicts || [] };
+        } catch {
+          return { id: ev.id, conflicts: [] };
+        }
+      });
+
+      const results = await Promise.all(conflictChecks);
+      const map: Record<string, ConflictResult[]> = {};
+      for (const r of results) map[r.id] = r.conflicts;
+      setConflictsMap(map);
     } catch {
       // silently fail — non-critical panel
     } finally {
@@ -42,7 +88,6 @@ export function EmailInboxPanel({ onViewInCalendar }: EmailInboxPanelProps = {})
     }
   }, [user]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchPending(); }, [user]);
 
   const removeItem = (id: string) => setItems(prev => prev.filter(i => i.id !== id));
@@ -76,24 +121,8 @@ export function EmailInboxPanel({ onViewInCalendar }: EmailInboxPanelProps = {})
       ) : (
         <div className="space-y-3">
           {items.map(item => {
-            const raw = item.extracted_data;
-            const events: AgentExtractedEvent[] = Array.isArray(raw?.events)
-              ? raw.events.map((e: any) => ({
-                  title: e.title || '',
-                  date: e.date || '',
-                  time_start: e.time_start || null,
-                  time_end: e.time_end || null,
-                  venue: e.venue || null,
-                  year_group: e.year_group || e.yearGroup || 'All',
-                  category: e.category || 'general',
-                  description: e.description || '',
-                  actions: e.actions || [],
-                  confidence_score: e.confidence_score ?? item.confidence_score ?? 0.8,
-                }))
-              : [];
-
-            // Failed extraction — minimal dismiss card
-            if (events.length === 0) {
+            // No staging events — extraction failed
+            if (!item.staging_events.length) {
               const discard = async () => {
                 try {
                   await fetch(API_ENDPOINTS.inboundEmail.discard(item.id), { method: 'POST' });
@@ -115,49 +144,94 @@ export function EmailInboxPanel({ onViewInCalendar }: EmailInboxPanelProps = {})
                       </p>
                     </div>
                     <Button variant="outline" size="sm" onClick={discard} className="text-gray-500 flex-shrink-0">
-                      <XCircle className="w-4 h-4 mr-1.5" />
-                      Dismiss
+                      <XCircle className="w-4 h-4 mr-1.5" />Dismiss
                     </Button>
                   </div>
                 </div>
               );
             }
 
-            return (
-              <AgentReviewCard
-                key={item.id}
-                source="email"
-                sourceLabel={item.from_address}
-                sourceSubject={item.raw_subject}
-                sourceBody={item.raw_body || undefined}
-                events={events}
-                confidenceScore={item.confidence_score}
-                onConfirm={async (eventsToConfirm) => {
-                  const res = await fetch(API_ENDPOINTS.inboundEmail.confirm(item.id), {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user_id: user.id, events: eventsToConfirm }),
-                  });
-                  if (!res.ok) throw new Error(await res.text());
-                  const data = await res.json();
-                  const inserted = data.events?.[0];
-                  if (inserted && onViewInCalendar) {
-                    toast({
-                      title: `${eventsToConfirm.length} event${eventsToConfirm.length > 1 ? 's' : ''} added`,
-                      description: eventsToConfirm[0].title,
+            // Map staging events → AgentExtractedEvent shape, carrying staging id
+            const agentEvents: (AgentExtractedEvent & { _stagingId: string })[] =
+              item.staging_events.map(ev => ({
+                _stagingId: ev.id,
+                title: ev.title,
+                date: ev.date,
+                time_start: ev.time_start,
+                time_end: ev.time_end,
+                venue: ev.venue,
+                year_group: ev.year_group,
+                category: ev.category,
+                description: ev.description || '',
+                actions: ev.actions || [],
+                confidence_score: ev.confidence_score ?? item.confidence_score ?? 0.8,
+              }));
+
+            // Build per-event conflicts/isDuplicate for AgentReviewCard
+            // AgentReviewCard takes top-level conflicts/isDuplicate (applies to all events)
+            // Since each event may have different conflicts, we pass the union and let
+            // EventForm show the warning for each event individually via the conflicts prop.
+            // We achieve per-event by rendering one AgentReviewCard per staging event.
+            return agentEvents.map((ev, idx) => {
+              const conflicts = conflictsMap[ev._stagingId] || [];
+              const incomingWords = new Set(
+                ev.title.toLowerCase().split(/\W+/).filter(w => w.length > 3)
+              );
+              const isDuplicate = conflicts.some(c => {
+                const cWords = c.title.toLowerCase().split(/\W+/).filter(w => w.length > 3);
+                return cWords.filter(w => incomingWords.has(w)).length >= 2;
+              });
+
+              return (
+                <AgentReviewCard
+                  key={ev._stagingId}
+                  source="email"
+                  sourceLabel={item.from_address}
+                  sourceSubject={idx === 0 ? item.raw_subject : undefined}
+                  sourceBody={idx === 0 ? (item.raw_body || undefined) : undefined}
+                  events={[ev]}
+                  confidenceScore={ev.confidence_score}
+                  conflicts={conflicts}
+                  isDuplicate={isDuplicate}
+                  onConfirm={async (eventsToConfirm) => {
+                    const edited = eventsToConfirm[0];
+                    const res = await fetch(API_ENDPOINTS.inboundEmail.stagingConfirm(ev._stagingId), {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        user_id: user.id,
+                        event: edited,
+                      }),
                     });
-                  }
-                }}
-                onDiscard={async () => {
-                  await fetch(API_ENDPOINTS.inboundEmail.discard(item.id), {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                  });
-                  removeItem(item.id);
-                }}
-                onViewInCalendar={onViewInCalendar ? () => onViewInCalendar({}) : undefined}
-              />
-            );
+                    if (!res.ok) throw new Error(await res.text());
+                    const data = await res.json();
+                    const confirmedEvent = data.event || edited;
+                    toast({ title: 'Added to calendar', description: edited.title });
+                    // Remove this staging event from the item first, then navigate
+                    setItems(prev => prev.map(i => {
+                      if (i.id !== item.id) return i;
+                      const remaining = i.staging_events.filter(s => s.id !== ev._stagingId);
+                      return { ...i, staging_events: remaining };
+                    }).filter(i => i.staging_events.length > 0));
+                    if (onViewInCalendar) onViewInCalendar(confirmedEvent);
+                  }}
+                  onDiscard={async () => {
+                    await fetch(API_ENDPOINTS.inboundEmail.stagingDiscard(ev._stagingId), {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                    });
+                    setItems(prev => prev.map(i => {
+                      if (i.id !== item.id) return i;
+                      const remaining = i.staging_events.filter(s => s.id !== ev._stagingId);
+                      return { ...i, staging_events: remaining };
+                    }).filter(i => i.staging_events.length > 0));
+                  }}
+                  onViewInCalendar={onViewInCalendar && isDuplicate
+                    ? () => onViewInCalendar({ ...conflicts[0], date: ev.date })
+                    : undefined}
+                />
+              );
+            });
           })}
         </div>
       )}

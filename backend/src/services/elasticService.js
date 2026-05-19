@@ -77,7 +77,6 @@ async function findConflicts({ date, year_group, exclude_id }) {
 
   const must = [
     { term: { date } },
-    { term: { status: 'confirmed' } },
   ];
 
   // Match year group OR "All"
