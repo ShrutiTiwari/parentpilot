@@ -58,15 +58,18 @@ Postmark inbound webhook → Express backend
         │   (title · date · year group · venue · todos + deadlines · confidence score)
         │   └─► Claude Haiku fallback on quota exceeded
         │
-        ├─► Supabase: update (status: pending_review)
+        ├─► Supabase: update queue (status: pending_review)
+        │           + insert one row per event into event_staging (status: pending)
         │
         ▼
-Review card on dashboard (human-in-loop approval)
+Per-event review cards on dashboard (human-in-loop approval)
+        │   Each extracted event gets its own card — confirm or discard independently
         │
-        ├─► Elastic: semantic conflict detection across 700+ events
+        ├─► Elastic: per-event conflict detection across 700+ events
+        │           (clash warning · duplicate detection · shown before confirm)
         │
-        └─► Confirm → events + todos saved → reminder cadence scheduled
-                       (7d · 3d · 1d · morning-of per action deadline)
+        └─► Confirm → events + todos saved → staging row marked confirmed
+                       → queue closed when all staging events resolved
 ```
 
 *"Forward me that school email. I'll extract the event, check for clashes, save it, and remind you 3 days before — you just confirm."*
@@ -103,9 +106,13 @@ Supabase stores. Elastic understands.
 
 **Built for the hackathon:**
 - Email ingestion pipeline (Postmark → Gemini/Claude → review card → confirm)
-- Human-in-loop review UI with confidence scoring
-- Elastic semantic search + conflict detection
-- Email reminder engine with per-action cadence
+- `event_staging` table — per-event lifecycle tracking (pending → confirmed / discarded)
+- Per-event review cards — each extracted event confirmed or discarded independently
+- Unified extraction prompt across email and screenshot flows (same DB-aligned schema)
+- `AgentReviewCard` — shared review UI for both email and image extraction paths
+- Elastic semantic conflict + duplicate detection per event, shown before confirm
+- Screenshot/image extraction flow using the same review card as email
+- Human-in-loop review UI with inline editing, confidence scoring, and source collapsible
 
 ---
 
@@ -154,7 +161,9 @@ Vite proxies `/api/*` to `localhost:3000` — no CORS config needed locally.
 | `ANTHROPIC_API_KEY` | Claude Haiku — fallback when Gemini quota exceeded |
 | `ADMIN_SECRET` | Protects `/api/inbound-email/pipeline-status` |
 
-**Database:** Run `supabase/migrations/20260514000000_add_agent_tables.sql` in Supabase SQL editor.
+**Database:** Run migrations in order in Supabase SQL editor:
+1. `supabase/migrations/20260514000000_add_agent_tables.sql` — email ingestion queue, reminder schedules, agent columns on events/todos
+2. `supabase/migrations/20260519000000_add_event_staging.sql` — per-event staging table for the review lifecycle
 
 **Test the pipeline:**
 Forward any school email to `6ab6321a948b3ee4872cf3ae8393baaf@inbound.postmarkapp.com` and watch the review card appear on the dashboard within ~10 seconds.
@@ -171,7 +180,11 @@ Forward any school email to `6ab6321a948b3ee4872cf3ae8393baaf@inbound.postmarkap
 
 **Why observable state in the DB** — Each email moves through explicit states: `processing → pending_review → confirmed / failed`. Every pipeline step emits structured JSON logs. Pipeline health visible at `/api/inbound-email/pipeline-status` (admin-secured). This makes the agent auditable — a judge can see exactly what the AI extracted and its confidence.
 
+**Why `event_staging` instead of JSONB review** — Early versions stored extracted events as a JSONB blob in `email_ingestion_queue.extracted_data` and reviewed the whole email as one unit. This made per-event lifecycle impossible: if a newsletter had 8 events, you couldn't confirm 3 and discard 5. The `event_staging` table gives each extracted event its own row with its own status (`pending → confirmed / discarded`), enabling accurate per-event conflict detection, independent confirm/discard, and a clean audit trail.
+
 **Why human-in-loop review** — Full automation would require very high confidence thresholds and still produce errors that erode trust fast. A review card takes 2 seconds to confirm and gives the parent full visibility into what the agent extracted. For parenting use cases, trust is everything — an agent that occasionally gets it wrong and tells you is far better than one that silently gets it wrong.
+
+**Why a unified extraction prompt** — Email and screenshot flows originally used different prompts, leading to inconsistent field names (`yearGroup` vs `year_group`), missing fields (`description`, `actions`), and fields that didn't match the DB schema. A single prompt shared across both paths guarantees consistent output regardless of input type.
 
 ---
 
