@@ -165,6 +165,7 @@ export function EmailInboxPanel({ onViewInCalendar }: EmailInboxPanelProps = {})
                 description: ev.description || '',
                 actions: ev.actions || [],
                 confidence_score: ev.confidence_score ?? item.confidence_score ?? 0.8,
+                event_type: 'school' as const,  // emails from school default to school
               }));
 
             // Build per-event conflicts/isDuplicate for AgentReviewCard
@@ -193,6 +194,7 @@ export function EmailInboxPanel({ onViewInCalendar }: EmailInboxPanelProps = {})
                   confidenceScore={ev.confidence_score}
                   conflicts={conflicts}
                   isDuplicate={isDuplicate}
+                  showEventTypePicker={true}
                   onConfirm={async (eventsToConfirm) => {
                     const edited = eventsToConfirm[0];
                     const res = await fetch(API_ENDPOINTS.inboundEmail.stagingConfirm(ev._stagingId), {
