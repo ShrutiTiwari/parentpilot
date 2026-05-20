@@ -206,16 +206,12 @@ export function EmailInboxPanel({ onViewInCalendar }: EmailInboxPanelProps = {})
                       }),
                     });
                     if (!res.ok) throw new Error(await res.text());
-                    const data = await res.json();
-                    const confirmedEvent = data.event || edited;
                     toast({ title: 'Added to calendar', description: edited.title });
-                    // Remove this staging event from the item first, then navigate
                     setItems(prev => prev.map(i => {
                       if (i.id !== item.id) return i;
                       const remaining = i.staging_events.filter(s => s.id !== ev._stagingId);
                       return { ...i, staging_events: remaining };
                     }).filter(i => i.staging_events.length > 0));
-                    if (onViewInCalendar) onViewInCalendar(confirmedEvent);
                   }}
                   onDiscard={async () => {
                     await fetch(API_ENDPOINTS.inboundEmail.stagingDiscard(ev._stagingId), {
