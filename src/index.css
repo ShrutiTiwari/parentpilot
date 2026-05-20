@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Attention pulse for newly extracted event cards */
+@keyframes pulse-border {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
+  50%       { box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.25); }
+}
+.animate-pulse-border {
+  animation: pulse-border 1.8s ease-in-out infinite;
+}
+
 /* Custom scrollbar utilities */
 .scrollbar-hide {
   -ms-overflow-style: none;  /* Internet Explorer 10+ */

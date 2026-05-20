@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import {
   Calendar, Clock, MapPin, Users, AlertTriangle,
   Mail, FileImage, Pencil, CheckCircle, XCircle,
-  ChevronDown, ChevronUp, AlertCircle, Tag, Trash2, Plus, ExternalLink
+  ChevronDown, ChevronUp, AlertCircle, Tag, Trash2, Plus, ExternalLink, Lock
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -22,6 +22,7 @@ export interface AgentExtractedEvent {
   description: string;
   actions: { text: string; deadline: string | null }[];
   confidence_score: number;
+  event_type?: 'personal' | 'school';
 }
 
 export interface AgentReviewCardProps {
@@ -38,6 +39,9 @@ export interface AgentReviewCardProps {
   // Intelligence warnings from Elastic
   conflicts?: { title: string; year_group: string }[];
   isDuplicate?: boolean;
+
+  // Show personal/school toggle (screenshot flow only)
+  showEventTypePicker?: boolean;
 
   // Callbacks
   onConfirm: (events: AgentExtractedEvent[]) => Promise<void>;
@@ -91,6 +95,7 @@ function EventForm({
   total,
   conflicts,
   isDuplicate,
+  showEventTypePicker,
   onConfirm,
   onDiscard,
   onViewInCalendar,
@@ -101,6 +106,7 @@ function EventForm({
   total: number;
   conflicts: { title: string; year_group: string }[];
   isDuplicate: boolean;
+  showEventTypePicker: boolean;
   onConfirm: () => Promise<void>;
   onDiscard: () => Promise<void>;
   onViewInCalendar?: () => void;
@@ -173,6 +179,32 @@ function EventForm({
         <p className="text-xs text-gray-400 mb-3 font-medium uppercase tracking-wide">
           Event {index + 1} of {total}
         </p>
+      )}
+
+      {/* Event type toggle — only for screenshot flow */}
+      {showEventTypePicker && (
+        <div className="flex gap-2 mb-4">
+          <button
+            onClick={() => onChange('event_type', 'personal')}
+            className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border font-medium transition-colors ${
+              (event.event_type || 'personal') === 'personal'
+                ? 'bg-gray-800 text-white border-gray-800'
+                : 'bg-white text-gray-500 border-gray-200 hover:border-gray-400'
+            }`}
+          >
+            <Lock className="w-3 h-3" /> Personal
+          </button>
+          <button
+            onClick={() => onChange('event_type', 'school')}
+            className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border font-medium transition-colors ${
+              event.event_type === 'school'
+                ? 'bg-gray-800 text-white border-gray-800'
+                : 'bg-white text-gray-500 border-gray-200 hover:border-gray-400'
+            }`}
+          >
+            <Users className="w-3 h-3" /> School
+          </button>
+        </div>
       )}
 
       {/* Title */}
@@ -386,31 +418,33 @@ export function AgentReviewCard({
   confidenceScore,
   conflicts = [],
   isDuplicate = false,
+  showEventTypePicker = false,
   onConfirm,
   onDiscard,
   onViewInCalendar,
 }: AgentReviewCardProps) {
   const [events, setEvents] = useState<AgentExtractedEvent[]>(initialEvents);
-  // Track which event indices have been dismissed (confirmed or discarded)
   const [dismissedIndices, setDismissedIndices] = useState<Set<number>>(new Set());
   const [sourceExpanded, setSourceExpanded] = useState(false);
+  // Pulse attention animation — active until first interaction
+  const [needsAttention, setNeedsAttention] = useState(true);
 
   const handleFieldChange = (eventIdx: number, field: keyof AgentExtractedEvent, value: any) => {
     setEvents(prev => prev.map((ev, i) => i === eventIdx ? { ...ev, [field]: value } : ev));
   };
 
   const handleEventConfirm = async (idx: number) => {
+    setNeedsAttention(false);
     await onConfirm([events[idx]]);
     const next = new Set(dismissedIndices).add(idx);
     setDismissedIndices(next);
-    // If all events dismissed, close the whole card
     if (next.size === events.length) await onDiscard();
   };
 
   const handleEventDiscard = async (idx: number) => {
+    setNeedsAttention(false);
     const next = new Set(dismissedIndices).add(idx);
     setDismissedIndices(next);
-    // If all events dismissed, close the whole card
     if (next.size === events.length) await onDiscard();
   };
 
@@ -420,13 +454,17 @@ export function AgentReviewCard({
   if (visibleEvents.length === 0) return null;
 
   return (
-    <div className="border border-gray-200 rounded-2xl bg-white shadow-sm overflow-hidden">
+    <div className={`border rounded-2xl bg-white overflow-hidden transition-shadow duration-300 ${
+      needsAttention
+        ? 'border-blue-400 shadow-[0_0_0_3px_rgba(59,130,246,0.15)] animate-pulse-border'
+        : 'border-gray-200 shadow-sm'
+    }`}>
 
       {/* Source strip */}
       <div className="bg-gray-50 border-b border-gray-100">
         <button
           className="w-full flex items-center gap-2 px-4 py-2.5 text-left"
-          onClick={() => sourceBody && setSourceExpanded(v => !v)}
+          onClick={() => { setNeedsAttention(false); sourceBody && setSourceExpanded(v => !v); }}
           style={{ cursor: sourceBody ? 'pointer' : 'default' }}
         >
           <SourceIcon className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
@@ -463,6 +501,7 @@ export function AgentReviewCard({
                 total={visibleEvents.length}
                 conflicts={conflicts}
                 isDuplicate={isDuplicate}
+                showEventTypePicker={showEventTypePicker}
                 onConfirm={() => handleEventConfirm(idx)}
                 onDiscard={() => handleEventDiscard(idx)}
                 onViewInCalendar={onViewInCalendar}

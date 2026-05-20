@@ -316,22 +316,24 @@ export function Dashboard({ showAuthModal, setShowAuthModal, onSignOut, initialA
                 sourceLabel={screenshotReview.sourceLabel}
                 events={screenshotReview.events}
                 confidenceScore={screenshotReview.events[0]?.confidence_score ?? 0.8}
+                showEventTypePicker={true}
                 onConfirm={async (eventsToSave) => {
                   for (const ev of eventsToSave) {
+                    const isSchool = ev.event_type === 'school';
                     await handleSaveEvent({
                       title: ev.title,
                       date: ev.date,
                       category: ev.category,
                       yearGroup: ev.year_group,
-                      event_type: selectedProfile ? 'school' : 'personal',
-                      visibility: selectedProfile ? 'private' : 'private',
+                      event_type: ev.event_type || (selectedProfile ? 'school' : 'personal'),
+                      visibility: 'private',
                       time_start: ev.time_start || '',
                       time_end: ev.time_end || '',
                       venue: ev.venue || '',
                       description: ev.description || '',
                       todos: ev.actions.map(a => ({ text: a.text, completed: false, deadline: a.deadline || null })),
                       created_by_user_id: user?.id || null,
-                      school_id: selectedProfile?.schoolId || null,
+                      school_id: isSchool ? (selectedProfile?.schoolId || null) : null,
                     });
                   }
                 }}
