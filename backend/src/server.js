@@ -543,6 +543,7 @@ app.post('/api/inbound-email/staging/:stagingId/confirm', async (req, res) => {
 
     // Merge any inline edits from the UI (eventOverride) with the staging row
     const e = { ...staging, ...(eventOverride || {}) };
+    console.log('staging confirm: actions count =', (e.actions || []).length, JSON.stringify(e.actions));
 
     // Insert into events table
     const { data: inserted, error: insertError } = await db
@@ -573,7 +574,7 @@ app.post('/api/inbound-email/staging/:stagingId/confirm', async (req, res) => {
     // Insert actions as todos
     const actions = e.actions || [];
     if (actions.length) {
-      await db.from('todos').insert(
+      const { error: todosError } = await db.from('todos').insert(
         actions.map(a => ({
           event_id: inserted.id,
           text: a.text,
@@ -583,6 +584,10 @@ app.post('/api/inbound-email/staging/:stagingId/confirm', async (req, res) => {
           created_by_user_id: user_id || null,
         }))
       );
+      if (todosError) console.error('todos insert error:', todosError.message);
+      else console.log('staging confirm: inserted', actions.length, 'todos for event', inserted.id);
+    } else {
+      console.log('staging confirm: no actions to insert for event', inserted.id);
     }
 
     // Mark staging row as confirmed
