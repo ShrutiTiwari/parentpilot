@@ -477,26 +477,39 @@ app.get('/api/inbound-email/pending', async (req, res) => {
 
 // ─── Delete event (Supabase + Elastic) ───────────────────────────────────────
 app.delete('/api/events/:id', async (req, res) => {
-  const db = supabaseAdmin || supabase;
-  if (!db) return res.status(503).json({ error: 'Database unavailable' });
+  // Must use service role to bypass RLS — anon client cannot delete other users' events
+  if (!supabaseAdmin) return res.status(503).json({ error: 'Service role key not configured' });
 
   const { id } = req.params;
   const { user_id } = req.body;
 
+  if (!user_id) return res.status(400).json({ error: 'user_id required' });
+
   try {
+    // Verify ownership before deleting
+    const { data: event } = await supabaseAdmin
+      .from('events')
+      .select('id, created_by_user_id')
+      .eq('id', id)
+      .single();
+
+    if (!event) return res.status(404).json({ error: 'Event not found' });
+    if (event.created_by_user_id !== user_id) return res.status(403).json({ error: 'Not your event' });
+
     // Null out event_staging references
-    await db.from('event_staging').update({ event_id: null }).eq('event_id', id);
+    await supabaseAdmin.from('event_staging').update({ event_id: null }).eq('event_id', id);
 
     // Delete todos
-    await db.from('todos').delete().eq('event_id', id);
+    await supabaseAdmin.from('todos').delete().eq('event_id', id);
 
     // Delete event
-    const { error } = await db.from('events').delete().eq('id', id);
+    const { error } = await supabaseAdmin.from('events').delete().eq('id', id);
     if (error) throw error;
 
     // Remove from Elastic (non-blocking)
     unindexEvent(id).catch(err => console.error('Elastic unindex failed:', err.message));
 
+    console.log(`Deleted event ${id} for user ${user_id}`);
     res.json({ success: true });
   } catch (error) {
     console.error('delete event error:', error);

@@ -173,10 +173,11 @@ export const dataService = {
     }
   },
 
-  async deleteEvent(eventId: string): Promise<void> {
+  async deleteEvent(eventId: string, userId?: string): Promise<void> {
     const res = await fetch(API_ENDPOINTS.events.delete(eventId), {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: userId }),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({ error: res.statusText }));

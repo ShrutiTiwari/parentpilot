@@ -352,7 +352,7 @@ export function useEventManagement(showAuthModal?: boolean, setShowAuthModal?: (
   // Mutation for deleting events
   const deleteMutation = useMutation({
     mutationFn: async (eventId: string) => {
-      return dataService.deleteEvent(eventId);
+      return dataService.deleteEvent(eventId, user?.id);
     },
     onSuccess: () => {
       // Invalidate and refetch
