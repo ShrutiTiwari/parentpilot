@@ -197,6 +197,7 @@ export function EmailInboxPanel({ onViewInCalendar }: EmailInboxPanelProps = {})
                   showEventTypePicker={true}
                   onConfirm={async (eventsToConfirm) => {
                     const edited = eventsToConfirm[0];
+                    console.log('confirm payload actions:', JSON.stringify(edited.actions));
                     const res = await fetch(API_ENDPOINTS.inboundEmail.stagingConfirm(ev._stagingId), {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
