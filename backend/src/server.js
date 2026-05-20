@@ -48,7 +48,11 @@ app.use(cors({
   optionsSuccessStatus: 200,
 }));
 
-app.use(express.json());
+app.use((req, res, next) => {
+  // Postmark webhooks include base64 attachments — allow up to 20MB for that route
+  const limit = req.path === '/api/inbound-email' ? '20mb' : '1mb';
+  express.json({ limit })(req, res, next);
+});
 app.set('trust proxy', 1);
 
 // Rate limiters
