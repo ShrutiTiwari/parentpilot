@@ -3,6 +3,7 @@ import { Activity } from '@/utils/activityTypes';
 import { WeekendPlan } from '@/utils/weekendPlanTypes';
 import { supabase } from '@/lib/supabase';
 import { getCategoriesByEventType } from '../utils/categoryUtils';
+import { API_ENDPOINTS } from '@/config/api';
 
 export const dataService = {
   async getSchoolEventsFromFilesystem(schoolName: string): Promise<Event[]> {
@@ -173,38 +174,13 @@ export const dataService = {
   },
 
   async deleteEvent(eventId: string): Promise<void> {
-    try {
-      // Null out event_staging.event_id references before deleting
-      // (FK constraint blocks delete if ON DELETE SET NULL wasn't applied at DB level)
-      await supabase
-        .from('event_staging')
-        .update({ event_id: null })
-        .eq('event_id', eventId);
-
-      // Delete all todos associated with the event
-      const { error: todosError } = await supabase
-        .from('todos')
-        .delete()
-        .eq('event_id', eventId);
-
-      if (todosError) {
-        console.error('Error deleting todos:', todosError);
-        throw todosError;
-      }
-
-      // Then delete the event
-      const { error: eventError } = await supabase
-        .from('events')
-        .delete()
-        .eq('id', eventId);
-
-      if (eventError) {
-        console.error('Error deleting event:', eventError);
-        throw eventError;
-      }
-    } catch (error) {
-      console.error('Error in deleteEvent:', error);
-      throw error;
+    const res = await fetch(API_ENDPOINTS.events.delete(eventId), {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: res.statusText }));
+      throw new Error(err.error || 'Failed to delete event');
     }
   },
 

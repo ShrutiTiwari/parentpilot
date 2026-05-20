@@ -163,4 +163,15 @@ async function bulkIndex(events) {
   return { total: events.length, errors: errors.length };
 }
 
-module.exports = { indexEvent, findConflicts, findDuplicates, bulkIndex, ensureIndex };
+// ─── Remove a single event from index ────────────────────────────────────────
+async function unindexEvent(eventId) {
+  try {
+    const es = getClient();
+    await es.delete({ index: INDEX, id: String(eventId) });
+  } catch (err) {
+    // 404 means it was never indexed — not an error
+    if (err?.meta?.statusCode !== 404) throw err;
+  }
+}
+
+module.exports = { indexEvent, unindexEvent, findConflicts, findDuplicates, bulkIndex, ensureIndex };

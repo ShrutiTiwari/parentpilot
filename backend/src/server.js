@@ -11,7 +11,7 @@ const schoolDiscoveryService = require('./services/schoolDiscoveryService');
 const termDatesService = require('./services/termDatesService');
 const { CLAUDE_CONFIG, OPENAI_CONFIG } = require('./config/llmConfig');
 const { extractEventsFromEmail } = require('./services/geminiService');
-const { indexEvent, findConflicts, findDuplicates } = require('./services/elasticService');
+const { indexEvent, unindexEvent, findConflicts, findDuplicates } = require('./services/elasticService');
 require('dotenv').config();
 
 const app = express();
@@ -473,6 +473,35 @@ app.get('/api/inbound-email/pending', async (req, res) => {
     .filter(q => q.staging_events.length > 0);
 
   res.json({ items });
+});
+
+// ─── Delete event (Supabase + Elastic) ───────────────────────────────────────
+app.delete('/api/events/:id', async (req, res) => {
+  const db = supabaseAdmin || supabase;
+  if (!db) return res.status(503).json({ error: 'Database unavailable' });
+
+  const { id } = req.params;
+  const { user_id } = req.body;
+
+  try {
+    // Null out event_staging references
+    await db.from('event_staging').update({ event_id: null }).eq('event_id', id);
+
+    // Delete todos
+    await db.from('todos').delete().eq('event_id', id);
+
+    // Delete event
+    const { error } = await db.from('events').delete().eq('id', id);
+    if (error) throw error;
+
+    // Remove from Elastic (non-blocking)
+    unindexEvent(id).catch(err => console.error('Elastic unindex failed:', err.message));
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('delete event error:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // ─── Elastic conflict check ───────────────────────────────────────────────────

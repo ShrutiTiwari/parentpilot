@@ -23,6 +23,7 @@ export const API_ENDPOINTS = {
   },
   events: {
     checkConflicts: `${API_BASE_URL}/api/events/check-conflicts`,
+    delete: (id: string | number) => `${API_BASE_URL}/api/events/${id}`,
   },
   inboundEmail: {
     pending: `${API_BASE_URL}/api/inbound-email/pending`,
