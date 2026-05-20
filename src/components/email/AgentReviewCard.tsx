@@ -371,16 +371,27 @@ function EventForm({
         {isDuplicate ? (
           <>
             <Button
-              variant="outline"
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-xl"
               size="sm"
-              className="flex-1 text-blue-600 border-blue-200 hover:bg-blue-50 rounded-xl"
-              onClick={onViewInCalendar}
-              disabled={discarding}
+              onClick={handleConfirm}
+              disabled={confirming || discarding}
             >
-              <ExternalLink className="w-4 h-4 mr-1.5" />
-              View in calendar
+              <CheckCircle className="w-4 h-4 mr-1.5" />
+              {confirming ? 'Adding…' : 'Add anyway'}
             </Button>
-            <Button variant="outline" size="sm" onClick={handleDiscard} disabled={discarding} className="text-gray-500 rounded-xl">
+            {onViewInCalendar && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-blue-600 border-blue-200 hover:bg-blue-50 rounded-xl"
+                onClick={onViewInCalendar}
+                disabled={discarding}
+              >
+                <ExternalLink className="w-4 h-4 mr-1.5" />
+                View
+              </Button>
+            )}
+            <Button variant="outline" size="sm" onClick={handleDiscard} disabled={confirming || discarding} className="text-gray-500 rounded-xl">
               <XCircle className="w-4 h-4 mr-1.5" />
               {discarding ? 'Dismissing…' : 'Dismiss'}
             </Button>
