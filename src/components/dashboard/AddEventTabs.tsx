@@ -217,25 +217,23 @@ export const AddEventTabs: React.FC<AddEventTabsProps> = ({
 
   return (
     <>
-      <div className={`flex items-center gap-2 ${className}`}>
+      <div className={`flex flex-col gap-2 ${className}`}>
         <Button
           onClick={() => setShowModal(true)}
           disabled={isExtracting}
-          size="sm"
-          className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl"
+          className="w-full h-12 text-base font-semibold bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-md rounded-xl"
         >
-          <Plus className="h-4 w-4 mr-1.5" />
-          {isExtracting ? 'Processing…' : 'Add event'}
+          <Plus className="h-5 w-5 mr-2" />
+          {isExtracting ? 'Processing…' : 'Add New Event'}
         </Button>
 
         <Button
           onClick={() => setShowICSImport(true)}
           variant="outline"
-          size="sm"
-          className="rounded-xl text-gray-600"
+          className="w-full h-10 text-sm font-medium rounded-xl text-gray-600 border-gray-200"
         >
           <CalendarImportIcon className="h-4 w-4 mr-1.5" />
-          Import
+          Import Calendar
         </Button>
       </div>
 
