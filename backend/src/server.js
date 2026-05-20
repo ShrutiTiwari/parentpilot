@@ -572,6 +572,7 @@ app.post('/api/inbound-email/staging/:stagingId/confirm', async (req, res) => {
 
   const { stagingId } = req.params;
   const { user_id, school_id, event: eventOverride } = req.body;
+  console.log('staging confirm hit:', stagingId, 'actions in override:', (eventOverride?.actions || []).length);
 
   try {
     // Fetch the staging row
