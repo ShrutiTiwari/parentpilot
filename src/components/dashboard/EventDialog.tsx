@@ -1,17 +1,39 @@
-import React, { useEffect } from 'react';
-import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertTriangle, Shield, Lock, Users, Eye, Calendar } from 'lucide-react';
-import { ThemedButton } from './ThemedButton';
+import React, { useEffect, useState } from 'react';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Calendar, Clock, MapPin, Users, Tag,
+  Lock, Eye, CheckCircle, XCircle,
+  ChevronDown, ChevronUp, AlertCircle, Trash2, Plus, Pencil
+} from 'lucide-react';
+import { format } from 'date-fns';
 import { useAgeTheme } from '@/contexts/AgeThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Event } from '../../utils/dateGrouping';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { getEventVisibility, setEventVisibility, getSchoolEventVisibilityOptions, getDefaultVisibility, getVisibilityConfig } from '../../utils/eventVisibilityUtils';
-import { getCategoryOptions } from '../../utils/categoryUtils';
-import { YearGroupMultiSelect } from '@/components/ui/YearGroupMultiSelect';
-import { AddEventTabs } from './AddEventTabs';
-import { PdfUploadButton } from './PdfUploadButton';
+import { getEventVisibility, setEventVisibility, getSchoolEventVisibilityOptions } from '../../utils/eventVisibilityUtils';
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const CATEGORY_OPTIONS = [
+  { value: 'sports',   label: '🏅 Sports' },
+  { value: 'swimming', label: '🏊 Swimming' },
+  { value: 'music',    label: '🎵 Music' },
+  { value: 'exam',     label: '📝 Exam' },
+  { value: 'trip',     label: '🚌 Trip' },
+  { value: 'parent',   label: '👨‍👩‍👧 Parents' },
+  { value: 'holiday',  label: '🏖️ Holiday' },
+  { value: 'report',   label: '📄 Report' },
+  { value: 'general',  label: '📌 General' },
+];
+
+const YEAR_GROUP_OPTIONS = [
+  'All', 'Reception',
+  'Year 1', 'Year 2', 'Year 3', 'Year 4', 'Year 5', 'Year 6',
+];
+
+// ─── Props ────────────────────────────────────────────────────────────────────
 
 interface EventDialogProps {
   open: boolean;
@@ -42,19 +64,19 @@ interface EventDialogProps {
   onTodoRemove: (idx: number) => void;
   onTodoAdd: () => void;
   initialEventType?: 'personal' | 'school';
+  // Legacy props — kept for compat but no longer used
   extractedEvents?: any[];
   setExtractedEvents?: React.Dispatch<React.SetStateAction<any[]>>;
 }
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export function EventDialog({
   open,
   onOpenChange,
   editingEvent,
-  showAiWarning,
   newEvent,
   setNewEvent,
-  yearGroups = [],
-  selectedProfile,
   savingEvent,
   isAdmin = false,
   onSave,
@@ -62,439 +84,261 @@ export function EventDialog({
   onTodoRemove,
   onTodoAdd,
   initialEventType = 'personal',
-  extractedEvents = [],
-  setExtractedEvents,
 }: EventDialogProps) {
   const { currentTheme } = useAgeTheme();
-  const { user } = useAuth();
+  const [editingField, setEditingField] = useState<string | null>(null);
+  const [actionsExpanded, setActionsExpanded] = useState(true);
 
-  // Set default event type to initialEventType when dialog opens for new events
   useEffect(() => {
     if (open && !editingEvent) {
-      // Only update event_type if newEvent is empty
       if (!newEvent.title && !newEvent.date && !newEvent.category) {
         setNewEvent({ ...newEvent, event_type: initialEventType });
       }
     }
-  }, [open, editingEvent, setNewEvent, initialEventType]);
+  }, [open, editingEvent]);
 
-  // Add debugging for admin status
-  console.log('EventDialog - Current newEvent:', newEvent);
-  console.log('EventDialog - isAdmin prop:', isAdmin);
+  const formattedDate = (() => {
+    try { return newEvent.date ? format(new Date(newEvent.date + 'T00:00:00'), 'EEE d MMM yyyy') : ''; }
+    catch { return newEvent.date; }
+  })();
 
-  // Add debugging to see if all array events are received just before displaying
-  console.log('EventDialog: extractedEvents before rendering forms:', extractedEvents);
-  console.log('EventDialog: newEvent before rendering forms:', newEvent);
-  console.log('EventDialog: extractedEvents.length:', extractedEvents.length);
-  console.log('EventDialog: open state:', open);
-
-  // Handler for saving an extracted event - this replaces the current newEvent with the extracted event and saves it
-  const handleSaveExtractedEvent = async (eventIdx: number, eventData: any) => {
-    if (!setExtractedEvents) return;
-    
-    console.log('Saving extracted event:', eventData);
-    
-    // Remove this event from extracted events
-    const updatedEvents = extractedEvents.filter((_, idx) => idx !== eventIdx);
-    setExtractedEvents(updatedEvents);
-    
-    // Call the main save handler with the specific event data
-    await onSave(eventData);
-    
-    // If this was the last event, close the dialog
-    if (updatedEvents.length === 0) {
-      console.log('All extracted events saved, closing dialog');
-      onOpenChange(false);
-    }
-  };
-
-  // Handler for editing an extracted event
-  const handleEditExtractedEvent = (eventIdx: number, field: string, value: any) => {
-    if (!setExtractedEvents) return;
-    setExtractedEvents((prev: any[]) => prev.map((ev, idx) => idx === eventIdx ? { ...ev, [field]: value } : ev));
-  };
-
-  // Handler for todos in extracted events
-  const handleExtractedTodoChange = (eventIdx: number, todoIdx: number, value: string) => {
-    if (!setExtractedEvents) return;
-    setExtractedEvents((prev: any[]) => prev.map((ev, idx) => {
-      if (idx !== eventIdx) return ev;
-      const todos = ev.todos ? [...ev.todos] : [];
-      todos[todoIdx].text = value;
-      return { ...ev, todos };
-    }));
-  };
-  const handleExtractedTodoRemove = (eventIdx: number, todoIdx: number) => {
-    if (!setExtractedEvents) return;
-    setExtractedEvents((prev: any[]) => prev.map((ev, idx) => {
-      if (idx !== eventIdx) return ev;
-      const todos = ev.todos ? [...ev.todos] : [];
-      todos.splice(todoIdx, 1);
-      return { ...ev, todos };
-    }));
-  };
-  const handleExtractedTodoAdd = (eventIdx: number) => {
-    if (!setExtractedEvents) return;
-    setExtractedEvents((prev: any[]) => prev.map((ev, idx) => {
-      if (idx !== eventIdx) return ev;
-      const todos = ev.todos ? [...ev.todos] : [];
-      todos.push({ id: Math.random().toString(36).slice(2), text: '', completed: false });
-      return { ...ev, todos };
-    }));
+  const Field = ({
+    icon: Icon,
+    field,
+    label,
+    display,
+    inputType = 'text',
+  }: {
+    icon: any;
+    field: string;
+    label: string;
+    display: string;
+    inputType?: string;
+  }) => {
+    const isEditing = editingField === field;
+    return (
+      <div
+        className="flex items-center gap-2 group cursor-pointer"
+        onClick={() => !isEditing && setEditingField(field)}
+      >
+        <Icon className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+        {isEditing ? (
+          <Input
+            autoFocus
+            type={inputType}
+            className="h-7 text-sm py-0 px-2 w-full max-w-xs"
+            value={(newEvent as any)[field] || ''}
+            onChange={e => setNewEvent({ ...newEvent, [field]: e.target.value })}
+            onBlur={() => setEditingField(null)}
+            onKeyDown={e => e.key === 'Enter' && setEditingField(null)}
+          />
+        ) : (
+          <span className="text-sm text-gray-700 flex-1">
+            {display || <span className="text-gray-400 italic">Not specified</span>}
+          </span>
+        )}
+        {!isEditing && (
+          <Pencil className="w-3 h-3 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+        )}
+      </div>
+    );
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent 
-        className="w-[95vw] max-w-2xl mx-auto max-h-[90vh] overflow-y-auto"
+      <DialogContent
+        className="w-[95vw] max-w-lg mx-auto max-h-[90vh] overflow-y-auto p-0"
         style={{ borderRadius: currentTheme.styles.borderRadius }}
       >
-        <DialogTitle style={{ color: currentTheme.colors.primary }}>
-          {editingEvent ? 'Edit Event' : 'Add New Event'}
-        </DialogTitle>
-        <DialogDescription className="text-sm">
-          {editingEvent ? 'Edit the event details below.' : 'Fill in the event details below.'}
-        </DialogDescription>
-        
-        {showAiWarning && (
-          <Alert className="mb-4 border-orange-200 bg-orange-50">
-            <AlertTriangle className="h-4 w-4 text-orange-600" />
-            <AlertDescription className="text-orange-800">
-              <strong>AI Extraction Notice:</strong> Please double-check all details (especially date, time, and venue) as AI may make mistakes when extracting information from images.
-            </AlertDescription>
-          </Alert>
-        )}
+        {/* Header */}
+        <div className="bg-gray-50 border-b border-gray-100 px-4 py-3">
+          <DialogTitle className="text-sm font-semibold text-gray-700">
+            {editingEvent ? 'Edit event' : 'Add event'}
+          </DialogTitle>
+          <DialogDescription className="sr-only">
+            {editingEvent ? 'Edit the event details.' : 'Fill in the event details.'}
+          </DialogDescription>
+        </div>
 
-        {/* If extractedEvents exist, show a vertical list of forms */}
-        {extractedEvents.length > 0 ? (
-          <div className="space-y-8">
-            <div className="text-sm text-gray-600 mb-4">
-              We found {extractedEvents.length} event{extractedEvents.length > 1 ? 's' : ''} in your screenshot. Please review and save each one:
-            </div>
-            {extractedEvents.map((event, idx) => (
-              <div key={idx} className="border rounded-lg p-4 bg-gray-50">
-                <div className="mb-4 font-semibold text-gray-700">Event {idx + 1} of {extractedEvents.length}</div>
-                <div className="space-y-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                    <label className="w-full sm:w-32 text-sm font-medium text-gray-500">Title</label>
-                    <input
-                      className="flex-1 block rounded-md border border-gray-300 bg-white text-gray-900 shadow-sm focus:border-[#1EAEDB] focus:ring-[#1EAEDB] text-sm px-3 py-2"
-                      placeholder="Event title"
-                      value={event.title}
-                      onChange={e => handleEditExtractedEvent(idx, 'title', e.target.value)}
-                    />
-                  </div>
-                  
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                    <label className="w-full sm:w-32 text-sm font-medium text-gray-500">Date</label>
-                    <input
-                      className="flex-1 block rounded-md border border-gray-300 bg-white text-gray-900 shadow-sm focus:border-[#1EAEDB] focus:ring-[#1EAEDB] text-sm px-3 py-2"
-                      type="date"
-                      value={event.date}
-                      onChange={e => handleEditExtractedEvent(idx, 'date', e.target.value)}
-                    />
-                  </div>
-                  
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                    <label className="w-full sm:w-32 text-sm font-medium text-gray-500">Start Time</label>
-                    <input
-                      className="flex-1 block rounded-md border border-gray-300 bg-white text-gray-900 shadow-sm focus:border-[#1EAEDB] focus:ring-[#1EAEDB] text-sm px-3 py-2"
-                      placeholder="Start time"
-                      value={event.time_start}
-                      onChange={e => handleEditExtractedEvent(idx, 'time_start', e.target.value)}
-                    />
-                  </div>
-                  
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                    <label className="w-full sm:w-32 text-sm font-medium text-gray-500">End Time</label>
-                    <input
-                      className="flex-1 block rounded-md border border-gray-300 bg-white text-gray-900 shadow-sm focus:border-[#1EAEDB] focus:ring-[#1EAEDB] text-sm px-3 py-2"
-                      placeholder="End time"
-                      value={event.time_end}
-                      onChange={e => handleEditExtractedEvent(idx, 'time_end', e.target.value)}
-                    />
-                  </div>
-                  
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                    <label className="w-full sm:w-32 text-sm font-medium text-gray-500">Venue</label>
-                    <input
-                      className="flex-1 block rounded-md border border-gray-300 bg-white text-gray-900 shadow-sm focus:border-[#1EAEDB] focus:ring-[#1EAEDB] text-sm px-3 py-2"
-                      placeholder="Event venue"
-                      value={event.venue}
-                      onChange={e => handleEditExtractedEvent(idx, 'venue', e.target.value)}
-                    />
-                  </div>
-                  
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                    <label className="w-full sm:w-32 text-sm font-medium text-gray-500">Category</label>
-                    <select
-                      className="flex-1 block rounded-md border border-gray-300 bg-white text-gray-900 shadow-sm focus:border-[#1EAEDB] focus:ring-[#1EAEDB] text-sm px-3 py-2"
-                      value={event.category}
-                      onChange={e => handleEditExtractedEvent(idx, 'category', e.target.value)}
-                    >
-                      <option value="">Select Category</option>
-                      {getCategoryOptions(event.event_type as 'school' | 'personal').map(category => (
-                        <option key={category.value} value={category.value}>
-                          {category.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                    <label className="w-full sm:w-32 text-sm font-medium text-gray-500">Year Group</label>
-                    <YearGroupMultiSelect
-                      eventType={event.event_type as 'personal' | 'school'}
-                      value={event.yearGroup ? event.yearGroup.split(',').map(yg => yg.trim()).filter(Boolean) : []}
-                      onChange={(value) => handleEditExtractedEvent(idx, 'yearGroup', value.join(','))}
-                      placeholder="Select year groups..."
-                    />
-                  </div>
-                  
-                  {/* Todos */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-500 mb-2">To-Dos</label>
-                    <div className="space-y-2">
-                      {event.todos && event.todos.length > 0 && event.todos.map((todo: any, tIdx: number) => (
-                        <div key={tIdx} className="flex items-center gap-2">
-                          <input
-                            className="flex-1 block rounded-md border border-gray-300 bg-white text-gray-900 shadow-sm focus:border-[#1EAEDB] focus:ring-[#1EAEDB] text-sm px-3 py-2"
-                            placeholder="Todo item"
-                            value={todo.text}
-                            onChange={e => handleExtractedTodoChange(idx, tIdx, e.target.value)}
-                          />
-                          <button
-                            className="text-red-500 hover:text-red-700 text-sm px-2"
-                            onClick={() => handleExtractedTodoRemove(idx, tIdx)}
-                            type="button"
-                          >Remove</button>
-                        </div>
-                      ))}
-                      <button
-                        className="text-[#1EAEDB] hover:text-[#1EAEDB]/80 text-sm"
-                        onClick={() => handleExtractedTodoAdd(idx)}
-                        type="button"
-                      >+ Add To-Do</button>
-                    </div>
-                  </div>
-                  
-                  <div className="pt-2">
-                    <ThemedButton
-                      onClick={() => handleSaveExtractedEvent(idx, event)}
-                      disabled={savingEvent}
-                      className="w-full"
-                    >
-                      {savingEvent ? 'Saving...' : 'Save Event'}
-                    </ThemedButton>
-                  </div>
-                </div>
-              </div>
-            ))}
+        <div className="px-4 py-4 space-y-4">
+
+          {/* Event type toggle */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => setNewEvent({ ...newEvent, event_type: 'personal', visibility: 'private' })}
+              className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border font-medium transition-colors ${
+                newEvent.event_type === 'personal'
+                  ? 'bg-gray-800 text-white border-gray-800'
+                  : 'bg-white text-gray-500 border-gray-200 hover:border-gray-400'
+              }`}
+            >
+              <Lock className="w-3 h-3" /> Personal
+            </button>
+            <button
+              onClick={() => setNewEvent({ ...newEvent, event_type: 'school', visibility: isAdmin ? 'public' : 'private' })}
+              className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border font-medium transition-colors ${
+                newEvent.event_type === 'school'
+                  ? 'bg-gray-800 text-white border-gray-800'
+                  : 'bg-white text-gray-500 border-gray-200 hover:border-gray-400'
+              }`}
+            >
+              <Users className="w-3 h-3" /> School
+            </button>
           </div>
-        ) : (
-          <div className="mt-4 space-y-4">
-            {/* Event Type Selection - Always show both options, highlight correct one */}
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-              <label className="w-full sm:w-32 text-sm font-medium text-gray-500">Event Type</label>
-              <div className="flex-1">
-                <div className="flex space-x-4">
-                  <label className="flex items-center space-x-2">
-                    <input
-                      type="radio"
-                      name="event_type"
-                      value="personal"
-                      checked={newEvent.event_type === 'personal'}
-                      onChange={(e) => setNewEvent({ ...newEvent, event_type: e.target.value })}
-                      className="h-4 w-4 text-[#1EAEDB] focus:ring-[#1EAEDB]"
-                    />
-                    <Lock className="h-4 w-4 text-gray-600" />
-                    <span className="text-sm">Personal</span>
-                  </label>
-                  <label className="flex items-center space-x-2">
-                    <input
-                      type="radio"
-                      name="event_type"
-                      value="school"
-                      checked={newEvent.event_type === 'school'}
-                      onChange={(e) => setNewEvent({ ...newEvent, event_type: e.target.value })}
-                      className="h-4 w-4 text-[#1EAEDB] focus:ring-[#1EAEDB]"
-                    />
-                    <Users className="h-4 w-4 text-gray-600" />
-                    <span className="text-sm">School</span>
-                  </label>
-                </div>
-              </div>
-            </div>
 
-            {/* Privacy Section based on Event Type */}
-            {newEvent.event_type === 'personal' ? (
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                <div className="flex items-center gap-2 text-gray-700">
-                  <Lock className="h-4 w-4" />
-                  <span className="text-sm font-medium">This event is private to you.</span>
-                </div>
-                <p className="text-xs text-gray-600 mt-1">Only you can view or edit it.</p>
+          {/* School admin visibility picker */}
+          {newEvent.event_type === 'school' && isAdmin && (
+            <div className="bg-blue-50 border border-blue-100 rounded-xl p-3">
+              <div className="flex items-center gap-1.5 mb-2">
+                <Eye className="w-3.5 h-3.5 text-blue-500" />
+                <span className="text-xs font-semibold text-blue-700">Who can see this?</span>
               </div>
-            ) : (
-              isAdmin ? (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
-                  <div className="flex items-center gap-2">
-                    <Eye className="h-4 w-4 text-blue-600" />
-                    <label className="text-sm font-medium text-blue-900">Who can see this event?</label>
-                  </div>
-                  <RadioGroup
-                    value={getEventVisibility(newEvent as any)}
-                    onValueChange={(value) => {
-                      setNewEvent(setEventVisibility({ ...newEvent }, value as 'public' | 'private' | 'verified_shared'));
-                    }}
-                    className="space-y-3"
-                  >
-                    {getSchoolEventVisibilityOptions(isAdmin).map(option => {
-                      return (
-                        <div key={option.value} className="flex items-start space-x-3 p-3 border border-blue-200 rounded-lg hover:bg-blue-25 cursor-pointer">
-                          <RadioGroupItem value={option.value} id={option.value} className="mt-1" />
-                          <label htmlFor={option.value} className="flex-1 cursor-pointer">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-lg">{option.emoji}</span>
-                              <span className="text-sm font-medium text-gray-900">{option.label}</span>
-                              {option.value === 'public' && (
-                                <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">Default</span>
-                              )}
-                            </div>
-                            <p className="text-xs text-gray-600">
-                              {option.description}
-                            </p>
-                          </label>
-                        </div>
-                      );
-                    })}
-                  </RadioGroup>
-                </div>
-              ) : (
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-center gap-2 text-gray-700">
-                    <Lock className="h-4 w-4" />
-                    <span className="text-sm font-medium">This event is private to you.</span>
-                  </div>
-                  <p className="text-xs text-gray-600 mt-1">Only you can view or edit it.</p>
-                </div>
-              )
-            )}
-
-            {/* Rest of the form fields */}
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-              <label className="w-full sm:w-32 text-sm font-medium text-gray-500">Title</label>
-              <input
-                type="text"
-                value={newEvent.title}
-                onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
-                className="flex-1 block rounded-md border border-gray-300 bg-white text-gray-900 shadow-sm focus:border-[#1EAEDB] focus:ring-[#1EAEDB] text-sm px-3 py-2"
-              />
-            </div>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-              <label className="w-full sm:w-32 text-sm font-medium text-gray-500">Venue</label>
-              <input
-                type="text"
-                value={newEvent.venue || ''}
-                onChange={(e) => setNewEvent({ ...newEvent, venue: e.target.value })}
-                className="flex-1 block rounded-md border border-gray-300 bg-white text-gray-900 shadow-sm focus:border-[#1EAEDB] focus:ring-[#1EAEDB] text-sm px-3 py-2"
-                placeholder="Enter venue location"
-              />
-            </div>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-              <label className="w-full sm:w-32 text-sm font-medium text-gray-500">Date</label>
-              <input
-                type="date"
-                value={newEvent.date}
-                onChange={(e) => {
-                  console.log('Date input changed:', e.target.value);
-                  setNewEvent({ ...newEvent, date: e.target.value });
-                }}
-                className="flex-1 block rounded-md border border-gray-300 bg-white text-gray-900 shadow-sm focus:border-[#1EAEDB] focus:ring-[#1EAEDB] text-sm px-3 py-2"
-              />
-            </div>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-              <label className="w-full sm:w-32 text-sm font-medium text-gray-500">Category</label>
-              <select
-                value={newEvent.category}
-                onChange={(e) => setNewEvent({ ...newEvent, category: e.target.value })}
-                className="flex-1 block rounded-md border border-gray-300 bg-white text-gray-900 shadow-sm focus:border-[#1EAEDB] focus:ring-[#1EAEDB] text-sm px-3 py-2"
+              <RadioGroup
+                value={getEventVisibility(newEvent as any)}
+                onValueChange={(value) => setNewEvent(setEventVisibility({ ...newEvent }, value as any))}
+                className="space-y-1.5"
               >
-                <option value="">Select Category</option>
-                {getCategoryOptions(newEvent.event_type as 'school' | 'personal').map(category => (
-                  <option key={category.value} value={category.value}>
-                    {category.label}
-                  </option>
+                {getSchoolEventVisibilityOptions(isAdmin).map(option => (
+                  <div key={option.value} className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-blue-100 cursor-pointer">
+                    <RadioGroupItem value={option.value} id={`vis-${option.value}`} />
+                    <label htmlFor={`vis-${option.value}`} className="text-xs text-gray-700 cursor-pointer flex items-center gap-1.5">
+                      <span>{option.emoji}</span> {option.label}
+                    </label>
+                  </div>
+                ))}
+              </RadioGroup>
+            </div>
+          )}
+
+          {/* Title */}
+          <div
+            className="group flex items-start gap-2 cursor-pointer"
+            onClick={() => editingField !== 'title' && setEditingField('title')}
+          >
+            {editingField === 'title' ? (
+              <Input
+                autoFocus
+                className="text-lg font-bold h-9 px-2"
+                placeholder="Event title"
+                value={newEvent.title}
+                onChange={e => setNewEvent({ ...newEvent, title: e.target.value })}
+                onBlur={() => setEditingField(null)}
+                onKeyDown={e => e.key === 'Enter' && setEditingField(null)}
+              />
+            ) : (
+              <>
+                <h3 className={`text-lg font-bold flex-1 leading-tight ${newEvent.title ? 'text-gray-900' : 'text-gray-300 italic'}`}>
+                  {newEvent.title || 'Event title'}
+                </h3>
+                <Pencil className="w-3.5 h-3.5 text-gray-300 opacity-0 group-hover:opacity-100 mt-1 flex-shrink-0" />
+              </>
+            )}
+          </div>
+
+          {/* Core fields */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <Field icon={Calendar} field="date" label="Date" display={formattedDate} inputType="date" />
+            <Field
+              icon={Clock} field="time_start" label="Time"
+              display={newEvent.time_start
+                ? `${newEvent.time_start}${newEvent.time_end ? ` – ${newEvent.time_end}` : ''}`
+                : ''}
+            />
+            <Field icon={MapPin} field="venue" label="Venue" display={newEvent.venue || ''} />
+
+            {/* Year group */}
+            <div className="flex items-center gap-2">
+              <Users className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+              <select
+                className="text-sm text-gray-700 bg-transparent border-0 border-b border-dashed border-gray-300 focus:border-gray-400 focus:outline-none cursor-pointer py-0.5 pr-6 flex-1"
+                value={newEvent.yearGroup || 'All'}
+                onChange={e => setNewEvent({ ...newEvent, yearGroup: e.target.value })}
+              >
+                {YEAR_GROUP_OPTIONS.map(yg => (
+                  <option key={yg} value={yg}>{yg}</option>
                 ))}
               </select>
             </div>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-              <label className="w-full sm:w-32 text-sm font-medium text-gray-500">Year Group</label>
-              <YearGroupMultiSelect
-                eventType={newEvent.event_type as 'personal' | 'school'}
-                value={newEvent.yearGroup ? newEvent.yearGroup.split(',').map(yg => yg.trim()).filter(Boolean) : []}
-                onChange={(value) => setNewEvent({ ...newEvent, yearGroup: value.join(',') })}
-                placeholder="Select year groups..."
-              />
-            </div>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-              <label className="w-full sm:w-32 text-sm font-medium text-gray-500">Start Time</label>
-              <input
-                type="time"
-                value={newEvent.time_start}
-                onChange={(e) => setNewEvent({ ...newEvent, time_start: e.target.value })}
-                className="flex-1 block rounded-md border border-gray-300 bg-white text-gray-900 shadow-sm focus:border-[#1EAEDB] focus:ring-[#1EAEDB] text-sm px-3 py-2"
-              />
-            </div>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-              <label className="w-full sm:w-32 text-sm font-medium text-gray-500">End Time</label>
-              <input
-                type="time"
-                value={newEvent.time_end}
-                onChange={(e) => setNewEvent({ ...newEvent, time_end: e.target.value })}
-                className="flex-1 block rounded-md border border-gray-300 bg-white text-gray-900 shadow-sm focus:border-[#1EAEDB] focus:ring-[#1EAEDB] text-sm px-3 py-2"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">To-Dos</label>
+          </div>
+
+          {/* Category */}
+          <div className="flex items-center gap-2">
+            <Tag className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+            <select
+              className="text-xs bg-gray-100 text-gray-600 border border-gray-200 rounded-full px-2 py-0.5 font-medium focus:outline-none focus:border-gray-400 cursor-pointer"
+              value={newEvent.category || 'general'}
+              onChange={e => setNewEvent({ ...newEvent, category: e.target.value })}
+            >
+              {CATEGORY_OPTIONS.map(o => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Actions / todos */}
+          <div>
+            <button
+              className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 hover:text-gray-700"
+              onClick={() => setActionsExpanded(!actionsExpanded)}
+            >
+              {actionsExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+              Actions needed ({newEvent.todos?.length || 0})
+            </button>
+
+            {actionsExpanded && (
               <div className="space-y-2">
-                {newEvent.todos.map((todo: any, idx: number) => (
-                  <div key={idx} className="flex items-center gap-2">
-                    <input
-                      type="text"
+                {(newEvent.todos || []).map((todo: any, i: number) => (
+                  <div key={i} className="flex items-center gap-2 bg-amber-50 rounded-lg px-3 py-2">
+                    <AlertCircle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
+                    <Input
+                      className="h-7 text-sm bg-white border-amber-200 focus:border-amber-400 px-2 flex-1"
                       value={todo.text}
-                      onChange={(e) => onTodoChange(idx, e.target.value)}
-                      className="flex-1 block rounded-md border border-gray-300 bg-white text-gray-900 shadow-sm focus:border-[#1EAEDB] focus:ring-[#1EAEDB] text-sm px-3 py-2"
+                      placeholder="Action description"
+                      onChange={e => onTodoChange(i, e.target.value)}
                     />
                     <button
+                      className="text-gray-300 hover:text-red-400 transition-colors flex-shrink-0"
+                      onClick={() => onTodoRemove(i)}
                       type="button"
-                      onClick={() => onTodoRemove(idx)}
-                      className="text-red-500 hover:text-red-700 text-sm px-2"
                     >
-                      Remove
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 ))}
                 <button
-                  type="button"
+                  className="flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 font-medium px-1"
                   onClick={onTodoAdd}
-                  className="text-[#1EAEDB] hover:text-[#1EAEDB]/80 text-sm"
+                  type="button"
                 >
-                  + Add To-Do
+                  <Plus className="w-3.5 h-3.5" /> Add action
                 </button>
               </div>
-            </div>
-            
-            <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:gap-0">
-              <ThemedButton variant="outline" onClick={() => onOpenChange(false)}>
-                Cancel
-              </ThemedButton>
-              <ThemedButton onClick={() => onSave()} disabled={savingEvent}>
-                {savingEvent ? 'Saving...' : 'Save Event'}
-              </ThemedButton>
-            </DialogFooter>
+            )}
           </div>
-        )}
+
+          {/* CTA */}
+          <div className="flex gap-2 pt-3 border-t border-gray-100">
+            <Button
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-xl"
+              size="sm"
+              onClick={() => onSave()}
+              disabled={savingEvent}
+            >
+              <CheckCircle className="w-4 h-4 mr-1.5" />
+              {savingEvent ? 'Saving…' : editingEvent ? 'Save changes' : 'Add to calendar'}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onOpenChange(false)}
+              disabled={savingEvent}
+              className="text-gray-500 rounded-xl"
+            >
+              <XCircle className="w-4 h-4 mr-1.5" /> Cancel
+            </Button>
+          </div>
+
+        </div>
       </DialogContent>
     </Dialog>
   );
