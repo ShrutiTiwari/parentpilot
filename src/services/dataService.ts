@@ -174,7 +174,14 @@ export const dataService = {
 
   async deleteEvent(eventId: string): Promise<void> {
     try {
-      // First delete all todos associated with the event
+      // Null out event_staging.event_id references before deleting
+      // (FK constraint blocks delete if ON DELETE SET NULL wasn't applied at DB level)
+      await supabase
+        .from('event_staging')
+        .update({ event_id: null })
+        .eq('event_id', eventId);
+
+      // Delete all todos associated with the event
       const { error: todosError } = await supabase
         .from('todos')
         .delete()
