@@ -217,134 +217,71 @@ export const AddEventTabs: React.FC<AddEventTabsProps> = ({
 
   return (
     <>
-      <div className={`bg-gradient-to-r from-green-50/80 to-emerald-50/80 backdrop-blur-sm rounded-xl border-2 border-green-200/50 p-4 sm:p-6 shadow-lg h-full flex flex-col justify-center ${className}`}>
-        <div className="space-y-3">
-          <ThemedButton
-            onClick={() => setShowModal(true)}
-            disabled={isExtracting}
-            className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg transform hover:scale-[1.02] transition-all duration-200"
-            size="lg"
-          >
-            <Plus className="h-6 w-6 mr-3" />
-            {isExtracting ? 'Processing...' : 'Add New Event'}
-          </ThemedButton>
+      <div className={`flex items-center gap-2 ${className}`}>
+        <Button
+          onClick={() => setShowModal(true)}
+          disabled={isExtracting}
+          size="sm"
+          className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl"
+        >
+          <Plus className="h-4 w-4 mr-1.5" />
+          {isExtracting ? 'Processing…' : 'Add event'}
+        </Button>
 
-          <ThemedButton
-            onClick={() => setShowICSImport(true)}
-            className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg transform hover:scale-[1.02] transition-all duration-200"
-            size="lg"
-          >
-            <CalendarImportIcon className="h-6 w-6 mr-3" />
-            Import Calendar
-          </ThemedButton>
-        </div>
+        <Button
+          onClick={() => setShowICSImport(true)}
+          variant="outline"
+          size="sm"
+          className="rounded-xl text-gray-600"
+        >
+          <CalendarImportIcon className="h-4 w-4 mr-1.5" />
+          Import
+        </Button>
       </div>
 
       {/* Modal with two options */}
       <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="w-[95vw] max-w-md mx-auto">
-          <DialogTitle className="text-xl font-semibold text-center mb-2">
-            How would you like to add an event?
-          </DialogTitle>
-          <DialogDescription className="sr-only">
-            Choose how to add your event
-          </DialogDescription>
-          
-          <div className="space-y-4 mt-6">
-            {/* Upload Screenshot Option */}
-            <button
-              onClick={handleUploadClick}
-              className="w-full p-6 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50/50 transition-all duration-200 text-left group"
-            >
-              <div className="flex items-start space-x-4">
-                <div className="flex-shrink-0">
-                  <Camera className="h-8 w-8 text-gray-600 group-hover:text-blue-600 transition-colors" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 group-hover:text-blue-900 transition-colors">
-                    Upload a Screenshot
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1">
-                    AI will extract event details from your screenshot
-                  </p>
-                </div>
-              </div>
-            </button>
-
-            {/* Create Manually Option */}
-            <button
-              onClick={handleManualClick}
-              className="w-full p-6 border border-gray-200 rounded-lg hover:border-green-300 hover:bg-green-50/50 transition-all duration-200 text-left group"
-            >
-              <div className="flex items-start space-x-4">
-                <div className="flex-shrink-0">
-                  <Pencil className="h-8 w-8 text-gray-600 group-hover:text-green-600 transition-colors" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 group-hover:text-green-900 transition-colors">
-                    Create Manually
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Use a simple form to add the event yourself
-                  </p>
-                </div>
-              </div>
-            </button>
+        <DialogContent className="w-[95vw] max-w-sm mx-auto p-0 overflow-hidden">
+          <div className="bg-gray-50 border-b border-gray-100 px-4 py-3">
+            <DialogTitle className="text-sm font-semibold text-gray-700">
+              Add event
+            </DialogTitle>
+            <DialogDescription className="sr-only">
+              Choose how to add your event
+            </DialogDescription>
           </div>
 
-          <div className="flex justify-center mt-8">
-            <ThemedButton
-              variant="outline"
-              onClick={() => setShowModal(false)}
-              className="px-8 py-2 text-red-600 border-red-300 hover:bg-red-50"
+          <div className="px-4 py-3 space-y-2">
+            <button
+              onClick={handleUploadClick}
+              className="w-full flex items-center gap-3 px-3 py-3 rounded-xl border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-colors text-left group"
             >
-              Cancel
-            </ThemedButton>
+              <Camera className="h-5 w-5 text-gray-400 group-hover:text-blue-500 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-medium text-gray-800">Upload screenshot</p>
+                <p className="text-xs text-gray-400 mt-0.5">AI extracts event details automatically</p>
+              </div>
+            </button>
+
+            <button
+              onClick={handleManualClick}
+              className="w-full flex items-center gap-3 px-3 py-3 rounded-xl border border-gray-200 hover:border-gray-400 hover:bg-gray-50 transition-colors text-left group"
+            >
+              <Pencil className="h-5 w-5 text-gray-400 group-hover:text-gray-600 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-medium text-gray-800">Create manually</p>
+                <p className="text-xs text-gray-400 mt-0.5">Fill in the event details yourself</p>
+              </div>
+            </button>
           </div>
 
           {extractError && (
-            <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <div className="flex items-start space-x-3">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div className="flex-1">
-                  <h4 className="text-sm font-medium text-red-800">
-                    {extractError.includes('Image processing was refused') || 
-                     extractError.includes('PDF processing was refused') ||
-                     extractError.includes('Please try with a different image') ||
-                     extractError.includes('Please try with a different PDF') ||
-                     extractError.includes('Please try with a different file') ? 'File Not Suitable' :
-                     extractError.includes('Service is temporarily busy') ? 'Service Busy' :
-                     extractError.includes('Service configuration error') ? 'Service Error' :
-                     'Extraction Failed'}
-                  </h4>
-                  <p className="text-sm text-red-700 mt-1">
-                    {extractError}
-                  </p>
-                  <div className="mt-3 flex space-x-2">
-                    <button
-                      onClick={() => {
-                        setExtractError(null);
-                        setShowModal(true);
-                      }}
-                      className="text-sm text-red-600 hover:text-red-800 underline"
-                    >
-                      Try Again
-                    </button>
-                    <button
-                      onClick={() => {
-                        setExtractError(null);
-                        onAddEventClick();
-                      }}
-                      className="text-sm text-red-600 hover:text-red-800 underline"
-                    >
-                      Create Manually Instead
-                    </button>
-                  </div>
-                </div>
+            <div className="mx-4 mb-4 p-3 bg-red-50 border border-red-200 rounded-xl">
+              <p className="text-xs font-medium text-red-800">Extraction failed</p>
+              <p className="text-xs text-red-700 mt-0.5">{extractError}</p>
+              <div className="mt-2 flex gap-3">
+                <button onClick={() => { setExtractError(null); setShowModal(true); }} className="text-xs text-red-600 hover:text-red-800 underline">Try again</button>
+                <button onClick={() => { setExtractError(null); onAddEventClick(); }} className="text-xs text-red-600 hover:text-red-800 underline">Create manually</button>
               </div>
             </div>
           )}
