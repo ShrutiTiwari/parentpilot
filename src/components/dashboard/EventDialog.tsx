@@ -17,15 +17,20 @@ import { getEventVisibility, setEventVisibility, getSchoolEventVisibilityOptions
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const CATEGORY_OPTIONS = [
-  { value: 'sports',   label: '🏅 Sports' },
-  { value: 'swimming', label: '🏊 Swimming' },
-  { value: 'music',    label: '🎵 Music' },
-  { value: 'exam',     label: '📝 Exam' },
-  { value: 'trip',     label: '🚌 Trip' },
-  { value: 'parent',   label: '👨‍👩‍👧 Parents' },
-  { value: 'holiday',  label: '🏖️ Holiday' },
-  { value: 'report',   label: '📄 Report' },
-  { value: 'general',  label: '📌 General' },
+  { value: 'sports',      label: '🏅 Sports' },
+  { value: 'swimming',    label: '🏊 Swimming' },
+  { value: 'music',       label: '🎵 Music' },
+  { value: 'drama',       label: '🎭 Drama' },
+  { value: 'dance',       label: '💃 Dance' },
+  { value: 'exam',        label: '📝 Exam' },
+  { value: 'trip',        label: '🚌 Trip' },
+  { value: 'club',        label: '🏫 Club' },
+  { value: 'academic',    label: '📚 Academic' },
+  { value: 'competition', label: '🏆 Competition' },
+  { value: 'parents',     label: '👨‍👩‍👧 Parents' },
+  { value: 'holiday',     label: '🏖️ Holiday' },
+  { value: 'report',      label: '📄 Report' },
+  { value: 'general',     label: '📌 General' },
 ];
 
 const YEAR_GROUP_OPTIONS = [
