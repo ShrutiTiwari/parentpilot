@@ -489,7 +489,11 @@ app.delete('/api/events/:id', async (req, res) => {
       .single();
 
     if (!event) return res.status(404).json({ error: 'Event not found' });
-    if (event.created_by_user_id !== user_id) return res.status(403).json({ error: 'Not your event' });
+    // School events have no created_by_user_id — allow any authenticated user to delete.
+    // Personal events are locked to their creator.
+    if (event.created_by_user_id !== null && event.created_by_user_id !== user_id) {
+      return res.status(403).json({ error: 'Not your event' });
+    }
 
     // Null out event_staging references
     await supabaseAdmin.from('event_staging').update({ event_id: null }).eq('event_id', id);
