@@ -40,7 +40,6 @@ export default function ResetPassword() {
           const type = hashParams.get('type');
 
           if (access_token && refresh_token && type === 'recovery') {
-            console.log("ResetPassword: Setting session from URL hash");
             const { error } = await supabase.auth.setSession({
               access_token,
               refresh_token,
@@ -100,11 +99,9 @@ export default function ResetPassword() {
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("ResetPassword: Auth state change", { event, hasSession: !!session });
 
       // Don't redirect away if we're in password recovery mode
       if (sessionStorage.getItem('password_recovery_active') === 'true') {
-        console.log("ResetPassword: Password recovery mode detected, staying on reset page");
         if (session) {
           setIsValidSession(true);
           setIsCheckingSession(false);

@@ -32,11 +32,9 @@ export function AddWeekendPlanDialog({ open, onOpenChange, onAddPlan, childName 
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted');
     
     if (!title || !date || !venue || !time) {
       // Basic validation
-      console.log('Validation failed:', { title, date, venue, time });
       toast({
         title: "Error",
         description: "Please fill in all required fields.",
@@ -59,7 +57,6 @@ export function AddWeekendPlanDialog({ open, onOpenChange, onAddPlan, childName 
 
     // Format the date
     const formattedDate = date ? formatDate(date.toISOString().split('T')[0], { includeYear: true }) : '';
-    console.log('Formatted date:', formattedDate);
     
     // Create the new weekend plan
     const newPlan: WeekendPlan = {
@@ -71,13 +68,10 @@ export function AddWeekendPlanDialog({ open, onOpenChange, onAddPlan, childName 
       category,
       yearGroup: yearGroup || 'Family',
     };
-    console.log('New plan created:', newPlan);
     
     try {
-      console.log('Attempting to save plan for child:', childName);
       // Save using dataService
       await dataService.addWeekendPlan(childName, newPlan);
-      console.log('Plan saved successfully');
       
       toast({
         title: "Success",
@@ -86,7 +80,6 @@ export function AddWeekendPlanDialog({ open, onOpenChange, onAddPlan, childName 
       
       // Add the new plan to the UI
       onAddPlan(newPlan);
-      console.log('UI updated with new plan');
       
       // Reset form and close dialog
       resetForm();

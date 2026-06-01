@@ -3,15 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 
 export default function AuthCallback() {
-  console.log("AuthCallback component rendered. Location:", window.location.href);
   const navigate = useNavigate();
 
   useEffect(() => {
     const handleAuthCallback = async () => {
-      console.log("handleAuthCallback: Starting auth callback processing");
-      console.log("handleAuthCallback: Full URL:", window.location.href);
-      console.log("handleAuthCallback: Search params:", window.location.search);
-      console.log("handleAuthCallback: Hash:", window.location.hash);
 
       const hash = window.location.hash;
       const searchParams = new URLSearchParams(window.location.search);
@@ -23,7 +18,6 @@ export default function AuthCallback() {
 
       // Handle password recovery flow
       if (isRecovery || hash.includes('type=recovery')) {
-        console.log("handleAuthCallback: Password recovery flow detected");
 
         // Handle the hash parameters for password recovery
         if (hash) {
@@ -33,7 +27,6 @@ export default function AuthCallback() {
           const type = hashParams.get('type');
 
           if (access_token && refresh_token && type === 'recovery') {
-            console.log("handleAuthCallback: Setting recovery session with tokens");
 
             const { error } = await supabase.auth.setSession({
               access_token,
@@ -45,8 +38,6 @@ export default function AuthCallback() {
               navigate('/auth');
               return;
             }
-
-            console.log("handleAuthCallback: Password recovery session established, redirecting to reset form");
             // Store recovery flag to prevent auto-login
             sessionStorage.setItem('password_recovery_active', 'true');
             navigate('/reset-password');
@@ -64,13 +55,11 @@ export default function AuthCallback() {
         }
 
         if (session) {
-          console.log("handleAuthCallback: Password recovery session found, redirecting to reset form");
           // Store recovery flag to prevent auto-login
           sessionStorage.setItem('password_recovery_active', 'true');
           navigate('/reset-password');
           return;
         } else {
-          console.log("handleAuthCallback: No session for password recovery");
           navigate('/auth');
           return;
         }
@@ -82,13 +71,8 @@ export default function AuthCallback() {
         const access_token = params.get('access_token');
         const refresh_token = params.get('refresh_token');
 
-        console.log("handleAuthCallback: Tokens found:", {
-          hasAccessToken: !!access_token,
-          hasRefreshToken: !!refresh_token
-        });
-
+        
         if (access_token && refresh_token) {
-          console.log("handleAuthCallback: Setting session with tokens");
           const { error } = await supabase.auth.setSession({
             access_token,
             refresh_token,
@@ -104,7 +88,6 @@ export default function AuthCallback() {
 
             navigate(authUrl);
           } else {
-            console.log("handleAuthCallback: Session set successfully");
 
             // Check for returnTo parameter in URL, cookies, sessionStorage, or localStorage
             const urlParams = new URLSearchParams(window.location.search);
@@ -124,18 +107,6 @@ export default function AuthCallback() {
             const storedReturnTo = localStorage.getItem('authReturnTo');
             const storedOrigin = localStorage.getItem('authOrigin');
 
-            console.log("🔍 CALLBACK.TSX: OAuth session established!");
-            console.log("🔍 CALLBACK.TSX: Current URL:", window.location.href);
-            console.log("🔍 CALLBACK.TSX: URL search params:", window.location.search);
-            console.log("🔍 CALLBACK.TSX: returnTo from URL params:", urlParams.get('returnTo'));
-            console.log("🔍 CALLBACK.TSX: origin from URL params:", urlParams.get('origin'));
-            console.log("🔍 CALLBACK.TSX: returnTo from cookie:", cookieReturnTo);
-            console.log("🔍 CALLBACK.TSX: origin from cookie:", cookieOrigin);
-            console.log("🔍 CALLBACK.TSX: returnTo from sessionStorage:", sessionReturnTo);
-            console.log("🔍 CALLBACK.TSX: origin from sessionStorage:", sessionOrigin);
-            console.log("🔍 CALLBACK.TSX: returnTo from localStorage:", storedReturnTo);
-            console.log("🔍 CALLBACK.TSX: origin from localStorage:", storedOrigin);
-
             // IMPORTANT: Prioritize cookies (work across subdomains), then sessionStorage, then localStorage, then URL params
             // Filter out 'null' string values
             const urlReturnTo = urlParams.get('returnTo');
@@ -152,11 +123,8 @@ export default function AuthCallback() {
             const returnTo = validCookieReturnTo || validSessionReturnTo || validUrlReturnTo || validStoredReturnTo || '/';
             const targetOrigin = validCookieOrigin || validSessionOrigin || validUrlOrigin || validStoredOrigin;
 
-            console.log("🔍 CALLBACK.TSX: Final decisions:", { returnTo, targetOrigin });
-
             // Clean up cookies and storage
             setTimeout(() => {
-              console.log("🔍 CALLBACK.TSX: Removing auth data from all storage");
               localStorage.removeItem('authReturnTo');
               localStorage.removeItem('authOrigin');
               sessionStorage.removeItem('authReturnTo');
@@ -178,16 +146,13 @@ export default function AuthCallback() {
             // If we have a target origin different from current, redirect to that origin with the path
             if (targetOrigin && targetOrigin !== window.location.origin) {
               const fullUrl = `${targetOrigin}${returnTo}`;
-              console.log("🔍 CALLBACK.TSX: ✅ FULL PAGE REDIRECT TO:", fullUrl);
               window.location.href = fullUrl;
             } else {
               // Navigate to the return URL (same origin)
-              console.log("🔍 CALLBACK.TSX: ✅ NAVIGATING TO:", returnTo);
               navigate(returnTo);
             }
           }
         } else {
-          console.log("handleAuthCallback: No tokens found in hash, redirecting to auth");
 
           // Preserve returnTo parameter in error redirect
           const urlParams = new URLSearchParams(window.location.search);
@@ -197,7 +162,6 @@ export default function AuthCallback() {
           navigate(authUrl);
         }
       } else {
-        console.log("handleAuthCallback: No hash found, redirecting to auth");
 
         // Preserve returnTo parameter in error redirect
         const urlParams = new URLSearchParams(window.location.search);

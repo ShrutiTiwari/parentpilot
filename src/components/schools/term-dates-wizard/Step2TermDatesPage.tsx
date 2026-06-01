@@ -82,7 +82,6 @@ export function Step2TermDatesPage({
       });
 
       if (result.suggestedPages && result.suggestedPages.length > 0) {
-        console.log('Setting suggested pages:', result.suggestedPages);
         setLocalSuggestedPages(result.suggestedPages);
         setSuggestedPages(result.suggestedPages); // Still update parent state for persistence
         // Auto-select first high confidence page
@@ -156,9 +155,6 @@ export function Step2TermDatesPage({
   const confirmedPageUrl = selectedPageUrl === 'custom' ? customPageUrl : selectedPageUrl;
 
   // Debug logging
-  console.log('Step2 render - localSuggestedPages:', localSuggestedPages);
-  console.log('Step2 render - loadingTermDatesPage:', loadingTermDatesPage);
-  console.log('Step2 render - savingSchool:', savingSchool);
 
   return (
     <>

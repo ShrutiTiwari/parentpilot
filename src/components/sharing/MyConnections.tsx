@@ -73,22 +73,17 @@ export function MyConnections() {
   };
 
   const fetchConnections = async () => {
-    console.log('🔵 MyConnections: fetchConnections called');
     try {
-      console.log('🔵 MyConnections: About to call SharingService.getMyConnections()');
       const myConnections = await SharingService.getMyConnections();
-      console.log('🔵 MyConnections received data:', myConnections);
       setConnections(myConnections);
     } catch (error) {
       console.error('🔴 Error fetching connections:', error);
     } finally {
-      console.log('🔵 MyConnections: Setting loading to false');
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    console.log('🔵 MyConnections: useEffect triggered');
     fetchConnections();
     
     // Refresh every 30 seconds

@@ -58,7 +58,6 @@ export const handleDonationWebhook = async (event: any) => {
     const session = event.data.object;
     
     // Log the donation, send thank you email, etc.
-    console.log(`Donation received: $${session.amount_total / 100}`);
     
     // Optional: Store donor information, send thank you email
   }

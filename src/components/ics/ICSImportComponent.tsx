@@ -319,7 +319,6 @@ export function ICSImportComponent({
 
       if (error) {
         // If bulk upsert fails, try saving events one by one
-        console.log('Bulk upsert failed, trying individual inserts...');
         successCount = 0;
 
         for (let i = 0; i < eventsToSave.length; i++) {

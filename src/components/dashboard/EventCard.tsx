@@ -179,12 +179,10 @@ export function EventCard({ event, onEditEvent, onCloneEvent, onDeleteEvent, isS
 
   // Handle todo toggle
   const handleTodoToggle = (todoId: string) => {
-    console.log('Toggling todo:', todoId);
     setEventTodos(prevTodos => {
       const newTodos = prevTodos.map(todo => 
         todo.id === todoId ? { ...todo, completed: !todo.completed } : todo
       );
-      console.log('Updated todos:', newTodos);
       return newTodos;
     });
   };

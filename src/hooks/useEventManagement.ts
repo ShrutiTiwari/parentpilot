@@ -34,15 +34,6 @@ export function useEventManagement(showAuthModal?: boolean, setShowAuthModal?: (
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Debug: Log user state changes
-  console.log('useEventManagement: User state changed:', {
-    user: !!user,
-    user_id: user?.id,
-    user_email: user?.email,
-    authLoading,
-    selectedProfile: !!selectedProfile
-  });
-
   // Check if user is admin
   const isAdmin = selectedProfile && authorizedSchools.some(
     auth => auth.schools?.id === selectedProfile.schoolId
@@ -80,8 +71,7 @@ export function useEventManagement(showAuthModal?: boolean, setShowAuthModal?: (
     const savedEventData = localStorage.getItem('pendingEventData');
     if (savedEventData) {
       try {
-        const parsedData = JSON.parse(savedEventData);
-        console.log('Loaded pending event data from localStorage:', parsedData);
+        JSON.parse(savedEventData);
       } catch (error) {
         console.error('Error parsing saved event data:', error);
         localStorage.removeItem('pendingEventData');
@@ -94,43 +84,38 @@ export function useEventManagement(showAuthModal?: boolean, setShowAuthModal?: (
     if (user) {
       const savedEventData = localStorage.getItem('pendingEventData');
       if (savedEventData) {
-        console.log('User authenticated, persisting local events to database');
         const persistLocalEvents = async () => {
           try {
             const pendingEvents = JSON.parse(savedEventData);
-            console.log('Found pending events to sync:', pendingEvents);
-            
+
             let successCount = 0;
             let errorCount = 0;
-            
+
             for (const eventData of pendingEvents) {
               try {
-                console.log('Processing event for sync:', eventData);
-                
                 // Validate required fields
                 if (!eventData.title || !eventData.date) {
-                  console.warn('Skipping event with missing required fields:', eventData);
                   errorCount++;
                   continue;
                 }
-                
+
                 // Convert year groups to database format
                 const yearGroups = eventData.yearGroup ? eventData.yearGroup.split(',').map((yg: string) => yg.trim()).filter(Boolean) : [];
                 const yearGroupData = convertYearGroupsToDatabase(yearGroups);
-                
+
                 // Prepare event data for database - all local events are personal
                 const eventToSave = {
                   title: eventData.title,
                   date: eventData.date,
                   category: eventData.category || 'general',
                   yearGroup: yearGroupData.year_group || 'All',
-                  event_type: 'personal' as const, // All local events are personal
-                  visibility: 'private' as const, // Always private for personal events
+                  event_type: 'personal' as const,
+                  visibility: 'private' as const,
                   time_start: eventData.time_start || null,
                   time_end: eventData.time_end || null,
                   venue: eventData.venue || null,
                   created_by_user_id: user.id,
-                  school_id: null, // No school_id for personal events
+                  school_id: null,
                   todos: eventData.todos?.map((todo: any) => ({
                     text: todo.text,
                     completed: todo.completed || false,
@@ -138,27 +123,23 @@ export function useEventManagement(showAuthModal?: boolean, setShowAuthModal?: (
                     todo_type: 'personal'
                   })) || []
                 };
-                
-                console.log('Event prepared for database:', eventToSave);
-                
+
                 await dataService.addEvent(eventToSave);
-                console.log('Event persisted to database successfully');
                 successCount++;
-                
+
               } catch (eventError) {
                 console.error('Error persisting individual event:', eventError);
                 errorCount++;
               }
             }
-            
+
             // Clear localStorage after processing all events
             localStorage.removeItem('pendingEventData');
-            console.log(`Sync completed: ${successCount} successful, ${errorCount} failed`);
-            
+
             // Refresh the events data
             queryClient.invalidateQueries({ queryKey: ['schoolEvents'] });
             queryClient.invalidateQueries({ queryKey: ['personalEvents'] });
-            
+
             // Show appropriate message based on results
             if (successCount > 0 && errorCount === 0) {
               toast({
@@ -179,7 +160,7 @@ export function useEventManagement(showAuthModal?: boolean, setShowAuthModal?: (
                 variant: 'destructive'
               });
             }
-            
+
           } catch (error) {
             console.error('Error persisting local events:', error);
             toast({
@@ -189,7 +170,7 @@ export function useEventManagement(showAuthModal?: boolean, setShowAuthModal?: (
             });
           }
         };
-        
+
         // Add a small delay to ensure auth state is fully settled
         setTimeout(persistLocalEvents, 500);
       }
@@ -269,8 +250,6 @@ export function useEventManagement(showAuthModal?: boolean, setShowAuthModal?: (
         }
       }
 
-      // No local events in school events tab since all local events are personal
-
       return schoolEvents;
     },
     enabled: !!user,
@@ -281,12 +260,12 @@ export function useEventManagement(showAuthModal?: boolean, setShowAuthModal?: (
     queryKey: ['personalEvents', user?.id],
     queryFn: async () => {
       let personalEvents: any[] = [];
-      
+
       // Get events from database if user is authenticated
       if (user) {
         personalEvents = await dataService.getPersonalEvents(user.id);
       }
-      
+
       // Add local events if user is not authenticated (all local events are personal)
       if (!user) {
         const savedEventData = localStorage.getItem('pendingEventData');
@@ -299,7 +278,7 @@ export function useEventManagement(showAuthModal?: boolean, setShowAuthModal?: (
           }
         }
       }
-      
+
       return personalEvents;
     },
     enabled: true, // Always enabled to show local events even when not authenticated
@@ -321,16 +300,16 @@ export function useEventManagement(showAuthModal?: boolean, setShowAuthModal?: (
       // Invalidate and refetch
       queryClient.invalidateQueries({ queryKey: ['schoolEvents'] });
       queryClient.invalidateQueries({ queryKey: ['personalEvents'] });
-      
+
       // Only close the dialog if we're not dealing with extracted events
       // The EventDialog component will handle closing when all extracted events are saved
       if (extractedEvents.length === 0) {
         setShowEventDialog(false);
       }
-      
-      toast({ 
-        title: editingEvent ? 'Event updated!' : 'Event saved!', 
-        variant: 'default' 
+
+      toast({
+        title: editingEvent ? 'Event updated!' : 'Event saved!',
+        variant: 'default'
       });
     },
     onError: (error: any) => {
@@ -341,10 +320,10 @@ export function useEventManagement(showAuthModal?: boolean, setShowAuthModal?: (
       ) {
         description = 'You already have a personal event with this title and date. Please choose a different title or date.';
       }
-      toast({ 
-        title: 'Error saving event', 
-        description, 
-        variant: 'destructive' 
+      toast({
+        title: 'Error saving event',
+        description,
+        variant: 'destructive'
       });
     }
   });
@@ -358,16 +337,16 @@ export function useEventManagement(showAuthModal?: boolean, setShowAuthModal?: (
       // Invalidate and refetch
       queryClient.invalidateQueries({ queryKey: ['schoolEvents'] });
       queryClient.invalidateQueries({ queryKey: ['personalEvents'] });
-      toast({ 
-        title: 'Event deleted!', 
-        variant: 'default' 
+      toast({
+        title: 'Event deleted!',
+        variant: 'default'
       });
     },
     onError: (error: any) => {
-      toast({ 
-        title: 'Error deleting event', 
-        description: error.message, 
-        variant: 'destructive' 
+      toast({
+        title: 'Error deleting event',
+        description: error.message,
+        variant: 'destructive'
       });
     }
   });
@@ -376,22 +355,11 @@ export function useEventManagement(showAuthModal?: boolean, setShowAuthModal?: (
   const [currentExtractedEventIndex, setCurrentExtractedEventIndex] = useState(0);
 
   const handleExtractSuccess = (extractedData: any) => {
-    console.log('handleExtractSuccess: received extractedData:', extractedData);
-    console.log('handleExtractSuccess: extractedData type:', typeof extractedData);
-    console.log('handleExtractSuccess: isArray:', Array.isArray(extractedData));
-    
     // Check if extractedData is an array (multiple events) or a single event
     const eventsArray = Array.isArray(extractedData) ? extractedData : [extractedData];
-    
-    console.log('handleExtractSuccess: processing events array:', eventsArray);
-    console.log('handleExtractSuccess: eventsArray.length:', eventsArray.length);
-    
+
     // Process and format all events
-    const formattedEvents = eventsArray.map((event: any, index: number) => {
-      console.log(`handleExtractSuccess: processing event ${index}:`, event);
-      console.log(`handleExtractSuccess: event ${index} title:`, event.title);
-      console.log(`handleExtractSuccess: event ${index} date:`, event.date);
-      
+    const formattedEvents = eventsArray.map((event: any) => {
       // Parse and format the date
       const formattedDate = event.date ? convertToInputFormat(event.date) : '';
 
@@ -404,7 +372,7 @@ export function useEventManagement(showAuthModal?: boolean, setShowAuthModal?: (
         ? event.actions.map((a: any) => ({ text: a.text, completed: false, deadline: a.deadline || null }))
         : (event.todos || []);
 
-      const formattedEvent = {
+      return {
         title: event.title || '',
         date: formattedDate,
         category: event.category || '',
@@ -419,65 +387,33 @@ export function useEventManagement(showAuthModal?: boolean, setShowAuthModal?: (
         created_by_user_id: user?.id || null,
         school_id: selectedProfile?.schoolId || null
       };
-      
-      console.log(`handleExtractSuccess: formatted event ${index}:`, formattedEvent);
-      return formattedEvent;
     });
-
-    console.log('handleExtractSuccess: final formattedEvents:', formattedEvents);
-    console.log('handleExtractSuccess: formattedEvents.length:', formattedEvents.length);
 
     // Set the extractedEvents to the full array
     setExtractedEvents(formattedEvents);
-    console.log('handleExtractSuccess: set extractedEvents to:', formattedEvents);
-    
+
     // Set the first event as the newEvent for the form
     if (formattedEvents.length > 0) {
       setNewEvent(formattedEvents[0]);
-      console.log('handleExtractSuccess: set newEvent to:', formattedEvents[0]);
     }
 
     // Show the dialog
     setShowEventDialog(true);
-    console.log('handleExtractSuccess: Dialog should open with events:', formattedEvents);
   };
 
   const handleSaveEvent = async (eventData?: any) => {
     // Use the passed eventData if available, otherwise use newEvent
     const dataToSave = eventData || newEvent;
-    
-    console.log('handleSaveEvent DEBUG:', {
-      user: !!user,
-      user_id: user?.id,
-      user_email: user?.email,
-      authLoading,
-      selectedProfile: !!selectedProfile,
-      selectedProfile_id: selectedProfile?.id,
-      selectedProfile_name: selectedProfile?.name,
-      event_type: dataToSave.event_type,
-      created_by_user_id: dataToSave.created_by_user_id,
-      school_id: dataToSave.school_id,
-      visibility: dataToSave.visibility
-    });
-    
+
     // Use the same condition as the sign-out button visibility
     const isUserAuthenticated = !!user;
-    
-    console.log('Authentication check:', {
-      user: !!user,
-      user_id: user?.id,
-      isUserAuthenticated,
-      authLoading
-    });
-    
+
     // If user is not authenticated, save event locally as personal event and prompt for authentication
     if (!isUserAuthenticated) {
-      console.log('User not authenticated, saving event locally as personal event and prompting for auth');
-      
       // Get existing local events
       const existingEvents = localStorage.getItem('pendingEventData');
       const localEvents = existingEvents ? JSON.parse(existingEvents) : [];
-      
+
       // Clean up event data for local storage - always save as personal event when unauthenticated
       const eventToSaveLocally = {
         title: dataToSave.title || '',
@@ -497,35 +433,25 @@ export function useEventManagement(showAuthModal?: boolean, setShowAuthModal?: (
         created_at: new Date().toISOString(),
         local: true
       };
-      
+
       localEvents.push(eventToSaveLocally);
       localStorage.setItem('pendingEventData', JSON.stringify(localEvents));
-      
-      console.log('Event saved locally as personal event:', eventToSaveLocally);
-      
+
       // Show auth modal to prompt user to sign in
       if (setShowAuthModal) {
         setShowAuthModal(true, 'save_event');
       }
-      
+
       // Keep the dialog open so user can see their event
       return;
     }
-    
-    // Personal events don't require a selected profile - they can be saved directly
-    // Only school events require a selected profile for school_id association
-    
+
     setSavingEvent(true);
     try {
-      console.log('--- DEBUG: handleSaveEvent called ---');
-      console.log('Current extractedEvents:', extractedEvents);
-      console.log('Current newEvent:', newEvent);
-      console.log('Passed eventData:', eventData);
-      
       // Convert year groups to database format - just use what's selected in UI
       const yearGroups = dataToSave.yearGroup ? dataToSave.yearGroup.split(',').map((yg: string) => yg.trim()).filter(Boolean) : [];
       const yearGroupData = convertYearGroupsToDatabase(yearGroups);
-      
+
       // Validate event type - if trying to save school event but no profile selected, convert to personal
       let finalEventType = dataToSave.event_type as 'school' | 'personal';
 
@@ -535,7 +461,6 @@ export function useEventManagement(showAuthModal?: boolean, setShowAuthModal?: (
       const hasSchoolId = dataToSave.school_id;
 
       if (finalEventType === 'school' && !selectedProfile && !isExtractedEvent && !hasSchoolId) {
-        console.log('handleSaveEvent: Converting manually created school event to personal event because no child profile is selected');
         finalEventType = 'personal';
         toast({
           title: 'Event saved as personal',
@@ -543,35 +468,28 @@ export function useEventManagement(showAuthModal?: boolean, setShowAuthModal?: (
           variant: 'default'
         });
       }
-      
+
       const eventToSave = {
         ...dataToSave,
         event_type: finalEventType,
-        school_id: finalEventType === 'school' ? selectedProfile?.schoolId : null, // Only set school_id for school events
-        created_by_user_id: user.id, // Always set to current user ID, regardless of what was in dataToSave
-        ...yearGroupData, // This includes both year_group and year_groups
+        school_id: finalEventType === 'school' ? selectedProfile?.schoolId : null,
+        created_by_user_id: user.id,
+        ...yearGroupData,
         todos: dataToSave.todos?.map((todo: any) => ({
           ...todo,
           created_by_user_id: user.id,
           todo_type: finalEventType
         })) || []
       };
-      console.log('Event to save with todos:', eventToSave);
-      console.log('handleSaveEvent: user.id:', user.id);
-      console.log('handleSaveEvent: eventToSave.created_by_user_id:', eventToSave.created_by_user_id);
       await eventMutation.mutateAsync(eventToSave);
 
-      // Check if this was an extracted event being saved
       if (extractedEvents.length > 0) {
-        // This was an extracted event, so we don't clear the array or close the dialog
-        // The EventDialog component will handle removing the specific event from the array
-        console.log('Saved extracted event, keeping dialog open for remaining events');
+        // Extracted event saved — dialog stays open for remaining events
       } else {
-        // This was a manually added event, so clear everything and close dialog
+        // Manually added event — clear and close
         setExtractedEvents([]);
         setCurrentExtractedEventIndex(0);
-        
-        // Reset newEvent after successful save
+
         setNewEvent({
           title: '',
           date: '',
@@ -586,8 +504,6 @@ export function useEventManagement(showAuthModal?: boolean, setShowAuthModal?: (
           created_by_user_id: user?.id || null,
           school_id: selectedProfile?.schoolId || null
         });
-        
-        // The dialog will close automatically via the mutation's onSuccess callback
       }
     } finally {
       setSavingEvent(false);
@@ -604,10 +520,10 @@ export function useEventManagement(showAuthModal?: boolean, setShowAuthModal?: (
 
     // Get year groups from database format (handles both old and new fields)
     const yearGroups = getYearGroupsFromDatabase(
-      typeof event.yearGroup === 'string' ? event.yearGroup : undefined, 
+      typeof event.yearGroup === 'string' ? event.yearGroup : undefined,
       event.yearGroups
     );
-    
+
     // For the MultiSelect component, join the year groups with commas
     const yearGroupString = yearGroups.join(',');
 
@@ -670,16 +586,6 @@ export function useEventManagement(showAuthModal?: boolean, setShowAuthModal?: (
       school_id: selectedProfile?.schoolId || null
     });
     setShowEventDialog(true);
-  };
-
-  // Debug: log when setNewEvent or setShowEventDialog are called
-  const debugSetNewEvent = (event: any) => {
-    console.log('setNewEvent called with:', event);
-    setNewEvent(event);
-  };
-  const debugSetShowEventDialog = (open: boolean) => {
-    console.log('setShowEventDialog called with:', open);
-    setShowEventDialog(open);
   };
 
   const handleDeleteEvent = async (event: Event) => {

@@ -40,7 +40,6 @@ async function ensureIndex() {
       },
     },
   });
-  console.log('Created Elastic index:', INDEX);
 }
 
 // ─── Index a single event ─────────────────────────────────────────────────────
@@ -159,7 +158,6 @@ async function bulkIndex(events) {
 
   const result = await es.bulk({ operations });
   const errors = result.items.filter(i => i.index?.error);
-  console.log(`Bulk indexed ${events.length} events, ${errors.length} errors`);
   return { total: events.length, errors: errors.length };
 }
 

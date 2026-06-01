@@ -105,12 +105,9 @@ export function StickyFooter({ currentValue, isPostGrade8, grade, learnerId }: S
           top: Math.max(0, targetPosition),
           behavior: 'smooth'
         });
-        
-        console.log(`🎯 Scrolled to ${sectionValue} section:`, targetElement);
       } else {
         // Fallback: scroll to a reasonable position from top (not absolute top)
         window.scrollTo({ top: 120, behavior: 'smooth' });
-        console.log(`⚠️ No specific section found for ${sectionValue}, using fallback scroll`);
       }
     }, delay);
   };

@@ -41,7 +41,6 @@ export function AuthModal({ open, onOpenChange, onSuccess, customMessage }: Auth
       const currentOrigin = window.location.origin;
       localStorage.setItem('authReturnTo', currentPath);
       localStorage.setItem('authOrigin', currentOrigin);
-      console.log('🔍 AuthModal: Stored auth data:', { currentPath, currentOrigin });
     }
   }, [open]);
 
@@ -164,13 +163,6 @@ export function AuthModal({ open, onOpenChange, onSuccess, customMessage }: Auth
       document.cookie = `authReturnTo=${encodeURIComponent(currentPath)}; path=/; domain=${domain}; max-age=600; SameSite=Lax`;
 
       const redirectUrl = `${window.location.origin}/auth/callback`;
-
-      console.log('🔍 AuthModal Google OAuth: Stored auth data in multiple places:', {
-        currentPath,
-        currentOrigin,
-        cookieDomain: domain,
-        redirectUrl: redirectUrl
-      });
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",

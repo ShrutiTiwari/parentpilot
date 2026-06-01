@@ -61,7 +61,6 @@ export class PublicSharingService {
       });
 
       // 2. Get scale practice data using joint query (all time for sharing)
-      console.log('🔍 PublicSharingService: Fetching scale practice data for learner:', learner.id);
       
       const { data: scalePracticeData, error: scaleError } = await supabase
         .from('scale_practice_daily')
@@ -83,12 +82,6 @@ export class PublicSharingService {
       if (scaleError) {
         console.error('Error fetching scale practice data:', scaleError);
       }
-      
-      console.log('🔍 PublicSharingService: Scale practice data result:', {
-        scalePracticeData: scalePracticeData?.length || 0,
-        sampleRecord: scalePracticeData?.[0],
-        hasAbrsmScales: scalePracticeData?.[0]?.abrsm_scales
-      });
 
       // Convert scale practice data to PracticeData format with scale details
       const scaleDataByScale: Record<number, Record<string, boolean>> = {};
@@ -102,20 +95,12 @@ export class PublicSharingService {
           scaleDataByScale[scaleId] = {};
           // Store scale details for this scale ID
           if (record.abrsm_scales) {
-            console.log(`🔍 PublicSharingService: Found abrsm_scales for scale ${scaleId}:`, {
-              rawData: record.abrsm_scales,
-              isArray: Array.isArray(record.abrsm_scales),
-              arrayLength: Array.isArray(record.abrsm_scales) ? record.abrsm_scales.length : 'N/A'
-            });
             
             const scale = Array.isArray(record.abrsm_scales) 
               ? record.abrsm_scales[0] 
               : record.abrsm_scales;
             scaleDetails[scaleId] = scale;
-            
-            console.log(`🔍 PublicSharingService: Extracted scale details for ${scaleId}:`, scale);
           } else {
-            console.log(`🔍 PublicSharingService: No abrsm_scales found for scale ${scaleId}`);
           }
         }
         
@@ -126,15 +111,6 @@ export class PublicSharingService {
       Object.entries(scaleDataByScale).forEach(([scaleId, days]) => {
         const practiceKey = `scale_${scaleId}`;
         const scaleDetail = scaleDetails[parseInt(scaleId)];
-        
-        console.log(`🔍 PublicSharingService: Processing scale ${scaleId}:`, {
-          practiceKey,
-          scaleDetail,
-          hasScaleDetails: !!scaleDetail,
-          scaleName: scaleDetail?.scale_name,
-          category: scaleDetail?.category,
-          grade: scaleDetail?.grade
-        });
         
         practiceData[practiceKey] = {
           days,
@@ -149,12 +125,6 @@ export class PublicSharingService {
       });
 
       // Debug: Log final practiceData structure
-      console.log('🔍 PublicSharingService: Final practiceData structure:', {
-        totalEntries: Object.keys(practiceData).length,
-        scaleEntries: Object.keys(practiceData).filter(key => key.startsWith('scale_')).length,
-        sampleScaleEntry: Object.entries(practiceData).find(([key]) => key.startsWith('scale_')),
-        allScaleKeys: Object.keys(practiceData).filter(key => key.startsWith('scale_'))
-      });
       
       // Calculate stats
       const stats = this.calculatePracticeStats(practiceData);

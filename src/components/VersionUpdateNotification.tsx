@@ -29,10 +29,6 @@ export function VersionUpdateNotification({
 
     // Subscribe to version changes
     const unsubscribe = versionChecker.onVersionChange((newVer, oldVer) => {
-      console.log('📦 Version update detected in component:', {
-        old: oldVer.version,
-        new: newVer.version
-      });
 
       setNewVersion(newVer);
       setOldVersion(oldVer);

@@ -39,17 +39,12 @@ export default function Auth() {
     // Store returnTo parameter in localStorage for OAuth flows
     const urlParams = new URLSearchParams(window.location.search);
     const returnTo = urlParams.get('returnTo');
-    console.log('🔍 AUTH.TSX USEEFFECT START - URL:', window.location.href);
-    console.log('🔍 AUTH.TSX: returnTo from URL params:', returnTo);
-    console.log('🔍 AUTH.TSX: Current localStorage authReturnTo:', localStorage.getItem('authReturnTo'));
 
     // ALWAYS store the current origin (subdomain info) for OAuth flows
     const currentOrigin = window.location.origin;
     localStorage.setItem('authOrigin', currentOrigin);
-    console.log('🔍 AUTH.TSX: Stored origin:', currentOrigin);
 
     if (returnTo) {
-      console.log('🔍 AUTH.TSX: ✅ PROCESSING returnTo:', returnTo);
 
       // Smart storage: Clean URLs to valid routes
       let urlToStore = returnTo;
@@ -64,12 +59,8 @@ export default function Auth() {
           urlToStore = '/music';
         }
       }
-
-      console.log('🔍 AUTH.TSX: ✅ STORING cleaned returnTo in localStorage:', urlToStore);
       localStorage.setItem('authReturnTo', urlToStore);
-      console.log('🔍 AUTH.TSX: ✅ STORED! Verification read:', localStorage.getItem('authReturnTo'));
     } else {
-      console.log('🔍 AUTH.TSX: ❌ No returnTo in URL params');
     }
 
     // Check if there's an active session
@@ -94,11 +85,8 @@ export default function Auth() {
         const returnTo = urlParams.get('returnTo') || cookieReturnTo || storedReturnTo || '/events';
         const targetOrigin = cookieOrigin || storedOrigin;
 
-        console.log('🔍 Auth.tsx existing session redirect:', { returnTo, targetOrigin, currentOrigin: window.location.origin });
-
         // If target origin differs from current, do full page redirect
         if (targetOrigin && targetOrigin !== window.location.origin) {
-          console.log('🔍 Auth.tsx: Redirecting to different origin:', `${targetOrigin}${returnTo}`);
           window.location.href = `${targetOrigin}${returnTo}`;
         } else {
           navigate(returnTo);
@@ -113,7 +101,6 @@ export default function Auth() {
         if (session) {
           // Don't navigate if we're on the callback page - let callback handle it
           if (window.location.pathname === '/auth/callback') {
-            console.log('🔍 Auth.tsx: Skipping navigation - callback will handle it');
             return;
           }
 
@@ -128,15 +115,7 @@ export default function Auth() {
           const storedOrigin = localStorage.getItem('authOrigin');
           const returnTo = urlParams.get('returnTo') || storedReturnTo || '/events';
 
-          console.log('🔍 Auth.tsx auth state change redirect:', {
-            fromUrl: urlParams.get('returnTo'),
-            fromStorage: storedReturnTo,
-            storedOrigin: storedOrigin,
-            finalReturnTo: returnTo,
-            currentPath: window.location.pathname,
-            currentOrigin: window.location.origin
-          });
-
+          
           // Only clean up if we're using it from URL (email login)
           // For OAuth, let the callback handle cleanup
           if (urlParams.get('returnTo')) {
@@ -147,7 +126,6 @@ export default function Auth() {
           // If we have a stored origin different from current, do a full page redirect
           if (storedOrigin && storedOrigin !== window.location.origin) {
             const fullUrl = `${storedOrigin}${returnTo}`;
-            console.log('🔍 Auth.tsx: Redirecting to different origin:', fullUrl);
             window.location.href = fullUrl;
           } else {
             navigate(returnTo);
@@ -276,18 +254,11 @@ export default function Auth() {
       const returnTo = urlParams.get('returnTo');
       const storedReturnTo = localStorage.getItem('authReturnTo');
 
-      console.log('🔍 GOOGLE SIGNIN START');
-      console.log('🔍 GOOGLE: returnTo from URL:', returnTo);
-      console.log('🔍 GOOGLE: returnTo from localStorage:', storedReturnTo);
-      console.log('🔍 GOOGLE: Will use for callback:', returnTo || storedReturnTo);
-
       // Include returnTo in the callback URL if it exists and is not null
       const finalReturnTo = returnTo || storedReturnTo;
       const callbackUrl = finalReturnTo && finalReturnTo !== 'null'
         ? `${window.location.origin}/auth/callback?returnTo=${encodeURIComponent(finalReturnTo)}`
         : `${window.location.origin}/auth/callback`;
-
-      console.log('🔍 GOOGLE OAuth redirectTo:', callbackUrl);
       
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",

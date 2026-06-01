@@ -40,8 +40,6 @@ export class SharingService {
         return { success: false, error: 'User not authenticated' };
       }
 
-      console.log('Attempting to use edge function for share code:', shareCode);
-
       // Try edge function first
       try {
         const { data, error } = await supabase.functions.invoke('claim-share-code', {
@@ -50,8 +48,6 @@ export class SharingService {
             Authorization: `Bearer ${session.access_token}`,
           },
         });
-
-        console.log('Edge function response:', { data, error });
 
         if (!error && data && !data.error) {
           return { 
@@ -81,8 +77,6 @@ export class SharingService {
     if (!user) {
       return { success: false, error: 'User not authenticated' };
     }
-
-    console.log('Using direct database approach for share code:', shareCode);
 
     // Find the share code
     const { data: shareData, error: fetchError } = await supabase
@@ -165,16 +159,12 @@ export class SharingService {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
 
-      console.log('Fetching pending requests for user:', user.id);
-
       // Use simple query since joins don't work due to missing foreign keys
       const { data, error } = await supabase
         .from('learner_access')
         .select('id, learner_id, shared_resource, created_at, user_id, granted_by')
         .eq('granted_by', user.id)
         .eq('status', 'pending');
-      
-      console.log('Raw pending requests data:', { data, error });
       
       if (error) {
         console.error('Error fetching pending requests:', error);
@@ -184,16 +174,8 @@ export class SharingService {
       // Filter to only show requests where someone else has claimed the code
       const claimedRequests = data?.filter(item => {
         const isClaimedByOther = item.user_id !== item.granted_by;
-        console.log('Filtering item:', { 
-          id: item.id, 
-          user_id: item.user_id, 
-          granted_by: item.granted_by, 
-          isClaimedByOther 
-        });
-        return isClaimedByOther;
+                return isClaimedByOther;
       }) || [];
-      
-      console.log('Filtered claimed requests:', claimedRequests);
 
       // Use edge function to get student and user details (bypasses RLS)
       try {
@@ -214,8 +196,6 @@ export class SharingService {
             },
           });
 
-          console.log('Edge function result for requests:', { detailsResult, detailsError });
-
           if (!detailsError && detailsResult?.success) {
             const { students, profiles } = detailsResult.data;
             
@@ -233,8 +213,6 @@ export class SharingService {
                 created_at: item.created_at
               };
             });
-
-            console.log('Enriched requests with real data:', enrichedRequests);
             return enrichedRequests;
           }
         }
@@ -252,8 +230,6 @@ export class SharingService {
         shared_resource: item.shared_resource,
         created_at: item.created_at
       }));
-
-      console.log('Enriched requests (fallback mode):', enrichedRequests);
       return enrichedRequests;
     } catch (error) {
       console.error('Error in getPendingRequests:', error);
@@ -285,16 +261,12 @@ export class SharingService {
         return { success: false, error: 'User not authenticated' };
       }
 
-      console.log('Calling edge function to process share request:', { requestId, action });
-
       const { data, error } = await supabase.functions.invoke('approve-share-request', {
         body: { requestId, action },
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
       });
-
-      console.log('Edge function response:', { data, error });
 
       if (error) {
         console.error('Edge function error:', error);
@@ -324,18 +296,14 @@ export class SharingService {
    * @param userId - The ID of the user to fetch learners for (if not provided, uses current user)
    */
   static async getSharedStudentsForUser(userId?: string): Promise<any[]> {
-    console.log('🔍 LEARNER_ACCESS_DEBUG: getSharedStudentsForUser called with userId:', userId);
     try {
       // If no userId provided, get current user
       let targetUserId = userId;
       if (!targetUserId) {
         const { data: { user } } = await supabase.auth.getUser();
-        console.log('🔍 LEARNER_ACCESS_DEBUG: Current user from auth:', user?.id);
         if (!user) return [];
         targetUserId = user.id;
       }
-
-      console.log('🔍 LEARNER_ACCESS_DEBUG: Fetching shared students for user:', targetUserId);
 
       const { data, error } = await supabase
         .from('learner_access')
@@ -344,20 +312,13 @@ export class SharingService {
         .eq('status', 'active')
         .order('created_at', { ascending: true }); 
 
-      console.log('🔍 LEARNER_ACCESS_DEBUG: Learner_access query result:', {
-        recordsFound: data?.length,
-        learnerIds: data?.map(r => r.learner_id),
-        error: error?.message,
-        userSearchingFor: targetUserId
-      });
-
+      
       if (error) {
         console.error('🔍 LEARNER_ACCESS_DEBUG: ❌ Error fetching shared students:', error);
         return [];
       }
 
       if (!data || data.length === 0) {
-        console.log('🔍 LEARNER_ACCESS_DEBUG: ❌ No learner_access records found for user');
         return [];
       }
 
@@ -377,8 +338,6 @@ export class SharingService {
               Authorization: `Bearer ${session.access_token}`,
             },
           });
-
-          console.log('Edge function result for students:', { detailsResult, detailsError });
 
           if (!detailsError && detailsResult?.success) {
             const studentDetails = detailsResult.data.students;
@@ -401,8 +360,6 @@ export class SharingService {
                 id: accessRecord.learner_id
               };
             });
-
-            console.log('Enriched students with real data:', enrichedStudents);
             return enrichedStudents;
           }
         }
@@ -418,8 +375,6 @@ export class SharingService {
         current_grade: DEFAULT_GRADE,
         id: accessRecord.learner_id
       }));
-
-      console.log('Enriched students (fallback mode):', enrichedStudents);
       return enrichedStudents;
     } catch (error) {
       console.error('Error in getSharedStudentsForUser:', error);
@@ -492,7 +447,6 @@ export class SharingService {
             });
 
           if (!error) {
-            console.log('Created owner access for:', student.name);
             created++;
           }
         } else if (existingAccess.status !== 'active') {
@@ -503,7 +457,6 @@ export class SharingService {
             .eq('id', existingAccess.id);
 
           if (!error) {
-            console.log('Fixed owner access status for:', student.name);
             updated++;
           }
         }
@@ -528,8 +481,6 @@ export class SharingService {
         return { success: false, error: 'User not authenticated' };
       }
 
-      console.log('🔍 Attempting user search with edge function:', searchCriteria);
-
       // Try edge function first (bypasses RLS)
       try {
         const { data, error } = await supabase.functions.invoke('search-users', {
@@ -544,8 +495,6 @@ export class SharingService {
             Authorization: `Bearer ${session.access_token}`,
           },
         });
-
-        console.log('🔍 Edge function response:', { data, error });
 
         if (!error && data && !data.error) {
           return { 
@@ -576,8 +525,6 @@ export class SharingService {
   ): Promise<{ success: boolean; users?: any[]; error?: string }> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { success: false, error: 'User not authenticated' };
-
-    console.log('🔍 Using direct database fallback (likely to fail due to RLS)');
 
     // This will likely return empty due to RLS, but helps with debugging
     const { data: profiles, error: searchError } = await supabase
@@ -772,15 +719,11 @@ export class SharingService {
    * NEW: Get accepted connections for current user
    */
   static async getMyConnections(learnerId?: string): Promise<any[]> {
-    console.log('🚀 NEW getMyConnections method called - version 2.0');
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        console.log('No user found for getMyConnections');
         return [];
       }
-
-      console.log('Fetching connections for user:', user.id);
 
       // Get accepted connections directly from database
       const { data: connections, error } = await supabase
@@ -795,8 +738,6 @@ export class SharingService {
         return [];
       }
 
-      console.log('Raw connections from DB:', connections);
-
       if (!connections || connections.length === 0) {
         return [];
       }
@@ -807,11 +748,8 @@ export class SharingService {
         ...connections.map(conn => conn.recipient_id)
       ])];
 
-      console.log('Fetching profiles for user IDs:', userIds);
-
       // Use the reusable profile fetching utility
       const profileMap = await this.getUserProfiles(userIds);
-      console.log('Profile map received:', profileMap);
 
       // Get primary teacher information
       const primaryTeacherMap = {};
@@ -823,8 +761,6 @@ export class SharingService {
           .select('user_id, learner_id, is_primary_teacher')
           .eq('learner_id', learnerId)
           .eq('status', 'active');
-
-        console.log('Primary teacher access data for learner:', learnerId, { learnerAccess, accessError });
 
         // Create a map of teacher_id (user_id) -> is_primary_teacher for quick lookup
         if (learnerAccess) {
@@ -839,8 +775,6 @@ export class SharingService {
           .select('id')
           .eq('created_by_user_id', user.id);
 
-        console.log('Current user learners:', { userLearners, learnersError });
-
         if (userLearners && userLearners.length > 0) {
           const learnerIds = userLearners.map(learner => learner.id);
 
@@ -849,8 +783,6 @@ export class SharingService {
             .select('user_id, learner_id, is_primary_teacher')
             .in('learner_id', learnerIds)
             .eq('is_primary_teacher', true);
-
-          console.log('Primary teacher access data:', { learnerAccess, accessError });
 
           if (learnerAccess) {
             learnerAccess.forEach(access => {
@@ -884,8 +816,6 @@ export class SharingService {
           is_primary_teacher: primaryTeacherMap[otherPersonId] || false
         };
       });
-
-      console.log('Formatted connections:', formattedConnections);
       return formattedConnections;
     } catch (error) {
       console.error('Error in getMyConnections:', error);

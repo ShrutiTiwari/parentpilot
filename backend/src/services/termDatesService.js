@@ -33,8 +33,6 @@ class TermDatesService {
    * @returns {Promise<Object>} Extraction result with events and raw data
    */
   async extractTermDates({ termDatesPageUrl, schoolName }) {
-    console.log('Extracting term dates from:', termDatesPageUrl);
-    console.log('School:', schoolName);
 
     if (!termDatesPageUrl) {
       throw new Error('Term dates page URL is required');
@@ -42,7 +40,6 @@ class TermDatesService {
 
     try {
       // Step 1: Fetch the term dates page HTML
-      console.log('Fetching term dates page HTML...');
       const pageResponse = await fetch(termDatesPageUrl);
 
       if (!pageResponse.ok) {
@@ -50,7 +47,6 @@ class TermDatesService {
       }
 
       const html = await pageResponse.text();
-      console.log(`Fetched ${html.length} characters of HTML from term dates page`);
 
       // Use cheerio to extract clean text content for better AI parsing
       const cheerio = require('cheerio');
@@ -68,19 +64,12 @@ class TermDatesService {
         .replace(/\n+/g, '\n')
         .trim();
 
-      console.log('Cleaned text content (first 500 chars):');
-      console.log(cleanedText.substring(0, 500));
-
       // Step 2: Use AI to extract term dates
       const extractedEvents = await this._extractEventsWithAI(cleanedText, termDatesPageUrl);
 
-      console.log(`Extracted ${extractedEvents.length} events`);
-
       // Log first few events for debugging
       if (extractedEvents.length > 0) {
-        console.log('First 3 events extracted:');
         extractedEvents.slice(0, 3).forEach((event, idx) => {
-          console.log(`  ${idx + 1}. ${event.title} - ${event.date} (${event.category})`);
         });
       }
 
@@ -118,8 +107,6 @@ class TermDatesService {
     } else {
       throw new Error('AI service is not available. Please check API key configuration.');
     }
-
-    console.log(`Using ${aiService} to extract term dates`);
 
     const systemPrompt = `You are a data extraction specialist for UK school term dates.
 
@@ -196,7 +183,6 @@ Return ONLY valid JSON, no other text.`;
       }
 
       let rawContent = content.text.trim();
-      console.log('Raw AI response (first 500 chars):', rawContent.substring(0, 500));
 
       // Try multiple strategies to extract JSON
       let parsedResponse = null;
@@ -210,7 +196,6 @@ Return ONLY valid JSON, no other text.`;
       try {
         parsedResponse = JSON.parse(rawContent);
       } catch (e) {
-        console.log('Direct JSON parse failed, trying to extract JSON from text...');
 
         // Strategy 3: Extract JSON object from text
         const jsonMatch = rawContent.match(/\{[\s\S]*\}/);

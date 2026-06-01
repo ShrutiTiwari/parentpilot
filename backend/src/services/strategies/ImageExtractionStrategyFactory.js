@@ -31,7 +31,6 @@ class ImageExtractionStrategyFactory {
           throw new Error('ANTHROPIC_API_KEY environment variable is required for Claude strategy');
         }
         strategyInstance = new ClaudeImageExtractionStrategy(claudeApiKey, this.temperature);
-        console.log('=== STRATEGY FACTORY: Using Claude strategy ===');
         break;
         
       case 'openai':
@@ -41,7 +40,6 @@ class ImageExtractionStrategyFactory {
           throw new Error('OPENAI_API_KEY environment variable is required for OpenAI strategy');
         }
         strategyInstance = new OpenAIImageExtractionStrategy(openaiApiKey, this.temperature);
-        console.log('=== STRATEGY FACTORY: Using OpenAI strategy ===');
         break;
     }
 

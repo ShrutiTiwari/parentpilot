@@ -25,7 +25,6 @@ export function SchoolsManagement() {
 
   const handleWizardComplete = (createdSchool: CreatedSchool | null) => {
     if (createdSchool) {
-      console.log('School created successfully:', createdSchool);
       // Reset form
       setSchoolData({
         schoolName: '',

@@ -183,7 +183,6 @@ export function ManageProfilesDialog({ open, onOpenChange, showAuthModal, setSho
   // Restore form data after authentication
   useEffect(() => {
     if (user && pendingProfileFormData && !editingProfile) {
-      console.log('Restoring form data after authentication:', pendingProfileFormData);
       setEditingProfile(pendingProfileFormData.editingProfile);
       setSelectedCountry(pendingProfileFormData.selectedCountry);
       setSelectedCity(pendingProfileFormData.selectedCity);

@@ -19,16 +19,12 @@ export function SchoolCodeEntry({ open, onOpenChange, onSuccess }: SchoolCodeEnt
   const { toast } = useToast();
   const { refreshAuthorizations } = useSchoolAuthorizations();
 
-  console.log('SchoolCodeEntry rendered with open:', open);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    console.log('Submitting school code:', schoolCode);
 
     try {
       const { isNew } = await schoolAuthorizationService.validateAndAuthorize(schoolCode);
-      console.log('School code validation result:', isNew ? 'New access granted' : 'Already had access');
       
       // Always refresh authorizations
       await refreshAuthorizations();
@@ -56,7 +52,6 @@ export function SchoolCodeEntry({ open, onOpenChange, onSuccess }: SchoolCodeEnt
     <Dialog 
       open={open} 
       onOpenChange={(newOpen) => {
-        console.log('Dialog onOpenChange:', newOpen);
         onOpenChange(newOpen);
       }}
     >
@@ -79,7 +74,6 @@ export function SchoolCodeEntry({ open, onOpenChange, onSuccess }: SchoolCodeEnt
           </div>
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => {
-              console.log('Cancel button clicked');
               onOpenChange(false);
             }}>
               Cancel

@@ -11,7 +11,6 @@ export const testBackendConnection = async () => {
       throw new Error('Backend health check failed');
     }
     const data = await response.json();
-    console.log('Backend connection successful:', data);
     return data;
   } catch (error) {
     console.error('Backend connection failed:', error);

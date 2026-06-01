@@ -80,7 +80,6 @@ export class DatabaseDataService implements IDataService {
           created_by_user_id: todo.created_by_user_id || event.created_by_user_id || null,
           todo_type: event.event_type || 'school',
         }));
-        console.log('Inserting todos:', todosToInsert);
         const { error: todosError } = await supabase
           .from('todos')
           .insert(todosToInsert);
@@ -164,14 +163,12 @@ export class DatabaseDataService implements IDataService {
         // Delete removed todos
         const toDelete = existingIds.filter(id => !incomingIds.includes(id));
         if (toDelete.length > 0) {
-          console.log('Deleting todos:', toDelete);
           await supabase.from('todos').delete().in('id', toDelete);
         }
         // Upsert (insert or update) todos
         for (const todo of event.todos) {
           if (todo.id && existingIds.includes(todo.id)) {
             // Update
-            console.log('Updating todo:', todo);
             const { error: updateError } = await supabase.from('todos').update({
               text: todo.text,
               completed: todo.completed,
@@ -190,7 +187,6 @@ export class DatabaseDataService implements IDataService {
               created_by_user_id: todo.created_by_user_id || event.created_by_user_id || null,
               todo_type: event.event_type || 'school',
             };
-            console.log('Inserting new todo:', todoToInsert);
             const { error: insertError } = await supabase.from('todos').insert(todoToInsert);
             if (insertError) {
               console.error('Todo insert error:', insertError);

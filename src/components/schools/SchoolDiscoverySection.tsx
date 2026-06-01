@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Search, School, Users, Calendar, ChevronRight, Sparkles, TrendingUp, MapPin, CheckCircle } from 'lucide-react';
+import { Search, School, Users, ChevronRight, Sparkles, TrendingUp, MapPin, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { childProfileService } from '@/services/childProfileService';
 
 interface School {
   id: string;
@@ -113,30 +113,12 @@ const mockPopularSchools: School[] = [
   }
 ];
 
-const mockUpcomingEvents = [
-  { title: 'Sports Day', date: 'June 15', daysAway: 3 },
-  { title: 'Summer Concert', date: 'July 10', daysAway: 28 },
-  { title: 'Term Ends', date: 'July 21', daysAway: 39 }
-];
 
 export function SchoolDiscoverySection({ onSignUp, onSignIn, className }: SchoolDiscoverySectionProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResult, setSearchResult] = useState<School | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
-  const [totalFamilies, setTotalFamilies] = useState(10234);
-  const [todayJoined, setTodayJoined] = useState(47);
-
-  // Simulate live counter
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTotalFamilies(prev => prev + Math.floor(Math.random() * 3));
-      if (Math.random() > 0.7) {
-        setTodayJoined(prev => prev + 1);
-      }
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -144,28 +126,43 @@ export function SchoolDiscoverySection({ onSignUp, onSignIn, className }: School
     setIsSearching(true);
     setHasSearched(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      // Check if search matches any mock school
-      const found = mockPopularSchools.find(school =>
-        school.name.toLowerCase().includes(searchQuery.toLowerCase())
+    try {
+      const schools = await childProfileService.getSchools();
+      const found = schools.find(s =>
+        s.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
 
       if (found) {
-        setSearchResult(found);
+        setSearchResult({
+          id: found.id,
+          name: found.name,
+          location: [found.city, found.country].filter(Boolean).join(', ') || 'Your area',
+          userCount: 0,
+          isIntegrated: true,
+          hasPublicEvents: true,
+        });
       } else {
-        // Create a "not found" school
         setSearchResult({
           id: 'new',
           name: searchQuery,
           location: 'Your area',
           userCount: 0,
           isIntegrated: false,
-          hasPublicEvents: false
+          hasPublicEvents: false,
         });
       }
+    } catch {
+      setSearchResult({
+        id: 'new',
+        name: searchQuery,
+        location: 'Your area',
+        userCount: 0,
+        isIntegrated: false,
+        hasPublicEvents: false,
+      });
+    } finally {
       setIsSearching(false);
-    }, 800);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -243,21 +240,6 @@ export function SchoolDiscoverySection({ onSignUp, onSignIn, className }: School
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 flex-shrink-0" />
                             <span>{searchResult.recentActivity?.eventsThisMonth} school events this month</span>
-                          </div>
-                        </div>
-
-                        {/* Upcoming Events Preview */}
-                        <div className="mt-4 p-3 bg-white rounded-lg">
-                          <p className="text-xs sm:text-sm font-medium text-gray-700 mb-2">Upcoming at {searchResult.name}:</p>
-                          <div className="space-y-1">
-                            {mockUpcomingEvents.map((event, index) => (
-                              <div key={index} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-xs sm:text-sm">
-                                <span className="text-gray-600">• {event.title}</span>
-                                <Badge variant="secondary" className="text-xs self-start sm:self-auto">
-                                  {event.daysAway === 0 ? 'Today' : `In ${event.daysAway} days`}
-                                </Badge>
-                              </div>
-                            ))}
                           </div>
                         </div>
 
@@ -344,21 +326,6 @@ export function SchoolDiscoverySection({ onSignUp, onSignIn, className }: School
             </div>
           )}
 
-          {/* Live Statistics */}
-          <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-            <div className="text-center">
-              <div className="text-xl sm:text-2xl font-bold text-blue-600">
-                {totalFamilies.toLocaleString()}+
-              </div>
-              <div className="text-xs sm:text-sm text-gray-600">Families organized</div>
-            </div>
-            <div className="text-center">
-              <div className="text-xl sm:text-2xl font-bold text-green-600">
-                {todayJoined}
-              </div>
-              <div className="text-xs sm:text-sm text-gray-600">Joined today</div>
-            </div>
-          </div>
         </CardContent>
       </Card>
 

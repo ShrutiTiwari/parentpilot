@@ -13,36 +13,18 @@ class OpenAIImageExtractionStrategy extends ImageExtractionStrategy {
     // For OpenAI, we can also use config but default to gpt-4o for now
     this.model = process.env.OPENAI_MODEL || 'gpt-4o';
     this.temperature = typeof temperature !== 'undefined' ? temperature : OPENAI_CONFIG.TEMPERATURE.DEFAULT;
-
-    console.log('OpenAI Strategy initialized with:', {
-      model: this.model,
-      temperature: this.temperature
-    });
   }
 
   async extractEventsFromImage(prompt, fileBuffer, sourceFilename, mimeType = 'image/jpeg') {
-    console.log('=== OpenAI STRATEGY: Starting file extraction ===');
-    console.log('Parameters received:', {
-      promptLength: prompt.length,
-      bufferSize: fileBuffer.length,
-      sourceFilename,
-      mimeType
-    });
 
     if (mimeType === 'application/pdf') {
       return await this.extractDataFromPDF(prompt, fileBuffer, sourceFilename);
     }
 
     // Handle images
-    console.log('=== OpenAI STRATEGY: Processing image file ===');
     const imageBase64 = fileBuffer.toString('base64');
-    console.log('Image converted to base64, length:', imageBase64.length);
 
     try {
-      console.log('=== OpenAI STRATEGY: Making OpenAI API request ===');
-      console.log('OpenAI API Key present:', !!process.env.OPENAI_API_KEY);
-      console.log('Model being used:', this.model);
-      console.log('OpenAI temperature setting:', this.temperature);
 
       const response = await this.openai.chat.completions.create({
         model: this.model,
@@ -59,13 +41,6 @@ class OpenAIImageExtractionStrategy extends ImageExtractionStrategy {
         max_tokens: 1000,
         temperature: this.temperature,
         response_format: { type: "json_object" }
-      });
-
-      console.log('=== OpenAI STRATEGY: OpenAI API response received ===');
-      console.log('Response structure:', {
-        hasChoices: !!response.choices,
-        choicesLength: response.choices?.length,
-        hasUsage: !!response.usage
       });
 
       const choice = response.choices?.[0]?.message;
@@ -87,29 +62,21 @@ class OpenAIImageExtractionStrategy extends ImageExtractionStrategy {
         }
         throw new Error('No response received from the AI service. Please try again in a few moments.');
       }
-
-      console.log('=== OpenAI STRATEGY: Processing OpenAI response ===');
       let rawContent = response.choices[0].message.content.trim();
-      console.log('Raw content length:', rawContent.length);
-      console.log('Raw content preview:', rawContent.substring(0, 200) + '...');
       // Log the full raw content for debugging
-      console.log('Raw content FULL:', rawContent);
 
       // If wrapped in markdown code block, strip it
       if (rawContent.startsWith("```json") || rawContent.startsWith("```")) {
         rawContent = rawContent.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
-        console.log('Stripped markdown formatting');
       }
 
       try {
-        console.log('=== OpenAI STRATEGY: Parsing JSON response ===');
         let result = JSON.parse(rawContent);
         // If result is not an array, wrap it in an array and log a warning
         if (!Array.isArray(result)) {
           console.warn('Model output was not an array. Wrapping in array.');
           result = [result];
         }
-        console.log('Successfully parsed JSON result:', result);
         // Ensure each event has todos array (optional: add your todos logic here)
         return result;
       } catch (parseError) {
@@ -145,26 +112,17 @@ class OpenAIImageExtractionStrategy extends ImageExtractionStrategy {
   }
 
   async extractDataFromPDF(prompt, pdfBuffer, sourceFilename) {
-    console.log('=== OpenAI STRATEGY: Starting PDF extraction ===');
-    console.log('Parameters received:', {
-      promptLength: prompt.length,
-      bufferSize: pdfBuffer.length,
-      sourceFilename
-    });
     const fileSizeMB = pdfBuffer.length / (1024 * 1024);
-    console.log('PDF file size:', fileSizeMB.toFixed(2), 'MB');
     const maxFileSizeMB = 50;
     if (fileSizeMB > maxFileSizeMB) {
       throw new Error(`PDF file is too large (${fileSizeMB.toFixed(1)}MB). Please use a smaller PDF file (under ${maxFileSizeMB}MB) or convert it to images first.`);
     }
     let file;
     try {
-      console.log('=== OpenAI STRATEGY: Making OpenAI API request for PDF ===');
       file = await this.openai.files.create({
         file: Buffer.from(pdfBuffer),
         purpose: 'user_data'
       });
-      console.log('=== OpenAI STRATEGY: PDF file uploaded, file ID:', file.id);
       const response = await this.openai.chat.completions.create({
         model: this.model,
         messages: [
@@ -182,21 +140,15 @@ class OpenAIImageExtractionStrategy extends ImageExtractionStrategy {
         response_format: { type: "json_object" }
       });
       let rawContent = response.choices[0].message.content.trim();
-      console.log('Raw content length:', rawContent.length);
-      console.log('Raw content preview:', rawContent.substring(0, 200) + '...');
-      console.log('Raw content FULL:', rawContent);
       if (rawContent.startsWith("```json") || rawContent.startsWith("```")) {
         rawContent = rawContent.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
-        console.log('Stripped markdown formatting');
       }
       try {
-        console.log('=== OpenAI STRATEGY: Parsing JSON response for PDF ===');
         let result = JSON.parse(rawContent);
         if (!Array.isArray(result)) {
           console.warn('Model output was not an array. Wrapping in array.');
           result = [result];
         }
-        console.log('Successfully parsed JSON result from PDF:', result);
         return result;
       } catch (parseError) {
         console.error('=== OpenAI STRATEGY: JSON parsing error for PDF ===');

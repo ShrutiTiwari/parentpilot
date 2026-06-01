@@ -19,9 +19,6 @@ interface ChildProfileSelectorProps {
 export function ChildProfileSelector({ onManageProfiles }: ChildProfileSelectorProps) {
   const { profiles, selectedProfile, selectProfile } = useChildProfiles();
   const { user } = useAuth();
-
-  console.log('ChildProfileSelector - profiles:', profiles);
-  console.log('ChildProfileSelector - selectedProfile:', selectedProfile);
 {/* 
   if (!selectedProfile && profiles.length === 0) {
     return (

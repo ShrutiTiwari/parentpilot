@@ -70,16 +70,6 @@ export const useFeedbackEligibility = (learnerId: string | null) => {
         loading: false
       });
 
-      console.log('📊 Feedback eligibility calculated:', {
-        learnerId,
-        daysUsed: stats.daysUsed,
-        sessionsCompleted: stats.sessionsCompleted,
-        isEligibleFor3Day,
-        isEligibleFor14Day,
-        hasSubmitted3Day,
-        hasSubmitted14Day
-      });
-
     } catch (error) {
       console.error('Error checking feedback eligibility:', error);
       setEligibility(prev => ({ ...prev, loading: false }));

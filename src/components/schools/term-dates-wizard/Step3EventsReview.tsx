@@ -46,11 +46,6 @@ export function Step3EventsReview({
   const [localExtractedEvents, setLocalExtractedEvents] = useState<ExtractedEvent[]>(extractedEvents || []);
   const [localRawDataSample, setLocalRawDataSample] = useState<string>(rawDataSample || '');
 
-  console.log('Step3 render - localExtractedEvents:', localExtractedEvents);
-  console.log('Step3 render - localExtractedEvents length:', localExtractedEvents?.length);
-  console.log('Step3 render - extractingTermDates:', extractingTermDates);
-  console.log('Step3 render - savingEvents:', savingEvents);
-
   // Sync local state with props when props change
   useEffect(() => {
     if (extractedEvents && extractedEvents.length > 0 && localExtractedEvents.length === 0) {
@@ -60,13 +55,7 @@ export function Step3EventsReview({
 
   // Extract events on mount
   useEffect(() => {
-    console.log('Step3 useEffect - checking conditions:', {
-      localExtractedEventsLength: localExtractedEvents.length,
-      extractedEventsLength: extractedEvents.length,
-      extractingTermDates
-    });
     if (localExtractedEvents.length === 0 && extractedEvents.length === 0 && !extractingTermDates) {
-      console.log('Step3 - Calling extractTermDates');
       extractTermDates();
     }
   }, []);
@@ -81,18 +70,12 @@ export function Step3EventsReview({
         schoolName: createdSchool.name,
       });
 
-      console.log('Step3 - Extraction result:', result);
-      console.log('Step3 - extractedEvents:', result.extractedEvents);
-      console.log('Step3 - extractedEvents length:', result.extractedEvents?.length);
-
       if (result.extractedEvents && result.extractedEvents.length > 0) {
-        console.log('Step3 - Setting extracted events:', result.extractedEvents);
         setLocalExtractedEvents(result.extractedEvents);
         setLocalRawDataSample(result.rawData || result.rawDataSample || '');
         setExtractedEvents(result.extractedEvents); // Update parent state too
         setRawDataSample(result.rawData || result.rawDataSample || '');
       } else {
-        console.log('Step3 - No events found in result');
         setError('No events found on this page. You can go back and try a different page.');
       }
     } catch (err: any) {

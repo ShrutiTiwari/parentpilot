@@ -85,7 +85,6 @@ export const schoolDiscoveryService = {
    */
   async discoverWebsite(request: DiscoverWebsiteRequest): Promise<DiscoverWebsiteResponse> {
     try {
-      console.log('Discovering website for:', request);
 
       const response = await fetch(API_ENDPOINTS.schools.discoverWebsite, {
         method: 'POST',
@@ -101,7 +100,6 @@ export const schoolDiscoveryService = {
       }
 
       const data = await response.json();
-      console.log('Website discovery result:', data);
       return data;
     } catch (error) {
       console.error('Error discovering school website:', error);
@@ -116,7 +114,6 @@ export const schoolDiscoveryService = {
     request: DiscoverTermDatesPageRequest
   ): Promise<DiscoverTermDatesPageResponse> {
     try {
-      console.log('Discovering term dates page for:', request);
 
       const response = await fetch(API_ENDPOINTS.schools.discoverTermDatesPage, {
         method: 'POST',
@@ -140,7 +137,6 @@ export const schoolDiscoveryService = {
       }
 
       const data = await response.json();
-      console.log('Term dates page discovery result:', data);
       return data;
     } catch (error) {
       console.error('Error discovering term dates page:', error);
@@ -155,7 +151,6 @@ export const schoolDiscoveryService = {
     request: ExtractTermDatesRequest
   ): Promise<ExtractTermDatesResponse> {
     try {
-      console.log('Extracting term dates from:', request);
 
       const response = await fetch(API_ENDPOINTS.schools.extractTermDates, {
         method: 'POST',
@@ -179,7 +174,6 @@ export const schoolDiscoveryService = {
       }
 
       const data = await response.json();
-      console.log('Term dates extraction result:', data);
       return data;
     } catch (error) {
       console.error('Error extracting term dates:', error);
@@ -213,7 +207,6 @@ export const schoolDiscoveryService = {
     error?: string;
   }> {
     try {
-      console.log('Creating school:', request);
 
       const response = await fetch(API_ENDPOINTS.schools.create, {
         method: 'POST',
@@ -229,7 +222,6 @@ export const schoolDiscoveryService = {
       }
 
       const data = await response.json();
-      console.log('School creation result:', data);
       return data;
     } catch (error) {
       console.error('Error creating school:', error);
@@ -251,7 +243,6 @@ export const schoolDiscoveryService = {
     error?: string;
   }> {
     try {
-      console.log('Adding events to school:', request.schoolId, request.events.length, 'events');
 
       const response = await fetch(API_ENDPOINTS.schools.addEvents(request.schoolId), {
         method: 'POST',
@@ -271,7 +262,6 @@ export const schoolDiscoveryService = {
       }
 
       const data = await response.json();
-      console.log('Events added result:', data);
       return data;
     } catch (error) {
       console.error('Error adding events to school:', error);
@@ -286,7 +276,6 @@ export const schoolDiscoveryService = {
     request: CreateSchoolWithEventsRequest
   ): Promise<CreateSchoolWithEventsResponse> {
     try {
-      console.log('Creating school with events:', request);
 
       const response = await fetch(API_ENDPOINTS.schools.createWithEvents, {
         method: 'POST',
@@ -302,7 +291,6 @@ export const schoolDiscoveryService = {
       }
 
       const data = await response.json();
-      console.log('School creation result:', data);
       return data;
     } catch (error) {
       console.error('Error creating school with events:', error);

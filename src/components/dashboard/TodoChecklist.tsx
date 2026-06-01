@@ -10,16 +10,10 @@ interface TodoChecklistProps {
 }
 
 export function TodoChecklist({ todos, onTodoToggle }: TodoChecklistProps) {
-  /*console.log('TodoChecklist received props:', {
-    hasTodos: Boolean(todos),
-    todosLength: todos?.length,
-    actualTodos: todos
-  });
-*/
+  /**/
   const handleTodoClick = (e: React.MouseEvent, todoId: string) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log('Todo clicked:', todoId);
     onTodoToggle(todoId);
   };
 

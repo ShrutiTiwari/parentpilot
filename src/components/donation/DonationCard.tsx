@@ -63,15 +63,12 @@ export function DonationCard({
         50: 'YOUR_STRIPE_PAYMENT_LINK_FOR_50' // Replace with your $50 payment link
       };
       
-      console.log(`💖 Opening donation link for $${amount}`);
-      
       // Open Stripe Payment Link in new tab
       const donationUrl = donationLinks[amount];
       if (donationUrl) {
         window.open(donationUrl, '_blank');
       } else {
         // Fallback: open general donation page
-        console.log('No specific donation link found, showing alert');
         alert(`Thank you for wanting to support with $${amount}! Please set up your Stripe Payment Links in DonationCard.tsx`);
       }
       

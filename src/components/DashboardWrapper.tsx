@@ -101,11 +101,9 @@ export function DashboardWrapper({ activeTab, activeSubTab, initialActiveSharing
             onOpenChange={setShowAuthModal}
             customMessage={getAuthMessage()}
             onSuccess={() => {
-              console.log('Auth successful, pending operations will resume automatically');
               // Keep the event dialog open if user was saving an event
               if (authTriggerAction === 'save_event') {
                 // The event dialog should remain open so user can see their saved event
-                console.log('Keeping event dialog open after auth success');
               }
             }}
           />

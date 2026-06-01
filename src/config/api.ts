@@ -4,7 +4,6 @@
 export const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 // Log which API URL is being used
-console.log('Using API URL:', API_BASE_URL);
 
 export const API_ENDPOINTS = {
   health: `${API_BASE_URL}/api/health`,

@@ -36,7 +36,6 @@ export function useDonation(): UseDonationReturn {
         lastDonationPrompt
       };
     } catch (error) {
-      console.log('Error initializing donation metrics:', error);
       // Return safe defaults
       return {
         totalSessions: 0,

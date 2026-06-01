@@ -10,7 +10,7 @@ export const dataService = {
     try {
       // Sanitize school name for filesystem
       const sanitizedSchoolName = schoolName.toLowerCase().replace(/[^a-z0-9]+/g, '_');
-      
+
       const response = await fetch(`/data/schools/${sanitizedSchoolName}/oneOffEvents.json`);
       if (!response.ok) {
         throw new Error(`Failed to fetch events for ${schoolName}`);
@@ -32,7 +32,7 @@ export const dataService = {
     try {
       // Sanitize child name for filesystem
       const sanitizedChildName = childName.toLowerCase().replace(/[^a-z0-9]+/g, '_');
-      
+
       const response = await fetch(`/data/children/${sanitizedChildName}/recurringEvents.json`);
       if (!response.ok) {
         throw new Error(`Failed to fetch recurring events for ${childName}`);
@@ -49,7 +49,7 @@ export const dataService = {
     try {
       // Sanitize child name for filesystem
       const sanitizedChildName = childName.toLowerCase().replace(/[^a-z0-9]+/g, '_');
-      
+
       const response = await fetch(`/data/children/${sanitizedChildName}/weekendPlans.json`);
       if (!response.ok) {
         throw new Error(`Failed to fetch weekend plans for ${childName}`);
@@ -66,7 +66,7 @@ export const dataService = {
     try {
       // Sanitize school name for filesystem
       const sanitizedSchoolName = schoolName.toLowerCase().replace(/[^a-z0-9]+/g, '_');
-      
+
       const response = await fetch(`/data/schools/${sanitizedSchoolName}/yearGroups.json`);
       if (!response.ok) {
         throw new Error(`Failed to fetch year groups for ${schoolName}`);
@@ -81,7 +81,6 @@ export const dataService = {
 
   async addEvent(event: Omit<Event, 'id'>): Promise<Event> {
     try {
-      console.log('Adding event with todos:', event.todos);
       // Extract todos from the event data
       const { todos, yearGroup, event_type, ...eventData } = event;
 
@@ -100,8 +99,6 @@ export const dataService = {
         time_end: eventData.time_end || null,
       };
 
-      console.log('Event data for DB:', eventDataForDb);
-
       // First insert the event
       const { data: insertedEvent, error: eventError } = await supabase
         .from('events')
@@ -113,7 +110,6 @@ export const dataService = {
 
       // If there are todos, insert them with the event_id
       if (todos && todos.length > 0) {
-        console.log('Inserting todos:', todos);
         const todosToInsert = todos.map(todo => ({
           event_id: insertedEvent.id,
           text: todo.text,
@@ -122,7 +118,6 @@ export const dataService = {
           todo_type: event_type || 'school'
         }));
 
-        console.log('Todos to insert:', todosToInsert);
         const { error: todosError } = await supabase
           .from('todos')
           .insert(todosToInsert);
@@ -145,8 +140,6 @@ export const dataService = {
 
       if (fetchError) throw fetchError;
 
-      console.log('Fetched event with todos:', eventWithTodos);
-
       // Convert back to camelCase for the frontend
       // Parse year_group string into an array if it contains commas
       let yearGroups: string[] = [];
@@ -158,15 +151,12 @@ export const dataService = {
         }
       }
 
-      const eventForFrontend = {
+      return {
         ...eventWithTodos,
         yearGroup: eventWithTodos.year_group,
         yearGroups: yearGroups,
         todos: eventWithTodos.todos || []
       };
-
-      console.log('Event for frontend:', eventForFrontend);
-      return eventForFrontend;
     } catch (error) {
       console.error('Error adding event:', error);
       throw error;
@@ -194,7 +184,7 @@ export const dataService = {
   async checkDuplicateEvent(event: Omit<Event, 'id'>): Promise<boolean> {
     try {
       const { title, date, event_type, school_id, created_by_user_id } = event;
-      
+
       const query = supabase
         .from('events')
         .select('id')
@@ -232,7 +222,9 @@ export const dataService = {
         school_id: event_type === 'school' ? eventData.school_id : null,
         created_by_user_id: event_type === 'personal' ? eventData.created_by_user_id : null,
         ...(event_type === 'personal' ? { school_id: null } : {}),
-        venue: event.venue || null
+        venue: event.venue || null,
+        time_start: eventData.time_start || null,
+        time_end: eventData.time_end || null,
       };
 
       // First update the event
@@ -312,7 +304,6 @@ export const dataService = {
 
   async getSchoolEventsFromDb(schoolName: string): Promise<Event[]> {
     try {
-      console.log('Fetching school ID for:', schoolName);
       // Fetch the school ID from the database
       const { data: school, error: schoolError } = await supabase
         .from('schools')
@@ -330,10 +321,7 @@ export const dataService = {
         throw new Error('NO_EVENTS_DATA');
       }
 
-      console.log('Found school ID:', school.id);
-
       // Fetch events for this school from the database
-      console.log('Fetching events for school ID:', school.id);
       const { data: events, error: eventsError } = await supabase
         .from('events')
         .select(`
@@ -348,10 +336,7 @@ export const dataService = {
         throw eventsError;
       }
 
-      console.log('Fetched events:', events);
-
       if (!events || events.length === 0) {
-        console.log('No events found for school');
         return [];
       }
 
@@ -361,24 +346,21 @@ export const dataService = {
         let yearGroups: string[] = [];
         if (ev.year_group) {
           if (ev.year_group.includes(',')) {
-            // Split comma-separated year groups and trim whitespace
             yearGroups = ev.year_group.split(',').map((yg: string) => yg.trim());
           } else {
-            // Single year group
             yearGroups = [ev.year_group];
           }
         }
 
         return {
           ...ev,
-          yearGroup: ev.year_group, // Keep the original string for backward compatibility
-          yearGroups: yearGroups,    // Add parsed array for filtering
+          yearGroup: ev.year_group,
+          yearGroups: yearGroups,
           todos: ev.todos || [],
           school_code_required: ev.school_code_required || false
         };
       });
 
-      console.log('Mapped events:', mappedEvents);
       return mappedEvents;
     } catch (error) {
       console.error('Error fetching school events from DB:', error);
@@ -410,18 +392,16 @@ export const dataService = {
         let yearGroups: string[] = [];
         if (event.year_group) {
           if (event.year_group.includes(',')) {
-            // Split comma-separated year groups and trim whitespace
             yearGroups = event.year_group.split(',').map((yg: string) => yg.trim());
           } else {
-            // Single year group
             yearGroups = [event.year_group];
           }
         }
 
         return {
           ...event,
-          yearGroup: event.year_group, // Keep the original string for backward compatibility
-          yearGroups: yearGroups,       // Add parsed array for filtering
+          yearGroup: event.year_group,
+          yearGroups: yearGroups,
           todos: event.todos || []
         };
       });

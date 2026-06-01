@@ -7,15 +7,11 @@ const path = require('path');
 const strategyFactory = new ImageExtractionStrategyFactory();
 
 async function extractDataFromImage(fileBuffer, sourceFilename, mimeType = 'image/jpeg') {
-  console.log('=== IMAGE SERVICE: Starting file extraction ===');
-  console.log('Parameters received:', { bufferSize: fileBuffer.length, sourceFilename, mimeType });
 
   const strategy = strategyFactory.getStrategy();
-  console.log(`=== IMAGE SERVICE: Using ${strategy.getStrategyName()} ===`);
 
   try {
     const result = await strategy.extractEventsFromImage(EXTRACTION_PROMPT, fileBuffer, sourceFilename, mimeType);
-    console.log('=== IMAGE SERVICE: Extraction completed successfully ===');
     return result;
   } catch (error) {
     console.error('=== IMAGE SERVICE: Error in extraction ===', error);

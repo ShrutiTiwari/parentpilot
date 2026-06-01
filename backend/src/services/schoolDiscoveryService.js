@@ -34,7 +34,6 @@ class SchoolDiscoveryService {
    * @returns {Promise<Object>} Discovery result with URL, confidence, and reasoning
    */
   async discoverWebsite({ schoolName, city, country }) {
-    console.log('Discovering website for school:', { schoolName, city, country });
 
     if (!schoolName) {
       throw new Error('School name is required');
@@ -56,8 +55,6 @@ class SchoolDiscoveryService {
     } else {
       throw new Error('AI service is not available. Please check API key configuration.');
     }
-
-    console.log(`Using ${aiService} for school website discovery`);
 
     // Build the prompt
     const locationInfo = [
@@ -122,8 +119,6 @@ Return ONLY the main public website URL (starting with http:// or https://). If 
       websiteUrl = completion.choices[0].message.content?.trim() || 'NOT_FOUND';
     }
 
-    console.log('AI response:', websiteUrl);
-
     // Check if website was found
     if (websiteUrl === 'NOT_FOUND' || !websiteUrl.startsWith('http')) {
       return {
@@ -137,15 +132,12 @@ Return ONLY the main public website URL (starting with http:// or https://). If 
     const validationResult = await this._validateWebsiteUrl(websiteUrl);
 
     if (!validationResult.isValid) {
-      console.log(`URL validation failed for ${websiteUrl}: ${validationResult.reason}`);
 
       // Try common variations if original fails
       const variations = this._generateUrlVariations(websiteUrl);
       for (const variation of variations) {
-        console.log(`Trying variation: ${variation}`);
         const variationResult = await this._validateWebsiteUrl(variation);
         if (variationResult.isValid) {
-          console.log(`Found working variation: ${variation}`);
           return {
             suggestedUrl: variation,
             confidence: 'high',
@@ -327,7 +319,6 @@ Return ONLY the main public website URL (starting with http:// or https://). If 
       }
 
     } catch (error) {
-      console.log('Error generating URL variations:', error);
     }
 
     return variations;

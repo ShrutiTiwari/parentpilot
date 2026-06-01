@@ -90,7 +90,6 @@ export const ChildProfileProvider = ({ children }: ChildProfileContextProps) => 
   // Persist local profiles to database after authentication
   useEffect(() => {
     if (user && pendingProfileFormData) {
-      console.log('User authenticated, persisting local profile to database');
       const persistLocalProfile = async () => {
         try {
           const { editingProfile, selectedCountry, selectedCity, schools } = pendingProfileFormData;
@@ -108,8 +107,6 @@ export const ChildProfileProvider = ({ children }: ChildProfileContextProps) => 
             schoolId: selectedSchool.id,
             yearGroup: editingProfile.yearGroup,
           });
-
-          console.log('Profile persisted to database:', newProfile);
 
           // Fetch the complete profile with school data
           const completeProfile = await childProfileService.getChild(newProfile.id);
@@ -136,8 +133,6 @@ export const ChildProfileProvider = ({ children }: ChildProfileContextProps) => 
 
           // Clear pending data
           clearPendingFormData();
-
-          console.log('Local profile successfully persisted to database');
         } catch (error) {
           console.error('Error persisting local profile:', error);
         }
@@ -150,7 +145,6 @@ export const ChildProfileProvider = ({ children }: ChildProfileContextProps) => 
   const addProfile = async (profileData: Omit<ChildProfile, 'id'>) => {
     // If not authenticated, save locally
     if (!user) {
-      console.log('User not authenticated, saving profile locally');
       return { deferred: true };
     }
 

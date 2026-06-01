@@ -95,10 +95,6 @@ export const AddEventTabs: React.FC<AddEventTabsProps> = ({
       
       const data = await response.json();
       
-      console.log('AddEventTabs: Raw response data:', data);
-      console.log('AddEventTabs: data.events:', data.events);
-      console.log('AddEventTabs: Array.isArray(data.events):', Array.isArray(data.events));
-      
       let events = [];
       if (Array.isArray(data.events)) {
         events = data.events;
@@ -111,8 +107,6 @@ export const AddEventTabs: React.FC<AddEventTabsProps> = ({
       } else {
         throw new Error('No event data received from server');
       }
-      console.log('AddEventTabs: Raw events from backend:', events);
-      console.log('AddEventTabs: events.length:', events.length);
       
       // Process all events and create an array of formatted events
       const formattedEvents = events.map(event => {
@@ -141,8 +135,6 @@ export const AddEventTabs: React.FC<AddEventTabsProps> = ({
           school_id: eventType === 'school' && selectedProfile ? selectedProfile.school_id : null,
         };
       });
-      
-      console.log('Formatted events array:', formattedEvents);
       
       // Call onExtractSuccess once with the full array of events
       onExtractSuccess(formattedEvents);

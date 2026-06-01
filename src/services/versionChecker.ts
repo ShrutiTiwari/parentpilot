@@ -33,12 +33,10 @@ class VersionChecker {
   async initialize(): Promise<void> {
     // Only check once per page session to avoid multiple checks from hot reloads
     if (this.hasCheckedThisSession) {
-      console.log('📌 Version already checked this session, skipping...');
       return;
     }
 
     this.hasCheckedThisSession = true;
-    console.log('🔄 Initializing version checker...');
 
     // Do initial check (won't notify on first check)
     await this.checkVersion();
@@ -59,10 +57,7 @@ class VersionChecker {
       clearInterval(this.checkInterval);
     }
 
-    console.log(`⏰ Starting periodic version check every ${intervalMs / 1000} seconds`);
-
     this.checkInterval = setInterval(async () => {
-      console.log('⏰ Running periodic version check...');
       await this.checkVersion();
     }, intervalMs);
   }
@@ -74,7 +69,6 @@ class VersionChecker {
     if (this.checkInterval) {
       clearInterval(this.checkInterval);
       this.checkInterval = null;
-      console.log('⏹️ Stopped periodic version checking');
     }
   }
 
@@ -105,7 +99,6 @@ class VersionChecker {
       const stored = localStorage.getItem(this.STORAGE_KEY);
       if (stored) {
         this.currentVersion = JSON.parse(stored);
-        console.log('📦 Loaded stored version:', this.currentVersion?.version);
       }
     } catch (error) {
       console.error('Error loading stored version:', error);
@@ -156,7 +149,6 @@ class VersionChecker {
       if (!this.currentVersion) {
         this.currentVersion = newVersion;
         this.saveStoredVersion(newVersion);
-        console.log('📌 Initial version set:', newVersion.version, 'built at:', newVersion.buildTime);
         return false;
       }
 
@@ -164,13 +156,6 @@ class VersionChecker {
       const hasChanged = this.hasVersionChanged(this.currentVersion, newVersion);
 
       if (hasChanged) {
-        console.log('🆕 Version difference detected!', {
-          old: this.currentVersion.version,
-          new: newVersion.version,
-          oldBuildTime: this.currentVersion.buildTime,
-          newBuildTime: newVersion.buildTime,
-          isInitialCheck: this.isInitialCheck
-        });
 
         const oldVersion = this.currentVersion;
         this.currentVersion = newVersion;
@@ -179,7 +164,6 @@ class VersionChecker {
         // Only notify callbacks if this is NOT the initial check
         // On initial page load, we're already running the new version
         if (!this.isInitialCheck) {
-          console.log('🔔 Notifying about version update (not initial check)');
 
           // Notify all callbacks
           this.callbacks.forEach(callback => {
@@ -192,12 +176,9 @@ class VersionChecker {
 
           return true;
         } else {
-          console.log('📌 Initial check after page load - already running new version, not showing notification');
           return false;
         }
       }
-
-      console.log('✅ Version check complete - no updates available');
       return false;
     } catch (error) {
       console.error('❌ Error checking version:', error);
@@ -236,7 +217,6 @@ class VersionChecker {
     localStorage.removeItem(this.STORAGE_KEY);
     this.currentVersion = null;
     this.hasCheckedThisSession = false;
-    console.log('🗑️ Cleared stored version');
   }
 }
 

@@ -16,7 +16,6 @@ export const useClarity = () => {
   useEffect(() => {
     // Ensure Clarity is loaded
     if (typeof window !== 'undefined' && window.clarity) {
-      console.log('Microsoft Clarity loaded successfully');
     }
   }, []);
 
@@ -26,7 +25,6 @@ export const useClarity = () => {
   const trackEvent = (eventName: string, data?: any) => {
     if (typeof window !== 'undefined' && window.clarity) {
       window.clarity('event', eventName, data);
-      console.log('Clarity event tracked:', eventName, data);
     }
   };
 
@@ -36,7 +34,6 @@ export const useClarity = () => {
   const setUserId = (userId: string) => {
     if (typeof window !== 'undefined' && window.clarity) {
       window.clarity('identify', userId);
-      console.log('Clarity user ID set:', userId);
     }
   };
 
@@ -46,7 +43,6 @@ export const useClarity = () => {
   const trackPageView = (pageName: string) => {
     if (typeof window !== 'undefined' && window.clarity) {
       window.clarity('event', 'page_view', { page: pageName });
-      console.log('Clarity page view tracked:', pageName);
     }
   };
 
@@ -56,7 +52,6 @@ export const useClarity = () => {
   const trackAction = (action: string, details?: any) => {
     if (typeof window !== 'undefined' && window.clarity) {
       window.clarity('event', 'user_action', { action, ...details });
-      console.log('Clarity action tracked:', action, details);
     }
   };
 

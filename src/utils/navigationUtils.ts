@@ -125,9 +125,7 @@ export const navigateToSharingSubtab = (navigate: NavigateFunction, subtab: stri
  * Parse current URL to extract navigation parameters
  */
 export const parseUrlParams = (pathname: string): NavigationParams => {
-  console.log('🔍 parseUrlParams called with:', pathname);
   const parts = pathname.split('/').filter(Boolean);
-  console.log('🔍 URL parts:', parts);
 
   // Normalize URL modules to internal tab keys
   const normalizeModule = (mod?: string): string | undefined => {
@@ -142,14 +140,12 @@ export const parseUrlParams = (pathname: string): NavigationParams => {
   
   // Handle sharing URLs - /shareProgress
   if (parts.length >= 1 && parts[0] === 'shareProgress') {
-    console.log('🔍 Detected sharing URL');
     
     const baseIndex = 0;
     
     if (parts.length === baseIndex + 1) {
       // /shareProgress
       const result = { sharingTab: 'myconnections' }; // Default to connections tab
-      console.log('🔍 Returning sharing result:', result);
       return result;
     } else if (parts.length === baseIndex + 2) {
       // /shareProgress/entercode, etc.
@@ -163,56 +159,45 @@ export const parseUrlParams = (pathname: string): NavigationParams => {
       if (sharingTab === 'myconnections') sharingTab = 'myconnections';
       
       const result = { sharingTab };
-      console.log('🔍 Returning sharing with subtab result:', result);
       return result;
     }
   }
   
   // Handle Post Grade 8 URLs
   if (parts.length >= 3 && parts[0] === 'music' && parts[1] === DEFAULT_BOARD && parts[2] === 'post-grade-8') {
-    console.log('🔍 Detected Post Grade 8 URL');
     if (parts.length === 3) {
       // /music/abrsm/post-grade-8
       const result = { grade: 8, isPostGrade8: true };
-      console.log('🔍 Returning Post Grade 8 result:', result);
       return result;
     } else if (parts.length === 4) {
       // /music/abrsm/post-grade-8/repertoire
       const result = { grade: 8, module: normalizeModule(parts[3]), isPostGrade8: true };
-      console.log('🔍 Returning Post Grade 8 with module result:', result);
       return result;
     }
   }
   
   // Handle regular grade URLs
   if (parts.length >= 4 && parts[0] === 'music' && parts[1] === DEFAULT_BOARD && parts[2] === 'grade') {
-    console.log('🔍 Detected regular grade URL');
     const grade = parseInt(parts[3], 10);
     
     if (parts.length === 4) {
       // /music/abrsm/grade/6
       const result = { grade };
-      console.log('🔍 Returning grade result:', result);
       return result;
     } else if (parts.length === 5) {
       // /music/abrsm/grade/6/scales
       const result = { grade, module: normalizeModule(parts[4]) };
-      console.log('🔍 Returning grade with module result:', result);
       return result;
     } else if (parts.length === 6 && parts[4] === 'learner') {
       // /music/abrsm/grade/6/learner/shlok
       const result = { grade, learnerId: parts[5] };
-      console.log('🔍 Returning grade with learner result:', result);
       return result;
     } else if (parts.length === 7 && parts[4] === 'learner') {
       // /music/abrsm/grade/6/learner/shlok/scales
       const result = { grade, learnerId: parts[5], module: normalizeModule(parts[6]) };
-      console.log('🔍 Returning grade with learner and module result:', result);
       return result;
     }
   }
-  
-  console.log('🔍 No matching URL pattern, returning empty object');
   return {};
 };
 

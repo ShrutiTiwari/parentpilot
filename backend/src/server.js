@@ -81,14 +81,9 @@ app.get('/api/health', (req, res) => {
 // ─── Extract event from image/PDF ─────────────────────────────────────────────
 app.post('/api/extract-event', uploadLimiter, upload.single('image'), async (req, res) => {
   try {
-    console.log('extract-event: file present:', !!req.file);
-    console.log('extract-event: ANTHROPIC_API_KEY present:', !!process.env.ANTHROPIC_API_KEY);
-    console.log('extract-event: LLM_STRATEGY:', process.env.LLM_STRATEGY);
-
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
 
     const mimeType = req.file.mimetype;
-    console.log('extract-event: mimetype:', mimeType, 'size:', req.file.size);
 
     const extractedEvent = await extractDataFromImage(
       req.file.buffer,
@@ -509,7 +504,6 @@ app.delete('/api/events/:id', async (req, res) => {
     // Remove from Elastic (non-blocking)
     unindexEvent(id).catch(err => console.error('Elastic unindex failed:', err.message));
 
-    console.log(`Deleted event ${id} for user ${user_id}`);
     res.json({ success: true });
   } catch (error) {
     console.error('delete event error:', error);
@@ -572,8 +566,6 @@ app.post('/api/inbound-email/staging/:stagingId/confirm', async (req, res) => {
 
   const { stagingId } = req.params;
   const { user_id, school_id, event: eventOverride } = req.body;
-  console.log('staging confirm hit:', stagingId, 'actions in override:', (eventOverride?.actions || []).length);
-
   try {
     // Fetch the staging row
     const { data: staging, error: fetchError } = await db
@@ -586,7 +578,6 @@ app.post('/api/inbound-email/staging/:stagingId/confirm', async (req, res) => {
 
     // Merge any inline edits from the UI (eventOverride) with the staging row
     const e = { ...staging, ...(eventOverride || {}) };
-    console.log('staging confirm: actions count =', (e.actions || []).length, JSON.stringify(e.actions));
 
     // Insert into events table
     const { data: inserted, error: insertError } = await db
@@ -628,9 +619,6 @@ app.post('/api/inbound-email/staging/:stagingId/confirm', async (req, res) => {
         }))
       );
       if (todosError) console.error('todos insert error:', todosError.message);
-      else console.log('staging confirm: inserted', actions.length, 'todos for event', inserted.id);
-    } else {
-      console.log('staging confirm: no actions to insert for event', inserted.id);
     }
 
     // Mark staging row as confirmed
@@ -694,14 +682,23 @@ app.post('/api/inbound-email/staging/:stagingId/discard', async (req, res) => {
     // Close queue item if all staging events are resolved
     const { data: remaining } = await db
       .from('event_staging')
-      .select('id')
+      .select('id, status')
       .eq('queue_id', staging.queue_id)
       .eq('status', 'pending');
 
     if (!remaining?.length) {
+      // If any staging event was confirmed, mark queue as confirmed — not discarded
+      const { data: anyConfirmed } = await db
+        .from('event_staging')
+        .select('id')
+        .eq('queue_id', staging.queue_id)
+        .eq('status', 'confirmed')
+        .limit(1);
+
+      const finalStatus = anyConfirmed?.length ? 'confirmed' : 'discarded';
       await db
         .from('email_ingestion_queue')
-        .update({ status: 'discarded', updated_at: new Date().toISOString() })
+        .update({ status: finalStatus, updated_at: new Date().toISOString() })
         .eq('id', staging.queue_id);
     }
 
@@ -726,10 +723,20 @@ app.post('/api/inbound-email/:id/discard', async (req, res) => {
       .eq('queue_id', id)
       .eq('status', 'pending');
 
-    await db
-      .from('email_ingestion_queue')
-      .update({ status: 'discarded', updated_at: new Date().toISOString() })
-      .eq('id', id);
+    // Only mark queue as discarded if no staging events were confirmed
+    const { data: anyConfirmed } = await db
+      .from('event_staging')
+      .select('id')
+      .eq('queue_id', id)
+      .eq('status', 'confirmed')
+      .limit(1);
+
+    if (!anyConfirmed?.length) {
+      await db
+        .from('email_ingestion_queue')
+        .update({ status: 'discarded', updated_at: new Date().toISOString() })
+        .eq('id', id);
+    }
 
     res.json({ success: true });
   } catch (error) {

@@ -29,8 +29,6 @@ const Index = () => {
   const { toast } = useToast();
   const [showSignupBanner, setShowSignupBanner] = useState(true);
 
-  console.log('Index: Rendering', { hasUser: !!user, loading });
-
   // Note: Auto-save functionality is now handled at the AuthContext level
 
   const handleSignOut = async () => {
@@ -81,7 +79,6 @@ const Index = () => {
 
   // Show loading state while checking auth
   if (loading) {
-    console.log('Index: Still loading auth state');
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1EAEDB]"></div>
@@ -92,11 +89,8 @@ const Index = () => {
   // Show landing page only on the root path for unauthenticated users
   // All other routes (e.g. /events) render the dashboard so guests can browse
   if (!user && location.pathname === '/') {
-    console.log('Index: No user on root, showing landing page');
     return <PowerParentIntegratedLanding />;
   }
-
-  console.log('Index: User authenticated, showing dashboard');
   return (
     <ChildProfileProvider>
       <SchoolAuthorizationProvider>
@@ -125,7 +119,6 @@ const Index = () => {
                   onOpenChange={setShowAuthModal}
                   customMessage={getAuthMessage()}
                   onSuccess={() => {
-                    console.log('Auth successful, pending operations will resume automatically');
                   }}
                 />
               </div>

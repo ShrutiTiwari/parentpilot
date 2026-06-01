@@ -17,12 +17,6 @@ class ClaudeImageExtractionStrategy extends ImageExtractionStrategy {
     this.baseDelay = config.retry.baseDelay;
 
     this.anthropic = new Anthropic({ apiKey });
-
-    console.log('Claude Strategy initialized with:', {
-      model: this.model,
-      temperature: this.temperature,
-      maxTokens: this.maxTokens
-    });
   }
 
   async makeClaudeRequest(requestData, retryCount = 0) {
@@ -38,7 +32,6 @@ class ClaudeImageExtractionStrategy extends ImageExtractionStrategy {
 
       if (isRetryable && retryCount < this.maxRetries) {
         const delay = this.baseDelay * Math.pow(2, retryCount); // Exponential backoff
-        console.log(`Retrying Claude API request in ${delay}ms (attempt ${retryCount + 2}/${this.maxRetries + 1})`);
         await new Promise(resolve => setTimeout(resolve, delay));
         return this.makeClaudeRequest(requestData, retryCount + 1);
       }
@@ -49,28 +42,15 @@ class ClaudeImageExtractionStrategy extends ImageExtractionStrategy {
   }
 
   async extractEventsFromImage(prompt, fileBuffer, sourceFilename, mimeType = 'image/jpeg') {
-    console.log('=== CLAUDE STRATEGY: Starting file extraction ===');
-    console.log('Parameters received:', {
-      promptLength: prompt.length,
-      bufferSize: fileBuffer.length,
-      sourceFilename,
-      mimeType
-    });
-    console.log('Claude temperature setting:', this.temperature);
 
     if (mimeType === 'application/pdf') {
       return await this.extractDataFromPDF(prompt, fileBuffer, sourceFilename);
     }
 
     // Handle images
-    console.log('=== CLAUDE STRATEGY: Processing image file ===');
     const imageBase64 = fileBuffer.toString('base64');
-    console.log('Image converted to base64, length:', imageBase64.length);
 
     try {
-      console.log('=== CLAUDE STRATEGY: Making Claude API request ===');
-      console.log('Claude API Key present:', !!process.env.ANTHROPIC_API_KEY);
-      console.log('Model being used:', this.model);
 
       const response = await this.makeClaudeRequest({
         model: this.model,
@@ -98,13 +78,6 @@ class ClaudeImageExtractionStrategy extends ImageExtractionStrategy {
         ]
       });
 
-      console.log('=== CLAUDE STRATEGY: Claude API response received ===');
-      console.log('Response structure:', {
-        hasContent: !!response.content,
-        contentLength: response.content?.length,
-        hasUsage: !!response.usage
-      });
-
       const content = response.content?.[0];
 
       if (!content || !content.text) {
@@ -112,30 +85,20 @@ class ClaudeImageExtractionStrategy extends ImageExtractionStrategy {
         console.error('Full response:', JSON.stringify(response, null, 2));
         throw new Error('No response received from the AI service. Please try again in a few moments.');
       }
-
-      console.log('=== CLAUDE STRATEGY: Processing Claude response ===');
       let rawContent = content.text.trim();
-      console.log('Raw content length:', rawContent.length);
-      console.log('Raw content preview:', rawContent.substring(0, 200) + '...');
-      console.log('Raw content FULL:', rawContent);
 
       // If wrapped in markdown code block, strip it
       if (rawContent.startsWith("```json") || rawContent.startsWith("```")) {
         rawContent = rawContent.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
-        console.log('Stripped markdown formatting');
       }
 
       try {
-        console.log('=== CLAUDE STRATEGY: Parsing JSON response ===');
         let result = JSON.parse(rawContent);
         // If result is not an array, wrap it in an array and log a warning
         if (!Array.isArray(result)) {
           console.warn('Model output was not an array. Wrapping in array.');
           result = [result];
         }
-        console.log('Successfully parsed JSON result:', result);
-        console.log('Number of events extracted:', result.length);
-        console.log('Event titles:', result.map(e => e.title));
         return result;
       } catch (parseError) {
         console.error('=== CLAUDE STRATEGY: JSON parsing error ===');
@@ -146,15 +109,11 @@ class ClaudeImageExtractionStrategy extends ImageExtractionStrategy {
         try {
           const jsonMatch = rawContent.match(/\[[\s\S]*\]/);
           if (jsonMatch) {
-            console.log('Attempting to extract JSON from response...');
             const extractedJson = jsonMatch[0];
             let result = JSON.parse(extractedJson);
             if (!Array.isArray(result)) {
               result = [result];
             }
-            console.log('Successfully extracted JSON from response:', result);
-            console.log('Number of events extracted:', result.length);
-            console.log('Event titles:', result.map(e => e.title));
             return result;
           }
         } catch (fallbackError) {
@@ -203,17 +162,9 @@ class ClaudeImageExtractionStrategy extends ImageExtractionStrategy {
   }
 
   async extractDataFromPDF(prompt, pdfBuffer, sourceFilename) {
-    console.log('=== CLAUDE STRATEGY: Starting PDF extraction ===');
-    console.log('Parameters received:', {
-      promptLength: prompt.length,
-      bufferSize: pdfBuffer.length,
-      sourceFilename
-    });
-    console.log('Claude temperature setting:', this.temperature);
 
     const config = getConfig();
     const fileSizeMB = pdfBuffer.length / (1024 * 1024);
-    console.log('PDF file size:', fileSizeMB.toFixed(2), 'MB');
     const maxFileSizeMB = config.processing.MAX_FILE_SIZE.PDF;
 
     if (fileSizeMB > maxFileSizeMB) {
@@ -221,7 +172,6 @@ class ClaudeImageExtractionStrategy extends ImageExtractionStrategy {
     }
 
     try {
-      console.log('=== CLAUDE STRATEGY: Making Claude API request for PDF ===');
 
       const response = await this.makeClaudeRequest({
         model: this.model,
@@ -250,25 +200,17 @@ class ClaudeImageExtractionStrategy extends ImageExtractionStrategy {
       });
 
       let rawContent = response.content[0].text.trim();
-      console.log('Raw content length:', rawContent.length);
-      console.log('Raw content preview:', rawContent.substring(0, 200) + '...');
-      console.log('Raw content FULL:', rawContent);
       
       if (rawContent.startsWith("```json") || rawContent.startsWith("```")) {
         rawContent = rawContent.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
-        console.log('Stripped markdown formatting');
       }
       
       try {
-        console.log('=== CLAUDE STRATEGY: Parsing JSON response for PDF ===');
         let result = JSON.parse(rawContent);
         if (!Array.isArray(result)) {
           console.warn('Model output was not an array. Wrapping in array.');
           result = [result];
         }
-        console.log('Successfully parsed JSON result from PDF:', result);
-        console.log('Number of events extracted from PDF:', result.length);
-        console.log('Event titles from PDF:', result.map(e => e.title));
         return result;
       } catch (parseError) {
         console.error('=== CLAUDE STRATEGY: JSON parsing error for PDF ===');

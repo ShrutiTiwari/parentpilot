@@ -15,12 +15,6 @@ export const initializeAnalytics = () => {
   if (typeof window !== 'undefined' && window.gtag) {
     const isProduction = import.meta.env.PROD;
     const hasGaId = !!import.meta.env.VITE_GA4_MEASUREMENT_ID;
-
-    console.log('📊 Google Analytics initialized', {
-      environment: isProduction ? 'production' : 'development',
-      measurementId: GA_MEASUREMENT_ID,
-      hasCustomId: hasGaId
-    });
   }
 };
 
@@ -34,7 +28,6 @@ export const trackPageView = (path: string, title?: string) => {
         page_path: path,
         page_title: title,
       });
-      console.log('📊 Page view tracked:', path, title);
     } catch (error) {
       console.warn('📊 Error tracking page view:', error);
     }
@@ -58,7 +51,6 @@ export const trackEvent = (eventName: string, parameters?: {
         value: parameters?.value,
         ...parameters,
       });
-      console.log('📊 Event tracked:', eventName, parameters);
     } catch (error) {
       console.warn('📊 Error tracking event:', error);
     }
@@ -247,7 +239,6 @@ export const setUserProperties = (properties: {
       window.gtag('config', GA_MEASUREMENT_ID, {
         user_properties: properties,
       });
-      console.log('📊 User properties set:', properties);
     } catch (error) {
       console.warn('📊 Error setting user properties:', error);
     }
@@ -263,7 +254,6 @@ export const setUserId = (userId: string) => {
       window.gtag('config', GA_MEASUREMENT_ID, {
         user_id: userId,
       });
-      console.log('📊 User ID set:', userId);
     } catch (error) {
       console.warn('📊 Error setting user ID:', error);
     }

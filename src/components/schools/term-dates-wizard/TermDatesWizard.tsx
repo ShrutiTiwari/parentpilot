@@ -37,7 +37,6 @@ export function TermDatesWizard({ open, onOpenChange, schoolData, onComplete }: 
   useEffect(() => {
     if (open && schoolData?.schoolName) {
       // Always reset wizard to ensure fresh school creation and website URL saving
-      console.log('Resetting wizard for school:', schoolData.schoolName);
       resetWizard();
       updateState({
         schoolData,
@@ -128,22 +127,7 @@ export function TermDatesWizard({ open, onOpenChange, schoolData, onComplete }: 
         {/* Step 2: Term Dates Page Discovery */}
         {state.wizardStep === 2 && state.confirmedWebsiteUrl && (
           <>
-            {console.log('TermDatesWizard Step 2 - state.suggestedPages:', state.suggestedPages)}
-            <DialogHeader>
-              <DialogTitle>Find Term Dates Page</DialogTitle>
-              <DialogDescription>
-                Searching {state.confirmedWebsiteUrl} for calendar information
-              </DialogDescription>
-            </DialogHeader>
-
-            <Step2TermDatesPage
-              schoolData={schoolData}
-              confirmedWebsiteUrl={state.confirmedWebsiteUrl}
-              suggestedPages={state.suggestedPages}
-              setSuggestedPages={(pages) => {
-                console.log('TermDatesWizard - updating suggested pages:', pages);
-                updateState({ suggestedPages: pages });
-              }}
+            {              }}
               selectedPageUrl={state.selectedPageUrl}
               setSelectedPageUrl={(url) => updateState({ selectedPageUrl: url })}
               customPageUrl={state.customPageUrl}

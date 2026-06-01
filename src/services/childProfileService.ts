@@ -37,7 +37,6 @@ function generateSchoolCode(): string {
 export const childProfileService = {
   // Get all children for the current user
   async getChildren(): Promise<Child[]> {
-    //console.log('Fetching children...');
     const { data: profile } = await supabase.auth.getUser();
     if (!profile.user) {
       console.error('No authenticated user found');
@@ -53,7 +52,6 @@ export const childProfileService = {
       throw childIdsError;
     }
     if (!childIds || childIds.length === 0) {
-      console.log('No children found for user');
       return [];
     }
     // Then get the full child data
@@ -136,16 +134,9 @@ export const childProfileService = {
 
   // Create a new child profile
   async createChildProfile(input: CreateChildProfileInput): Promise<Child> {
-    console.log('Creating child profile with input:', input);
     
     // First check if we're authenticated
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-    console.log('Session check:', { 
-      hasSession: !!session, 
-      sessionError,
-      userId: session?.user?.id,
-      userRole: session?.user?.role
-    });
     
     if (sessionError) {
       console.error('Session error:', sessionError);
@@ -179,8 +170,6 @@ export const childProfileService = {
       throw childError;
     }
 
-    console.log('Child created successfully:', child);
-
     // Then create the child-user relationship
     const { error: relationshipError } = await supabase
       .from('child_users')
@@ -201,8 +190,6 @@ export const childProfileService = {
       await supabase.from('children').delete().eq('id', child.id);
       throw relationshipError;
     }
-
-    console.log('Successfully created child profile and relationship');
     return child;
   },
 
@@ -243,7 +230,6 @@ export const childProfileService = {
 
   // Get all schools
   async getSchools(): Promise<School[]> {
-    //console.log('Fetching schools...');
     try {
       const { data, error } = await supabase
         .from('schools')
@@ -252,21 +238,18 @@ export const childProfileService = {
 
       if (error) {
         console.error('Error fetching schools:', error);
-        console.log('Using empty schools list for unauthenticated users');
         return [];
       }
 
       return data || [];
     } catch (error) {
       console.error('Exception fetching schools:', error);
-      console.log('Using empty schools list due to error');
       return [];
     }
   },
 
   // Create a new school
   async createSchool(name: string, address?: string, city?: string, country?: string): Promise<School> {
-    console.log('Creating school:', { name, address, city, country });
     // Check for duplicate school name
     const { data: existingSchool, error: checkError } = await supabase
       .from('schools')
@@ -296,7 +279,6 @@ export const childProfileService = {
       console.error('Error creating school:', error);
       throw error;
     }
-    console.log('Successfully created school:', data);
 
     // Create a folder for the school under public/data/schools (Node.js only)
     if (typeof window === 'undefined') {
@@ -308,7 +290,6 @@ export const childProfileService = {
         const dirPath = path.join(process.cwd(), 'public', 'data', 'schools', folderName);
         if (!fs.existsSync(dirPath)) {
           fs.mkdirSync(dirPath, { recursive: true });
-          console.log('Created school data folder:', dirPath);
         }
       } catch (err) {
         console.error('Error creating school data folder:', err);
@@ -320,7 +301,6 @@ export const childProfileService = {
 
   // Get unique countries from schools
   async getCountries(): Promise<string[]> {
-    console.log('Fetching countries from database...');
     
     // Fallback countries for unauthenticated users or when database access fails
     const fallbackCountries = [
@@ -355,25 +335,19 @@ export const childProfileService = {
 
       if (error) {
         console.error('Error fetching countries:', error);
-        console.log('Using fallback countries for unauthenticated users');
         return fallbackCountries;
       }
-
-      console.log('Raw country data:', data);
       // Get unique countries and sort them
       const countries = [...new Set(data.map(school => school.country))].filter(Boolean);
-      console.log('Processed countries:', countries);
       
       // If no countries found in database, use fallback
       if (countries.length === 0) {
-        console.log('No countries found in database, using fallback');
         return fallbackCountries;
       }
       
       return countries;
     } catch (error) {
       console.error('Exception fetching countries:', error);
-      console.log('Using fallback countries due to error');
       return fallbackCountries;
     }
   },
@@ -404,7 +378,6 @@ export const childProfileService = {
 
       if (error) {
         console.error('Error fetching cities:', error);
-        console.log('Using fallback cities for unauthenticated users');
         return fallbackCities[country] || [];
       }
 
@@ -413,21 +386,18 @@ export const childProfileService = {
       
       // If no cities found in database, use fallback
       if (cities.length === 0) {
-        console.log('No cities found in database, using fallback');
         return fallbackCities[country] || [];
       }
       
       return cities;
     } catch (error) {
       console.error('Exception fetching cities:', error);
-      console.log('Using fallback cities due to error');
       return fallbackCities[country] || [];
     }
   },
 
   // Get schools without term dates imported
   async getSchoolsWithoutTermDates(): Promise<School[]> {
-    console.log('Fetching schools without term dates...');
     try {
       const { data, error } = await supabase
         .from('schools')
@@ -498,7 +468,6 @@ export const childProfileService = {
 
       if (error) {
         console.error('Error fetching schools by location:', error);
-        console.log('Using fallback schools for unauthenticated users');
         
         // Return fallback schools if available for the selected country and city
         if (country && city && fallbackSchools[country] && fallbackSchools[country][city]) {
@@ -511,7 +480,6 @@ export const childProfileService = {
 
       // If no schools found in database, try fallback
       if (!data || data.length === 0) {
-        console.log('No schools found in database, trying fallback');
         if (country && city && fallbackSchools[country] && fallbackSchools[country][city]) {
           return fallbackSchools[country][city];
         }
@@ -520,7 +488,6 @@ export const childProfileService = {
       return data || [];
     } catch (error) {
       console.error('Exception fetching schools by location:', error);
-      console.log('Using fallback schools due to error');
       
       // Return fallback schools if available for the selected country and city
       if (country && city && fallbackSchools[country] && fallbackSchools[country][city]) {
