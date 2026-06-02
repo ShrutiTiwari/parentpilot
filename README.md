@@ -88,10 +88,7 @@ Supabase stores. Elastic understands.
 | **Natural language timeline** | "What's on next week for Aisha?" — full-text + semantic across all event types |
 
 **Elastic MCP indexes:**
-- `school-events` — 700+ events with date fields
-- `local-services` — NHS, dentists, tutors by postcode
-- `family-history` — past tasks and resolutions
-- `parenting-guides` — NHS and CAMHS resources (RAG)
+- `school-events` — 700+ confirmed events indexed for conflict + duplicate detection
 
 ---
 
@@ -125,7 +122,7 @@ Supabase stores. Elastic understands.
 | Partner MCP | Elastic MCP Server — semantic search + conflict detection + RAG |
 | Database | Supabase — events, todos, family profiles, cron |
 | Email ingest | Postmark inbound webhooks |
-| Reminders | Supabase Edge Functions — daily cron, progressive cadence |
+| Reminders | Reminder schedules table seeded at confirm — delivery engine roadmap |
 | Hosting | Vercel (frontend + backend as separate projects) |
 
 ---
@@ -159,7 +156,9 @@ Vite proxies `/api/*` to `localhost:3000` — no CORS config needed locally.
 | `SUPABASE_SERVICE_ROLE_KEY` | Service role key — required for webhook inserts that bypass RLS |
 | `GEMINI_API_KEY` | Google AI Studio — primary extraction model |
 | `ANTHROPIC_API_KEY` | Claude Haiku — fallback when Gemini quota exceeded |
-| `ADMIN_SECRET` | Protects `/api/inbound-email/pipeline-status` |
+| `ELASTIC_ENDPOINT` | Elastic Cloud endpoint URL |
+| `ELASTIC_API_KEY` | Elastic API key for indexing and search |
+| `ADMIN_SECRET` | Protects `/api/inbound-email/pipeline-status` and `/api/events/bulk-index` |
 
 **Database:** Run migrations in order in Supabase SQL editor:
 1. `supabase/migrations/20260514000000_add_agent_tables.sql` — email ingestion queue, reminder schedules, agent columns on events/todos
