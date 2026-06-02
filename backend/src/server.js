@@ -11,7 +11,7 @@ const schoolDiscoveryService = require('./services/schoolDiscoveryService');
 const termDatesService = require('./services/termDatesService');
 const { CLAUDE_CONFIG, OPENAI_CONFIG } = require('./config/llmConfig');
 const { extractEventsFromEmail } = require('./services/geminiService');
-const { indexEvent, unindexEvent, findConflicts, findDuplicates } = require('./services/elasticService');
+const { indexEvent, unindexEvent, findConflicts, findDuplicates, bulkIndex } = require('./services/elasticService');
 require('dotenv').config();
 
 const app = express();
@@ -470,6 +470,54 @@ app.get('/api/inbound-email/pending', async (req, res) => {
   res.json({ items });
 });
 
+// ─── Get school events by school name (service role — bypasses RLS on todos) ──
+app.get('/api/events/school', async (req, res) => {
+  const db = supabaseAdmin || supabase;
+  if (!db) return res.status(503).json({ error: 'Database unavailable' });
+
+  const { school_name } = req.query;
+  if (!school_name) return res.status(400).json({ error: 'school_name required' });
+
+  try {
+    const { data: school, error: schoolError } = await db
+      .from('schools').select('id').eq('name', school_name).single();
+    if (schoolError || !school) return res.status(404).json({ error: 'School not found' });
+
+    const { data: events, error } = await db
+      .from('events')
+      .select('*, todos!fk_todos_event(*)')
+      .eq('school_id', school.id)
+      .order('date', { ascending: true });
+
+    if (error) throw error;
+    res.json({ events: events || [] });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ─── Get personal events by user id (service role — bypasses RLS on todos) ───
+app.get('/api/events/personal', async (req, res) => {
+  const db = supabaseAdmin || supabase;
+  if (!db) return res.status(503).json({ error: 'Database unavailable' });
+
+  const { user_id } = req.query;
+  if (!user_id) return res.status(400).json({ error: 'user_id required' });
+
+  try {
+    const { data: events, error } = await db
+      .from('events')
+      .select('*, todos!fk_todos_event(*)')
+      .eq('created_by_user_id', user_id)
+      .order('date', { ascending: true });
+
+    if (error) throw error;
+    res.json({ events: events || [] });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ─── Create event + todos (service role bypasses RLS) ────────────────────────
 app.post('/api/events', async (req, res) => {
   const db = supabaseAdmin || supabase;
@@ -477,8 +525,6 @@ app.post('/api/events', async (req, res) => {
 
   const { todos, yearGroup, year_group, year_groups, event_type, ...eventData } = req.body;
   const resolvedYearGroup = yearGroup || year_group || 'All';
-  console.log('[POST /api/events] todos received:', JSON.stringify(todos));
-  console.log('[POST /api/events] resolvedYearGroup:', resolvedYearGroup, 'event_type:', event_type);
 
   try {
     const { data: inserted, error: eventError } = await db
@@ -499,7 +545,6 @@ app.post('/api/events', async (req, res) => {
 
     if (eventError) throw eventError;
 
-    console.log('[POST /api/events] event inserted id:', inserted.id, 'now inserting todos:', todos?.length);
     if (todos && todos.length > 0) {
       const todoRows = todos.map(t => ({
         event_id: inserted.id,
@@ -509,12 +554,8 @@ app.post('/api/events', async (req, res) => {
         todo_type: t.todo_type || event_type || 'school',
         deadline: t.deadline || null,
       }));
-      console.log('[POST /api/events] todoRows:', JSON.stringify(todoRows));
       const { error: todosError } = await db.from('todos').insert(todoRows);
-      if (todosError) console.error('[POST /api/events] todos insert error:', todosError.message, todosError.details, todosError.hint);
-      else console.log('[POST /api/events] todos inserted ok');
-    } else {
-      console.log('[POST /api/events] no todos to insert');
+      if (todosError) console.error('todos insert error:', todosError.message);
     }
 
     const { data: eventWithTodos, error: fetchError } = await db
@@ -656,6 +697,34 @@ app.post('/api/events/check-conflicts', async (req, res) => {
   } catch (err) {
     console.error('Conflict check failed:', err.message);
     res.json({ conflicts: [], has_conflicts: false }); // fail open — don't block confirm
+  }
+});
+
+// ─── Bulk index all confirmed events into Elastic ────────────────────────────
+app.post('/api/events/bulk-index', async (req, res) => {
+  const adminSecret = process.env.ADMIN_SECRET;
+  const provided = req.headers['x-admin-secret'] || req.query.secret;
+  if (!adminSecret || provided !== adminSecret) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const db = supabaseAdmin || supabase;
+  if (!db) return res.status(503).json({ error: 'Database unavailable' });
+
+  try {
+    const { data: events, error } = await db
+      .from('events')
+      .select('*')
+      .eq('status', 'confirmed')
+      .order('id', { ascending: true });
+
+    if (error) throw error;
+
+    const result = await bulkIndex(events || []);
+    res.json({ indexed: result.total, errors: result.errors });
+  } catch (err) {
+    console.error('Bulk index failed:', err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 
