@@ -22,6 +22,8 @@ export const API_ENDPOINTS = {
   },
   events: {
     checkConflicts: `${API_BASE_URL}/api/events/check-conflicts`,
+    create: `${API_BASE_URL}/api/events`,
+    update: (id: string | number) => `${API_BASE_URL}/api/events/${id}`,
     delete: (id: string | number) => `${API_BASE_URL}/api/events/${id}`,
   },
   inboundEmail: {

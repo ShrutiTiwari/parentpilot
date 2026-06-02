@@ -80,87 +80,22 @@ export const dataService = {
   },
 
   async addEvent(event: Omit<Event, 'id'>): Promise<Event> {
-    try {
-      // Extract todos from the event data
-      const { todos, yearGroup, event_type, ...eventData } = event;
-
-      // Convert to snake_case for database
-      const eventDataForDb = {
-        ...eventData,
-        year_group: yearGroup,
-        event_type: event_type || 'school', // Default to school if not specified
-        school_id: event_type === 'school' ? eventData.school_id : null, // Only set school_id for school events
-        created_by_user_id: event_type === 'personal' ? eventData.created_by_user_id : null, // Only set created_by_user_id for personal events
-        // Remove any school_id for personal events
-        ...(event_type === 'personal' ? { school_id: null } : {}),
-        venue: event.venue || null,
-        // DB time columns reject empty strings — coerce to null
-        time_start: eventData.time_start || null,
-        time_end: eventData.time_end || null,
-      };
-
-      // First insert the event
-      const { data: insertedEvent, error: eventError } = await supabase
-        .from('events')
-        .insert([eventDataForDb])
-        .select()
-        .single();
-
-      if (eventError) throw eventError;
-
-      // If there are todos, insert them with the event_id
-      if (todos && todos.length > 0) {
-        const todosToInsert = todos.map(todo => ({
-          event_id: insertedEvent.id,
-          text: todo.text,
-          completed: todo.completed || false,
-          created_by_user_id: todo.created_by_user_id,
-          todo_type: event_type || 'school'
-        }));
-
-        const { error: todosError } = await supabase
-          .from('todos')
-          .insert(todosToInsert);
-
-        if (todosError) {
-          console.error('Error inserting todos:', todosError);
-          // Continue even if todos insertion fails
-        }
-      }
-
-      // Fetch the event with its todos
-      const { data: eventWithTodos, error: fetchError } = await supabase
-        .from('events')
-        .select(`
-          *,
-          todos!fk_todos_event(*)
-        `)
-        .eq('id', insertedEvent.id)
-        .single();
-
-      if (fetchError) throw fetchError;
-
-      // Convert back to camelCase for the frontend
-      // Parse year_group string into an array if it contains commas
-      let yearGroups: string[] = [];
-      if (eventWithTodos.year_group) {
-        if (eventWithTodos.year_group.includes(',')) {
-          yearGroups = eventWithTodos.year_group.split(',').map((yg: string) => yg.trim());
-        } else {
-          yearGroups = [eventWithTodos.year_group];
-        }
-      }
-
-      return {
-        ...eventWithTodos,
-        yearGroup: eventWithTodos.year_group,
-        yearGroups: yearGroups,
-        todos: eventWithTodos.todos || []
-      };
-    } catch (error) {
-      console.error('Error adding event:', error);
-      throw error;
+    const res = await fetch(API_ENDPOINTS.events.create, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(event),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: res.statusText }));
+      throw new Error(err.error || 'Failed to create event');
     }
+    const data = await res.json();
+    const yearGroups = data.year_group
+      ? data.year_group.includes(',')
+        ? data.year_group.split(',').map((yg: string) => yg.trim())
+        : [data.year_group]
+      : [];
+    return { ...data, yearGroup: data.year_group, yearGroups, todos: data.todos || [] };
   },
 
   async deleteEvent(eventId: string, userId?: string): Promise<void> {
@@ -210,96 +145,22 @@ export const dataService = {
   },
 
   async updateEvent(event: Event): Promise<Event> {
-    try {
-      // Extract todos from the event data
-      const { todos, yearGroup, event_type, ...eventData } = event;
-
-      // Convert to snake_case for database
-      const eventDataForDb = {
-        ...eventData,
-        year_group: yearGroup,
-        event_type: event_type || 'school',
-        school_id: event_type === 'school' ? eventData.school_id : null,
-        created_by_user_id: event_type === 'personal' ? eventData.created_by_user_id : null,
-        ...(event_type === 'personal' ? { school_id: null } : {}),
-        venue: event.venue || null,
-        time_start: eventData.time_start || null,
-        time_end: eventData.time_end || null,
-      };
-
-      // First update the event
-      const { data: updatedEvent, error: eventError } = await supabase
-        .from('events')
-        .update(eventDataForDb)
-        .eq('id', event.id)
-        .select()
-        .single();
-
-      if (eventError) throw eventError;
-
-      // Delete existing todos for this event
-      const { error: deleteError } = await supabase
-        .from('todos')
-        .delete()
-        .eq('event_id', event.id);
-
-      if (deleteError) {
-        console.error('Error deleting existing todos:', deleteError);
-        // Continue even if todo deletion fails
-      }
-
-      // If there are todos, insert them with the event_id
-      if (todos && todos.length > 0) {
-        const todosToInsert = todos.map(todo => ({
-          event_id: event.id,
-          text: todo.text,
-          completed: todo.completed || false,
-          created_by_user_id: todo.created_by_user_id || event.created_by_user_id,
-          todo_type: event.event_type || 'school'
-        }));
-
-        const { error: todosError } = await supabase
-          .from('todos')
-          .insert(todosToInsert);
-
-        if (todosError) {
-          console.error('Error inserting todos:', todosError);
-          // Continue even if todos insertion fails
-        }
-      }
-
-      // Fetch the event with its todos
-      const { data: eventWithTodos, error: fetchError } = await supabase
-        .from('events')
-        .select(`
-          *,
-          todos!fk_todos_event(*)
-        `)
-        .eq('id', event.id)
-        .single();
-
-      if (fetchError) throw fetchError;
-
-      // Parse year_group string into an array if it contains commas
-      let yearGroups: string[] = [];
-      if (eventWithTodos.year_group) {
-        if (eventWithTodos.year_group.includes(',')) {
-          yearGroups = eventWithTodos.year_group.split(',').map((yg: string) => yg.trim());
-        } else {
-          yearGroups = [eventWithTodos.year_group];
-        }
-      }
-
-      return {
-        ...eventWithTodos,
-        yearGroup: eventWithTodos.year_group,
-        yearGroups: yearGroups,
-        todos: eventWithTodos.todos || []
-      };
-    } catch (error) {
-      console.error('Error updating event:', error);
-      throw error;
+    const res = await fetch(API_ENDPOINTS.events.update(event.id), {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(event),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: res.statusText }));
+      throw new Error(err.error || 'Failed to update event');
     }
+    const data = await res.json();
+    const yearGroups = data.year_group
+      ? data.year_group.includes(',')
+        ? data.year_group.split(',').map((yg: string) => yg.trim())
+        : [data.year_group]
+      : [];
+    return { ...data, yearGroup: data.year_group, yearGroups, todos: data.todos || [] };
   },
 
   async getSchoolEventsFromDb(schoolName: string): Promise<Event[]> {

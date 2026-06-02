@@ -470,6 +470,123 @@ app.get('/api/inbound-email/pending', async (req, res) => {
   res.json({ items });
 });
 
+// ─── Create event + todos (service role bypasses RLS) ────────────────────────
+app.post('/api/events', async (req, res) => {
+  const db = supabaseAdmin || supabase;
+  if (!db) return res.status(503).json({ error: 'Database unavailable' });
+
+  const { todos, yearGroup, event_type, ...eventData } = req.body;
+
+  try {
+    const { data: inserted, error: eventError } = await db
+      .from('events')
+      .insert({
+        ...eventData,
+        year_group: yearGroup,
+        event_type: event_type || 'school',
+        school_id: event_type === 'school' ? eventData.school_id : null,
+        created_by_user_id: event_type === 'personal' ? eventData.created_by_user_id : null,
+        venue: eventData.venue || null,
+        time_start: eventData.time_start || null,
+        time_end: eventData.time_end || null,
+      })
+      .select()
+      .single();
+
+    if (eventError) throw eventError;
+
+    if (todos && todos.length > 0) {
+      const { error: todosError } = await db.from('todos').insert(
+        todos.map(t => ({
+          event_id: inserted.id,
+          text: t.text,
+          completed: t.completed || false,
+          created_by_user_id: t.created_by_user_id || null,
+          todo_type: t.todo_type || event_type || 'school',
+          deadline: t.deadline || null,
+        }))
+      );
+      if (todosError) console.error('todos insert error:', todosError.message);
+    }
+
+    const { data: eventWithTodos, error: fetchError } = await db
+      .from('events')
+      .select('*, todos!fk_todos_event(*)')
+      .eq('id', inserted.id)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    indexEvent(eventWithTodos).catch(err => console.error('Elastic index failed:', err.message));
+
+    res.json(eventWithTodos);
+  } catch (error) {
+    console.error('create event error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ─── Update event + todos (service role bypasses RLS) ────────────────────────
+app.put('/api/events/:id', async (req, res) => {
+  const db = supabaseAdmin || supabase;
+  if (!db) return res.status(503).json({ error: 'Database unavailable' });
+
+  const { id } = req.params;
+  const { todos, yearGroup, event_type, ...eventData } = req.body;
+
+  try {
+    const { data: updated, error: eventError } = await db
+      .from('events')
+      .update({
+        ...eventData,
+        year_group: yearGroup,
+        event_type: event_type || 'school',
+        school_id: event_type === 'school' ? eventData.school_id : null,
+        created_by_user_id: event_type === 'personal' ? eventData.created_by_user_id : null,
+        venue: eventData.venue || null,
+        time_start: eventData.time_start || null,
+        time_end: eventData.time_end || null,
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (eventError) throw eventError;
+
+    // Replace todos
+    await db.from('todos').delete().eq('event_id', id);
+
+    if (todos && todos.length > 0) {
+      const { error: todosError } = await db.from('todos').insert(
+        todos.map(t => ({
+          event_id: id,
+          text: t.text,
+          completed: t.completed || false,
+          created_by_user_id: t.created_by_user_id || eventData.created_by_user_id || null,
+          todo_type: t.todo_type || event_type || 'school',
+          deadline: t.deadline || null,
+        }))
+      );
+      if (todosError) console.error('todos update error:', todosError.message);
+    }
+
+    const { data: eventWithTodos, error: fetchError } = await db
+      .from('events')
+      .select('*, todos!fk_todos_event(*)')
+      .eq('id', id)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    indexEvent(eventWithTodos).catch(err => console.error('Elastic index failed:', err.message));
+
+    res.json(eventWithTodos);
+  } catch (error) {
+    console.error('update event error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ─── Delete event (Supabase + Elastic) ───────────────────────────────────────
 app.delete('/api/events/:id', async (req, res) => {
   // Must use service role to bypass RLS — anon client cannot delete other users' events
