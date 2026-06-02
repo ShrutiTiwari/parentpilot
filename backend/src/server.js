@@ -476,8 +476,9 @@ app.post('/api/events', async (req, res) => {
   if (!db) return res.status(503).json({ error: 'Database unavailable' });
 
   const { todos, yearGroup, year_group, year_groups, event_type, ...eventData } = req.body;
-  // Accept both camelCase (yearGroup) and snake_case (year_group) from frontend
   const resolvedYearGroup = yearGroup || year_group || 'All';
+  console.log('[POST /api/events] todos received:', JSON.stringify(todos));
+  console.log('[POST /api/events] resolvedYearGroup:', resolvedYearGroup, 'event_type:', event_type);
 
   try {
     const { data: inserted, error: eventError } = await db
@@ -498,18 +499,22 @@ app.post('/api/events', async (req, res) => {
 
     if (eventError) throw eventError;
 
+    console.log('[POST /api/events] event inserted id:', inserted.id, 'now inserting todos:', todos?.length);
     if (todos && todos.length > 0) {
-      const { error: todosError } = await db.from('todos').insert(
-        todos.map(t => ({
-          event_id: inserted.id,
-          text: t.text,
-          completed: t.completed || false,
-          created_by_user_id: t.created_by_user_id || null,
-          todo_type: t.todo_type || event_type || 'school',
-          deadline: t.deadline || null,
-        }))
-      );
-      if (todosError) console.error('todos insert error:', todosError.message);
+      const todoRows = todos.map(t => ({
+        event_id: inserted.id,
+        text: t.text,
+        completed: t.completed || false,
+        created_by_user_id: t.created_by_user_id || null,
+        todo_type: t.todo_type || event_type || 'school',
+        deadline: t.deadline || null,
+      }));
+      console.log('[POST /api/events] todoRows:', JSON.stringify(todoRows));
+      const { error: todosError } = await db.from('todos').insert(todoRows);
+      if (todosError) console.error('[POST /api/events] todos insert error:', todosError.message, todosError.details, todosError.hint);
+      else console.log('[POST /api/events] todos inserted ok');
+    } else {
+      console.log('[POST /api/events] no todos to insert');
     }
 
     const { data: eventWithTodos, error: fetchError } = await db
