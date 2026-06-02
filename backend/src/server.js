@@ -475,14 +475,17 @@ app.post('/api/events', async (req, res) => {
   const db = supabaseAdmin || supabase;
   if (!db) return res.status(503).json({ error: 'Database unavailable' });
 
-  const { todos, yearGroup, event_type, ...eventData } = req.body;
+  const { todos, yearGroup, year_group, year_groups, event_type, ...eventData } = req.body;
+  // Accept both camelCase (yearGroup) and snake_case (year_group) from frontend
+  const resolvedYearGroup = yearGroup || year_group || 'All';
 
   try {
     const { data: inserted, error: eventError } = await db
       .from('events')
       .insert({
         ...eventData,
-        year_group: yearGroup,
+        year_group: resolvedYearGroup,
+        year_groups: year_groups || [resolvedYearGroup],
         event_type: event_type || 'school',
         school_id: event_type === 'school' ? eventData.school_id : null,
         created_by_user_id: event_type === 'personal' ? eventData.created_by_user_id : null,
@@ -532,14 +535,16 @@ app.put('/api/events/:id', async (req, res) => {
   if (!db) return res.status(503).json({ error: 'Database unavailable' });
 
   const { id } = req.params;
-  const { todos, yearGroup, event_type, ...eventData } = req.body;
+  const { todos, yearGroup, year_group, year_groups, event_type, ...eventData } = req.body;
+  const resolvedYearGroup = yearGroup || year_group || 'All';
 
   try {
     const { data: updated, error: eventError } = await db
       .from('events')
       .update({
         ...eventData,
-        year_group: yearGroup,
+        year_group: resolvedYearGroup,
+        year_groups: year_groups || [resolvedYearGroup],
         event_type: event_type || 'school',
         school_id: event_type === 'school' ? eventData.school_id : null,
         created_by_user_id: event_type === 'personal' ? eventData.created_by_user_id : null,
