@@ -573,7 +573,7 @@ app.put('/api/events/:id', async (req, res) => {
           text: t.text,
           completed: t.completed || false,
           created_by_user_id: t.created_by_user_id || eventData.created_by_user_id || null,
-          todo_type: t.todo_type || event_type || 'school',
+          todo_type: ['school', 'personal', 'action'].includes(t.todo_type) ? t.todo_type : (event_type || 'school'),
           deadline: t.deadline || null,
         }))
       );
