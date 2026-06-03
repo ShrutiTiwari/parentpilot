@@ -103,7 +103,7 @@ export function EventCard({ event, onEditEvent, onCloneEvent, onDeleteEvent, isS
     || (event.time_start && event.time_end
       ? `${formattedTime} - ${formatTime(event.time_end)}`
       : formattedTime || formatTime(event.time_end) || '');
-  const isAllDayEvent = (!displayTime || displayTime.toLowerCase() === 'all day' || displayTime === '00:00 - 00:00' || displayTime === '00:00');
+  const isAllDayEvent = (!displayTime || displayTime.toLowerCase() === 'all day' || displayTime === '00:00 - 00:00' || displayTime === '00:00' || displayTime === '12:00 AM - 12:00 AM' || displayTime === '12:00 AM');
 
   // Check if event is private - only personal events are considered private
   const isPrivateEvent = event.event_type === 'personal';
