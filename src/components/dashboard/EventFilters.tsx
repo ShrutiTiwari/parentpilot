@@ -107,9 +107,9 @@ export function EventFilters({
       {/* Horizontal Scrollable Filter Bar */}
       <div className="bg-white/90 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-gray-200/50 shadow-sm">
         <div className="overflow-x-auto">
-          <div className="space-y-4">
+          <div className="space-y-3">
             {/* First row - Main filters */}
-            <div className="flex items-center gap-6 min-w-max">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
               {/* Year Group Dropdown */}
               <div className="flex items-center gap-2 whitespace-nowrap">
                 <span className="text-sm font-medium text-gray-700">Show:</span>
@@ -169,9 +169,9 @@ export function EventFilters({
 
             {/* Second row - Category filters */}
             {availableCategories.length > 0 && (
-              <div className="flex items-center gap-4">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm font-medium text-gray-700 whitespace-nowrap">Filter by:</span>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2">
                   {availableCategories.slice(0, 6).map(category => {
                     const selected = selectedCategories.includes(category);
                     const categoryIcon = getCategoryIconComponent(category);
