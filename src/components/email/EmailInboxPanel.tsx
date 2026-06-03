@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { AgentReviewCard, AgentExtractedEvent } from './AgentReviewCard';
 import { API_ENDPOINTS } from '@/config/api';
 import { useAuth } from '@/contexts/AuthContext';
+import { useChildProfiles } from '@/contexts/ChildProfileContext';
 import { toast } from '@/hooks/use-toast';
 
 interface StagingEvent {
@@ -45,6 +46,7 @@ interface EmailInboxPanelProps {
 
 export function EmailInboxPanel({ onViewInCalendar }: EmailInboxPanelProps = {}) {
   const { user } = useAuth();
+  const { selectedProfile } = useChildProfiles();
   const [items, setItems] = useState<QueueItem[]>([]);
   const [loading, setLoading] = useState(false);
   // conflicts keyed by staging event id
@@ -202,7 +204,10 @@ export function EmailInboxPanel({ onViewInCalendar }: EmailInboxPanelProps = {})
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({
                         user_id: user.id,
-                        event: edited,
+                        event: {
+                          ...edited,
+                          school_id: edited.school_id || selectedProfile?.school_id || null,
+                        },
                       }),
                     });
                     if (!res.ok) throw new Error(await res.text());
