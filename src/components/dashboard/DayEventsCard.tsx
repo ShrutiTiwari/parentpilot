@@ -1,7 +1,6 @@
 import React from 'react';
 import { Event } from '../../utils/dateGrouping';
 import { EventCard } from './EventCard';
-import { ThemedCard } from './ThemedCard';
 import { useAgeTheme } from '../../contexts/AgeThemeContext';
 import { getRelativeDayName, formatDate } from '../../utils/dateUtils';
 
@@ -26,14 +25,14 @@ export function DayEventsCard({ date, events, onEditEvent, onCloneEvent, onDelet
   if (events.length === 0) return null;
 
   return (
-    <ThemedCard className="p-3 sm:p-4">
-      <h3 
-        className="text-lg font-semibold mb-2 sm:mb-3"
+    <div className="space-y-1.5">
+      <h3
+        className="text-sm font-semibold text-gray-500 px-1"
         style={{ color: currentTheme.colors.text }}
       >
         {dayName}, {dateFormatted}
       </h3>
-      <div className="space-y-1.5 sm:space-y-2">
+      <div className="space-y-1.5">
         {events.map((event) => (
           <EventCard
             key={event.id}
@@ -46,6 +45,6 @@ export function DayEventsCard({ date, events, onEditEvent, onCloneEvent, onDelet
           />
         ))}
       </div>
-    </ThemedCard>
+    </div>
   );
 }
