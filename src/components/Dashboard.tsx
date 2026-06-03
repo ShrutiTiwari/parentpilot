@@ -214,8 +214,8 @@ export function Dashboard({ showAuthModal, setShowAuthModal, onSignOut, initialA
                   className="text-purple-600 hover:bg-purple-100 hover:text-purple-700"
                   onClick={onSignOut}
                 >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Sign Out
+                  <LogOut className="sm:mr-2 h-4 w-4" />
+                  <span className="hidden sm:inline">Sign Out</span>
                 </Button>
                 {displayEvent(user) && (
                   <ChildProfileSelector onManageProfiles={() => setIsProfileDialogOpen(true)} />

@@ -45,7 +45,7 @@ export function ChildProfileSelector({ onManageProfiles }: ChildProfileSelectorP
               {selectedProfile ? getInitials(selectedProfile.name) : "?"}
             </AvatarFallback>
           </Avatar>
-          <span className="font-medium truncate max-w-[100px]">
+          <span className="font-medium truncate max-w-[60px] sm:max-w-[100px]">
             {selectedProfile?.name || "Select Child"}
           </span>
         </Button>
