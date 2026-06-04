@@ -478,11 +478,7 @@ export function AgentReviewCard({
 
       {/* Source strip */}
       <div className="bg-gray-50 border-b border-gray-100">
-        <button
-          className="w-full flex items-center gap-2 px-4 py-2.5 text-left"
-          onClick={() => { setNeedsAttention(false); sourceBody && setSourceExpanded(v => !v); }}
-          style={{ cursor: sourceBody ? 'pointer' : 'default' }}
-        >
+        <div className="w-full flex items-center gap-2 px-4 py-2.5">
           <SourceIcon className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
           <span className="text-xs text-gray-500 truncate flex-1">
             {source === 'email' ? 'Forwarded email' : 'Screenshot'} · {sourceLabel}
@@ -490,11 +486,14 @@ export function AgentReviewCard({
           </span>
           <ConfidenceBadge score={confidenceScore} />
           {sourceBody && (
-            sourceExpanded
-              ? <ChevronUp className="w-3.5 h-3.5 text-gray-400 flex-shrink-0 ml-1" />
-              : <ChevronDown className="w-3.5 h-3.5 text-gray-400 flex-shrink-0 ml-1" />
+            <button
+              className="text-xs text-blue-500 hover:text-blue-700 font-medium whitespace-nowrap ml-1 flex items-center gap-1"
+              onClick={() => { setNeedsAttention(false); setSourceExpanded(v => !v); }}
+            >
+              📧 {sourceExpanded ? 'Hide email' : 'View original email'}
+            </button>
           )}
-        </button>
+        </div>
         {sourceExpanded && sourceBody && (
           <div className="px-4 pb-3">
             <pre className="text-xs text-gray-500 whitespace-pre-wrap font-sans bg-white border border-gray-100 rounded-lg px-3 py-2 max-h-48 overflow-y-auto">
