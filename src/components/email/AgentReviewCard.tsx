@@ -117,6 +117,7 @@ function EventForm({
   onViewInCalendar?: () => void;
 }) {
   const [editingField, setEditingField] = useState<string | null>(null);
+  const [hasEdited, setHasEdited] = useState(false);
   const [actionsExpanded, setActionsExpanded] = useState(true);
   const [descExpanded, setDescExpanded] = useState(false);
   const [confirming, setConfirming] = useState(false);
@@ -148,7 +149,7 @@ function EventForm({
     return (
       <div
         className="flex items-center gap-2 group cursor-pointer"
-        onClick={() => !isEditing && setEditingField(field as string)}
+        onClick={() => { if (!isEditing) { setEditingField(field as string); setHasEdited(true); } }}
       >
         <Icon className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
         {isEditing ? (
@@ -167,7 +168,7 @@ function EventForm({
           </span>
         )}
         {!isEditing && (
-          <Pencil className="w-3 h-3 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+          <Pencil className="w-3 h-3 text-gray-400 flex-shrink-0" />
         )}
       </div>
     );
@@ -215,7 +216,7 @@ function EventForm({
       {/* Title */}
       <div
         className="group flex items-start gap-2 mb-4 cursor-pointer"
-        onClick={() => editingField !== 'title' && setEditingField('title')}
+        onClick={() => { editingField !== 'title' && setEditingField('title'); setHasEdited(true); }}
       >
         {editingField === 'title' ? (
           <Input
@@ -229,10 +230,15 @@ function EventForm({
         ) : (
           <>
             <h3 className="text-lg font-bold text-gray-900 flex-1 leading-tight">{event.title}</h3>
-            <Pencil className="w-3.5 h-3.5 text-gray-300 opacity-0 group-hover:opacity-100 mt-1 flex-shrink-0" />
+            <Pencil className="w-3.5 h-3.5 text-gray-400 mt-1 flex-shrink-0" />
           </>
         )}
       </div>
+
+      {/* Edit hint — shown until first edit */}
+      {!hasEdited && (
+        <p className="text-xs text-gray-400 italic mb-3 -mt-1">Tap any field to edit</p>
+      )}
 
       {/* Core fields grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-3">
