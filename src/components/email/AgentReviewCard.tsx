@@ -44,7 +44,7 @@ export interface AgentReviewCardProps {
   showEventTypePicker?: boolean;
 
   // Callbacks
-  onConfirm: (events: AgentExtractedEvent[]) => Promise<void>;
+  onConfirm: (events: AgentExtractedEvent[], corrections?: {field_name: string; original_value: string; corrected_value: string}[]) => Promise<void>;
   onDiscard: () => Promise<void>;
   onViewInCalendar?: () => void;
 }
@@ -95,6 +95,7 @@ const CATEGORY_LABELS: Record<string, string> = Object.fromEntries(
 
 function EventForm({
   event,
+  originalEvent,
   onChange,
   index,
   total,
@@ -106,13 +107,14 @@ function EventForm({
   onViewInCalendar,
 }: {
   event: AgentExtractedEvent;
+  originalEvent: AgentExtractedEvent;
   onChange: (field: keyof AgentExtractedEvent, value: any) => void;
   index: number;
   total: number;
   conflicts: { title: string; year_group: string }[];
   isDuplicate: boolean;
   showEventTypePicker: boolean;
-  onConfirm: () => Promise<void>;
+  onConfirm: (corrections: {field_name: string; original_value: string; corrected_value: string}[]) => Promise<void>;
   onDiscard: () => Promise<void>;
   onViewInCalendar?: () => void;
 }) {
@@ -125,7 +127,17 @@ function EventForm({
 
   const handleConfirm = async () => {
     setConfirming(true);
-    try { await onConfirm(); } finally { setConfirming(false); }
+    try {
+      const trackedFields: (keyof AgentExtractedEvent)[] = ['title', 'date', 'time_start', 'venue', 'category', 'year_group'];
+      const corrections = trackedFields
+        .filter(f => String(event[f] || '') !== String(originalEvent[f] || ''))
+        .map(f => ({
+          field_name: f,
+          original_value: String(originalEvent[f] || ''),
+          corrected_value: String(event[f] || ''),
+        }));
+      await onConfirm(corrections);
+    } finally { setConfirming(false); }
   };
   const handleDiscard = async () => {
     setDiscarding(true);
@@ -446,6 +458,7 @@ export function AgentReviewCard({
   onViewInCalendar,
 }: AgentReviewCardProps) {
   const [events, setEvents] = useState<AgentExtractedEvent[]>(initialEvents);
+  const [originalEvents] = useState<AgentExtractedEvent[]>(initialEvents);
   const [dismissedIndices, setDismissedIndices] = useState<Set<number>>(new Set());
   const [sourceExpanded, setSourceExpanded] = useState(false);
   // Pulse attention animation — active until first interaction
@@ -455,9 +468,9 @@ export function AgentReviewCard({
     setEvents(prev => prev.map((ev, i) => i === eventIdx ? { ...ev, [field]: value } : ev));
   };
 
-  const handleEventConfirm = async (idx: number) => {
+  const handleEventConfirm = async (idx: number, corrections: {field_name: string; original_value: string; corrected_value: string}[]) => {
     setNeedsAttention(false);
-    await onConfirm([events[idx]]);
+    await onConfirm([events[idx]], corrections);
     const next = new Set(dismissedIndices).add(idx);
     setDismissedIndices(next);
     if (next.size === events.length) await onDiscard();
@@ -513,13 +526,14 @@ export function AgentReviewCard({
             <div key={idx} className="px-4 py-4">
               <EventForm
                 event={event}
+                originalEvent={originalEvents[idx]}
                 onChange={(field, value) => handleFieldChange(idx, field, value)}
                 index={idx}
                 total={visibleEvents.length}
                 conflicts={conflicts}
                 isDuplicate={isDuplicate}
                 showEventTypePicker={showEventTypePicker}
-                onConfirm={() => handleEventConfirm(idx)}
+                onConfirm={(corrections) => handleEventConfirm(idx, corrections)}
                 onDiscard={() => handleEventDiscard(idx)}
                 onViewInCalendar={onViewInCalendar}
               />

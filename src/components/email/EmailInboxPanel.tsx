@@ -197,7 +197,7 @@ export function EmailInboxPanel({ onViewInCalendar }: EmailInboxPanelProps = {})
                   conflicts={conflicts}
                   isDuplicate={isDuplicate}
                   showEventTypePicker={true}
-                  onConfirm={async (eventsToConfirm) => {
+                  onConfirm={async (eventsToConfirm, corrections) => {
                     const edited = eventsToConfirm[0];
                     const res = await fetch(API_ENDPOINTS.inboundEmail.stagingConfirm(ev._stagingId), {
                       method: 'POST',
@@ -211,6 +211,20 @@ export function EmailInboxPanel({ onViewInCalendar }: EmailInboxPanelProps = {})
                       }),
                     });
                     if (!res.ok) throw new Error(await res.text());
+                    const confirmed = await res.json();
+                    if (corrections && corrections.length > 0) {
+                      fetch(API_ENDPOINTS.extractionCorrections, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          event_id: confirmed.id,
+                          queue_id: item.id,
+                          user_id: user.id,
+                          confidence_score: ev.confidence_score,
+                          corrections,
+                        }),
+                      }).catch(() => {}); // fire and forget
+                    }
                     toast({ title: 'Added to calendar', description: edited.title });
                     setItems(prev => prev.map(i => {
                       if (i.id !== item.id) return i;

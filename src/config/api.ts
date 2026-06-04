@@ -22,10 +22,13 @@ export const API_ENDPOINTS = {
   },
   events: {
     checkConflicts: `${API_BASE_URL}/api/events/check-conflicts`,
+    school: `${API_BASE_URL}/api/events/school`,
+    personal: `${API_BASE_URL}/api/events/personal`,
     create: `${API_BASE_URL}/api/events`,
     update: (id: string | number) => `${API_BASE_URL}/api/events/${id}`,
     delete: (id: string | number) => `${API_BASE_URL}/api/events/${id}`,
   },
+  extractionCorrections: `${API_BASE_URL}/api/extraction-corrections`,
   inboundEmail: {
     pending: `${API_BASE_URL}/api/inbound-email/pending`,
     discard: (id: string) => `${API_BASE_URL}/api/inbound-email/${id}/discard`,

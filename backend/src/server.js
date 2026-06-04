@@ -700,6 +700,35 @@ app.post('/api/events/check-conflicts', async (req, res) => {
   }
 });
 
+// ─── Extraction corrections (self-learning audit trail) ──────────────────────
+app.post('/api/extraction-corrections', async (req, res) => {
+  const db = supabaseAdmin || supabase;
+  if (!db) return res.status(503).json({ error: 'Database unavailable' });
+
+  const { event_id, queue_id, user_id, confidence_score, corrections } = req.body;
+  if (!corrections || !Array.isArray(corrections) || corrections.length === 0) {
+    return res.status(400).json({ error: 'corrections array required' });
+  }
+
+  try {
+    const rows = corrections.map(c => ({
+      event_id: event_id || null,
+      queue_id: queue_id || null,
+      user_id: user_id || null,
+      confidence_score: confidence_score || null,
+      field_name: c.field_name,
+      original_value: c.original_value,
+      corrected_value: c.corrected_value,
+    }));
+    const { error } = await db.from('extraction_corrections').insert(rows);
+    if (error) throw error;
+    res.json({ saved: rows.length });
+  } catch (err) {
+    console.error('extraction corrections error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ─── Bulk index all confirmed events into Elastic ────────────────────────────
 app.post('/api/events/bulk-index', async (req, res) => {
   const adminSecret = process.env.ADMIN_SECRET;
