@@ -29,6 +29,11 @@ export const API_ENDPOINTS = {
     delete: (id: string | number) => `${API_BASE_URL}/api/events/${id}`,
   },
   extractionCorrections: `${API_BASE_URL}/api/extraction-corrections`,
+  prompts: {
+    list: `${API_BASE_URL}/api/prompts`,
+    review: `${API_BASE_URL}/api/prompts/review`,
+    apply: `${API_BASE_URL}/api/prompts/apply`,
+  },
   inboundEmail: {
     pending: `${API_BASE_URL}/api/inbound-email/pending`,
     discard: (id: string) => `${API_BASE_URL}/api/inbound-email/${id}/discard`,

@@ -10,7 +10,7 @@ const { devLog, devWarn, devError } = require('./utils/logger');
 const schoolDiscoveryService = require('./services/schoolDiscoveryService');
 const termDatesService = require('./services/termDatesService');
 const { CLAUDE_CONFIG, OPENAI_CONFIG } = require('./config/llmConfig');
-const { extractEventsFromEmail } = require('./services/geminiService');
+const { extractEventsFromEmail, getActivePrompt, invalidatePromptCache } = require('./services/geminiService');
 const { indexEvent, unindexEvent, findConflicts, findDuplicates, bulkIndex } = require('./services/elasticService');
 require('dotenv').config();
 
@@ -727,6 +727,144 @@ app.post('/api/extraction-corrections', async (req, res) => {
     console.error('extraction corrections error:', err.message);
     res.status(500).json({ error: err.message });
   }
+});
+
+// ─── Prompt review — analyse corrections and suggest improved prompt ──────────
+app.post('/api/prompts/review', async (req, res) => {
+  const adminSecret = process.env.ADMIN_SECRET;
+  const provided = req.headers['x-admin-secret'] || req.query.secret;
+  if (!adminSecret || provided !== adminSecret) return res.status(401).json({ error: 'Unauthorized' });
+
+  const db = supabaseAdmin || supabase;
+  if (!db) return res.status(503).json({ error: 'Database unavailable' });
+
+  try {
+    // Fetch corrections
+    const { data: corrections, error } = await db
+      .from('extraction_corrections')
+      .select('field_name, original_value, corrected_value, confidence_score')
+      .order('created_at', { ascending: false })
+      .limit(100);
+    if (error) throw error;
+    if (!corrections || corrections.length === 0) return res.json({ message: 'No corrections yet', patterns: [], suggested_prompt: null });
+
+    // Group by field_name
+    const grouped = corrections.reduce((acc, c) => {
+      if (!acc[c.field_name]) acc[c.field_name] = [];
+      acc[c.field_name].push(c);
+      return acc;
+    }, {});
+
+    const patterns = Object.entries(grouped).map(([field, rows]) => ({
+      field_name: field,
+      count: rows.length,
+      examples: rows.slice(0, 3).map(r => ({ original: r.original_value, corrected: r.corrected_value })),
+    }));
+
+    const currentPrompt = await getActivePrompt();
+
+    // Ask Gemini to suggest an improved prompt
+    const { GoogleGenerativeAI } = require('@google/generative-ai');
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+
+    const reviewPrompt = `You are helping improve an AI extraction prompt used to extract school events from emails.
+
+Here is the current prompt:
+---
+${currentPrompt}
+---
+
+Here are corrections that parents made to the AI's extractions (what the AI got wrong vs what it should have been):
+${patterns.map(p => `
+Field: ${p.field_name} (${p.count} corrections)
+Examples:
+${p.examples.map(e => `  - AI said: "${e.original || '(empty)'}" → Parent corrected to: "${e.corrected}"`).join('\n')}`).join('\n')}
+
+Based on these correction patterns:
+1. Identify what the AI consistently gets wrong
+2. Suggest a specific improved prompt that would fix these issues
+3. Keep the same JSON output format — only improve the instructions
+
+Return a JSON object with this exact format:
+{
+  "summary": "2-3 sentence plain English summary of what patterns you found",
+  "patterns_found": ["pattern 1", "pattern 2"],
+  "suggested_prompt": "the full improved prompt text"
+}`;
+
+    const result = await model.generateContent(reviewPrompt);
+    const text = result.response.text().trim().replace(/^```json\n?/, '').replace(/\n?```$/, '');
+    const parsed = JSON.parse(text);
+
+    res.json({
+      correction_count: corrections.length,
+      patterns,
+      summary: parsed.summary,
+      patterns_found: parsed.patterns_found,
+      suggested_prompt: parsed.suggested_prompt,
+      current_prompt: currentPrompt,
+    });
+  } catch (err) {
+    console.error('Prompt review error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── Prompt apply — promote suggested prompt to active ───────────────────────
+app.post('/api/prompts/apply', async (req, res) => {
+  const adminSecret = process.env.ADMIN_SECRET;
+  const provided = req.headers['x-admin-secret'] || req.query.secret;
+  if (!adminSecret || provided !== adminSecret) return res.status(401).json({ error: 'Unauthorized' });
+
+  const db = supabaseAdmin || supabase;
+  if (!db) return res.status(503).json({ error: 'Database unavailable' });
+
+  const { suggested_prompt, summary, correction_count } = req.body;
+  if (!suggested_prompt) return res.status(400).json({ error: 'suggested_prompt required' });
+
+  try {
+    // Archive current active prompt
+    await db.from('prompt_versions').update({ status: 'archived' }).eq('status', 'active');
+
+    // Get next version number
+    const { data: latest } = await db.from('prompt_versions').select('version').order('version', { ascending: false }).limit(1).single();
+    const nextVersion = (latest?.version || 1) + 1;
+
+    // Insert new active prompt
+    const { data: newPrompt, error } = await db.from('prompt_versions').insert({
+      prompt_text: suggested_prompt,
+      version: nextVersion,
+      status: 'active',
+      summary: summary || `v${nextVersion} — improved based on ${correction_count || 0} corrections`,
+      correction_count_at_review: correction_count || 0,
+      activated_at: new Date().toISOString(),
+    }).select().single();
+
+    if (error) throw error;
+
+    // Invalidate prompt cache so next extraction uses new prompt
+    invalidatePromptCache();
+
+    res.json({ version: nextVersion, activated_at: newPrompt.activated_at });
+  } catch (err) {
+    console.error('Prompt apply error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── Prompt versions list ─────────────────────────────────────────────────────
+app.get('/api/prompts', async (req, res) => {
+  const adminSecret = process.env.ADMIN_SECRET;
+  const provided = req.headers['x-admin-secret'] || req.query.secret;
+  if (!adminSecret || provided !== adminSecret) return res.status(401).json({ error: 'Unauthorized' });
+
+  const db = supabaseAdmin || supabase;
+  const { data, error } = await db.from('prompt_versions')
+    .select('id, version, status, summary, correction_count_at_review, activated_at, created_at')
+    .order('version', { ascending: false });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ prompts: data });
 });
 
 // ─── Bulk index all confirmed events into Elastic ────────────────────────────

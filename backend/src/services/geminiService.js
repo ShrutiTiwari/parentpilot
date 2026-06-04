@@ -1,7 +1,8 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const Anthropic = require('@anthropic-ai/sdk');
+const { createClient } = require('@supabase/supabase-js');
 
-const EXTRACTION_PROMPT = `You are an AI assistant helping parents manage school events.
+const FALLBACK_PROMPT = `You are an AI assistant helping parents manage school events.
 
 Extract ALL school events from the following email. For each event return a JSON object.
 
@@ -33,6 +34,33 @@ Rules:
 - actions should be concrete parent tasks (e.g. "Return permission slip", "Pay £5 online")
 `;
 
+// ─── Prompt cache — refreshed every 5 minutes ─────────────────────────────────
+let cachedPrompt = null;
+let cacheExpiry = 0;
+
+async function getActivePrompt() {
+  if (cachedPrompt && Date.now() < cacheExpiry) return cachedPrompt;
+  try {
+    const db = createClient(
+      process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
+    const { data, error } = await db
+      .from('prompt_versions')
+      .select('prompt_text')
+      .eq('status', 'active')
+      .order('activated_at', { ascending: false })
+      .limit(1)
+      .single();
+    if (error || !data) throw new Error('no active prompt');
+    cachedPrompt = data.prompt_text;
+    cacheExpiry = Date.now() + 5 * 60 * 1000;
+    return cachedPrompt;
+  } catch {
+    return FALLBACK_PROMPT;
+  }
+}
+
 function parseEventsJson(text) {
   const cleaned = text.trim()
     .replace(/^```json\n?/, '').replace(/\n?```$/, '');
@@ -47,16 +75,16 @@ function parseEventsJson(text) {
   return { events, confidence_score: Math.round(avgConfidence * 100) / 100 };
 }
 
-async function extractWithGemini(emailContent) {
+async function extractWithGemini(emailContent, prompt) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error('GEMINI_API_KEY not configured');
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-  const result = await model.generateContent(EXTRACTION_PROMPT + '\n\nEmail:\n' + emailContent);
+  const result = await model.generateContent(prompt + '\n\nEmail:\n' + emailContent);
   return result.response.text();
 }
 
-async function extractWithClaude(emailContent) {
+async function extractWithClaude(emailContent, prompt) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured');
   const client = new Anthropic({ apiKey });
@@ -65,7 +93,7 @@ async function extractWithClaude(emailContent) {
     max_tokens: 2048,
     messages: [{
       role: 'user',
-      content: EXTRACTION_PROMPT + '\n\nEmail:\n' + emailContent
+      content: prompt + '\n\nEmail:\n' + emailContent
     }]
   });
   return message.content[0].text;
@@ -76,14 +104,16 @@ async function extractEventsFromEmail({ subject, body, html }) {
 
 ${body || html || '(no content)'}`;
 
+  const prompt = await getActivePrompt();
+
   // Try Gemini first, fall back to Claude if quota exceeded
   let text;
   try {
-    text = await extractWithGemini(emailContent);
+    text = await extractWithGemini(emailContent, prompt);
   } catch (err) {
     if (err.message && err.message.includes('429')) {
       console.warn('Gemini quota exceeded, falling back to Claude');
-      text = await extractWithClaude(emailContent);
+      text = await extractWithClaude(emailContent, prompt);
     } else {
       throw err;
     }
@@ -92,4 +122,9 @@ ${body || html || '(no content)'}`;
   return parseEventsJson(text);
 }
 
-module.exports = { extractEventsFromEmail };
+function invalidatePromptCache() {
+  cachedPrompt = null;
+  cacheExpiry = 0;
+}
+
+module.exports = { extractEventsFromEmail, getActivePrompt, invalidatePromptCache };
