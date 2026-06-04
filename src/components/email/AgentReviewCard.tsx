@@ -479,15 +479,11 @@ export function AgentReviewCard({
       {/* Source strip */}
       <div className="bg-gray-50 border-b border-gray-100">
         <div className="w-full flex items-center gap-2 px-4 py-2.5">
-          <SourceIcon className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-          <span className="text-xs text-gray-500 truncate flex-1">
-            {source === 'email' ? 'Forwarded email' : 'Screenshot'} · {sourceLabel}
-            {sourceSubject && <span className="ml-1 text-gray-400">· {sourceSubject}</span>}
-          </span>
           <ConfidenceBadge score={confidenceScore} />
+          <div className="flex-1" />
           {sourceBody && (
             <button
-              className="text-xs text-blue-500 hover:text-blue-700 font-medium whitespace-nowrap ml-1 flex items-center gap-1"
+              className="text-xs text-blue-500 hover:text-blue-700 font-medium whitespace-nowrap flex items-center gap-1"
               onClick={() => { setNeedsAttention(false); setSourceExpanded(v => !v); }}
             >
               📧 {sourceExpanded ? 'Hide email' : 'View original email'}
