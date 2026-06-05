@@ -13,6 +13,7 @@ import ResetPassword from "./pages/ResetPassword";
 import SharedCalendar from "./pages/shared/[shareToken]";
 import NotFound from "./pages/NotFound";
 import ReviewPreview from "./pages/ReviewPreview";
+import Admin from "./pages/Admin";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,7 @@ const App = () => (
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/shared/:shareToken" element={<SharedCalendar />} />
                 <Route path="/review-preview" element={<ReviewPreview />} />
+                <Route path="/admin" element={<Admin />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </SchoolAuthorizationProvider>
