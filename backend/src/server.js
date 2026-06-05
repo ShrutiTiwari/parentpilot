@@ -10,7 +10,7 @@ const { devLog, devWarn, devError } = require('./utils/logger');
 const schoolDiscoveryService = require('./services/schoolDiscoveryService');
 const termDatesService = require('./services/termDatesService');
 const { CLAUDE_CONFIG, OPENAI_CONFIG } = require('./config/llmConfig');
-const { extractEventsFromEmail, getActivePrompt, invalidatePromptCache } = require('./services/geminiService');
+const { extractEventsFromEmail, getActivePrompt, invalidatePromptCache, callAI } = require('./services/geminiService');
 const { indexEvent, unindexEvent, findConflicts, findDuplicates, bulkIndex } = require('./services/elasticService');
 require('dotenv').config();
 
@@ -788,28 +788,8 @@ Return a JSON object with this exact format:
   "suggested_prompt": "the full improved prompt text"
 }`;
 
-    let text;
-    try {
-      const { GoogleGenerativeAI } = require('@google/generative-ai');
-      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-      const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-      const result = await model.generateContent(reviewPrompt);
-      text = result.response.text();
-    } catch (err) {
-      if (err.message && err.message.includes('429')) {
-        const Anthropic = require('@anthropic-ai/sdk');
-        const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-        const msg = await client.messages.create({
-          model: 'claude-haiku-4-5-20251001',
-          max_tokens: 2048,
-          messages: [{ role: 'user', content: reviewPrompt }],
-        });
-        text = msg.content[0].text;
-      } else {
-        throw err;
-      }
-    }
-    const cleaned = text.trim().replace(/^```json\n?/, '').replace(/\n?```$/, '');
+    const rawText = await callAI(reviewPrompt);
+    const cleaned = rawText.trim().replace(/^```json\n?/, '').replace(/\n?```$/, '');
     const parsed = JSON.parse(cleaned);
 
     res.json({

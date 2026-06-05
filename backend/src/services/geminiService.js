@@ -75,28 +75,31 @@ function parseEventsJson(text) {
   return { events, confidence_score: Math.round(avgConfidence * 100) / 100 };
 }
 
-async function extractWithGemini(emailContent, prompt) {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error('GEMINI_API_KEY not configured');
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-  const result = await model.generateContent(prompt + '\n\nEmail:\n' + emailContent);
-  return result.response.text();
-}
-
-async function extractWithClaude(emailContent, prompt) {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured');
-  const client = new Anthropic({ apiKey });
-  const message = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 2048,
-    messages: [{
-      role: 'user',
-      content: prompt + '\n\nEmail:\n' + emailContent
-    }]
-  });
-  return message.content[0].text;
+// ─── Shared AI call with Gemini → Claude fallback ────────────────────────────
+async function callAI(prompt, maxTokens = 2048) {
+  // Try Gemini first
+  try {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) throw new Error('GEMINI_API_KEY not configured');
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    const result = await model.generateContent(prompt);
+    return result.response.text();
+  } catch (err) {
+    if (err.message && err.message.includes('429')) {
+      console.warn('Gemini quota exceeded, falling back to Claude');
+      const apiKey = process.env.ANTHROPIC_API_KEY;
+      if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured');
+      const client = new Anthropic({ apiKey });
+      const message = await client.messages.create({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: maxTokens,
+        messages: [{ role: 'user', content: prompt }],
+      });
+      return message.content[0].text;
+    }
+    throw err;
+  }
 }
 
 async function extractEventsFromEmail({ subject, body, html }) {
@@ -105,20 +108,7 @@ async function extractEventsFromEmail({ subject, body, html }) {
 ${body || html || '(no content)'}`;
 
   const prompt = await getActivePrompt();
-
-  // Try Gemini first, fall back to Claude if quota exceeded
-  let text;
-  try {
-    text = await extractWithGemini(emailContent, prompt);
-  } catch (err) {
-    if (err.message && err.message.includes('429')) {
-      console.warn('Gemini quota exceeded, falling back to Claude');
-      text = await extractWithClaude(emailContent, prompt);
-    } else {
-      throw err;
-    }
-  }
-
+  const text = await callAI(prompt + '\n\nEmail:\n' + emailContent);
   return parseEventsJson(text);
 }
 
@@ -127,4 +117,4 @@ function invalidatePromptCache() {
   cacheExpiry = 0;
 }
 
-module.exports = { extractEventsFromEmail, getActivePrompt, invalidatePromptCache };
+module.exports = { extractEventsFromEmail, getActivePrompt, invalidatePromptCache, callAI };
