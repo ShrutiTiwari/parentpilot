@@ -43,7 +43,7 @@ app.use(cors({
     callback(new Error(`CORS blocked: ${origin}`), false);
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-admin-secret'],
   credentials: true,
   optionsSuccessStatus: 200,
 }));
