@@ -10,7 +10,7 @@ const { devLog, devWarn, devError } = require('./utils/logger');
 const schoolDiscoveryService = require('./services/schoolDiscoveryService');
 const termDatesService = require('./services/termDatesService');
 const { CLAUDE_CONFIG, OPENAI_CONFIG } = require('./config/llmConfig');
-const { extractEventsFromEmail, getActivePrompt, invalidatePromptCache, callAI } = require('./services/geminiService');
+const { extractEventsFromEmail, getActivePrompt, invalidatePromptCache, callAI } = require('./services/llmService');
 const { indexEvent, unindexEvent, findConflicts, findDuplicates, bulkIndex } = require('./services/elasticService');
 require('dotenv').config();
 
