@@ -763,11 +763,6 @@ app.post('/api/prompts/review', async (req, res) => {
 
     const currentPrompt = await getActivePrompt();
 
-    // Ask Gemini to suggest an improved prompt
-    const { GoogleGenerativeAI } = require('@google/generative-ai');
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-
     const reviewPrompt = `You are helping improve an AI extraction prompt used to extract school events from emails.
 
 Here is the current prompt:
@@ -793,9 +788,29 @@ Return a JSON object with this exact format:
   "suggested_prompt": "the full improved prompt text"
 }`;
 
-    const result = await model.generateContent(reviewPrompt);
-    const text = result.response.text().trim().replace(/^```json\n?/, '').replace(/\n?```$/, '');
-    const parsed = JSON.parse(text);
+    let text;
+    try {
+      const { GoogleGenerativeAI } = require('@google/generative-ai');
+      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+      const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+      const result = await model.generateContent(reviewPrompt);
+      text = result.response.text();
+    } catch (err) {
+      if (err.message && err.message.includes('429')) {
+        const Anthropic = require('@anthropic-ai/sdk');
+        const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+        const msg = await client.messages.create({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 2048,
+          messages: [{ role: 'user', content: reviewPrompt }],
+        });
+        text = msg.content[0].text;
+      } else {
+        throw err;
+      }
+    }
+    const cleaned = text.trim().replace(/^```json\n?/, '').replace(/\n?```$/, '');
+    const parsed = JSON.parse(cleaned);
 
     res.json({
       correction_count: corrections.length,
