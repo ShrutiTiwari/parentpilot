@@ -26,6 +26,7 @@ import { isFeatureEnabled } from '../config/features';
 import { DonationModal } from './donation/DonationModal';
 import { displayEvent } from '@/utils/visbilityControl';
 import { EmailInboxPanel } from './email/EmailInboxPanel';
+import { EmailSetupBanner } from './email/EmailSetupBanner';
 import { AgentReviewCard, AgentExtractedEvent } from './email/AgentReviewCard';
 
 interface DashboardProps {
@@ -82,6 +83,8 @@ export function Dashboard({ showAuthModal, setShowAuthModal, onSignOut, initialA
   const [personalSearchTerm, setPersonalSearchTerm] = useState('');
   const [personalShowUpcomingOnly, setPersonalShowUpcomingOnly] = useState(true);
   const [personalSelectedCategories, setPersonalSelectedCategories] = useState<string[]>([]);
+
+  const [hasReceivedEmails, setHasReceivedEmails] = useState(false);
 
   // Screenshot extraction review — shows AgentReviewCard instead of EventDialog
   const [screenshotReview, setScreenshotReview] = useState<{
@@ -344,8 +347,13 @@ export function Dashboard({ showAuthModal, setShowAuthModal, onSignOut, initialA
 
           {user && (
             <div className="px-4 pt-2">
+              <EmailSetupBanner
+                userEmail={user.email ?? ''}
+                hasReceivedEmails={hasReceivedEmails}
+              />
               <EmailInboxPanel
                 onViewInCalendar={handleViewInCalendar}
+                onItemsLoaded={(count) => { if (count > 0) setHasReceivedEmails(true); }}
               />
             </div>
           )}

@@ -346,27 +346,21 @@ app.post('/api/inbound-email', async (req, res) => {
     }
 
     // Step 1: Resolve user_id from plus-addressed To field
-    // Users forward to calendar+{userId}@inbound.powerparent.co.uk
+    // Users forward to calendar+{emailUsername}@inbound.powerparent.co.uk
     // OriginalRecipient is the most reliable field for this
     let resolvedUserId = null;
     const toAddress = OriginalRecipient || (ToFull && ToFull[0]?.Email) || '';
     const plusMatch = toAddress.match(/\+([^@+]+)@/);
     if (plusMatch) {
       const token = plusMatch[1];
-      // token is either a user UUID directly, or a short token we look up
-      // Try direct UUID first
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-      if (uuidRegex.test(token)) {
-        resolvedUserId = token;
-      } else {
-        // Look up short token in profiles (future: add inbound_token column)
-        const { data: profile } = await db
-          .from('profiles')
-          .select('id')
-          .eq('inbound_token', token)
-          .single();
-        if (profile) resolvedUserId = profile.id;
-      }
+      // token is the sanitised email username (e.g. "shrutikierti")
+      // Look up profile whose email starts with this username
+      const { data: profile } = await db
+        .from('profiles')
+        .select('id')
+        .ilike('email', `${token}@%`)
+        .single();
+      if (profile) resolvedUserId = profile.id;
     }
     log('user_resolved', { toAddress, resolvedUserId });
 

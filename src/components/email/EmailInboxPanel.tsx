@@ -43,9 +43,10 @@ interface ConflictResult {
 
 interface EmailInboxPanelProps {
   onViewInCalendar?: (event: any) => void;
+  onItemsLoaded?: (count: number) => void;
 }
 
-export function EmailInboxPanel({ onViewInCalendar }: EmailInboxPanelProps = {}) {
+export function EmailInboxPanel({ onViewInCalendar, onItemsLoaded }: EmailInboxPanelProps = {}) {
   const { user } = useAuth();
   const { selectedProfile } = useChildProfiles();
   const [items, setItems] = useState<QueueItem[]>([]);
@@ -55,7 +56,9 @@ export function EmailInboxPanel({ onViewInCalendar }: EmailInboxPanelProps = {})
   // conflicts keyed by staging event id
   const [conflictsMap, setConflictsMap] = useState<Record<string, ConflictResult[]>>({});
 
-  const inboundAddress = user ? `calendar+${user.id}@inbound.powerparent.co.uk` : '';
+  const inboundAddress = user?.email
+    ? `calendar+${user.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '')}@inbound.powerparent.co.uk`
+    : '';
   const copyAddress = () => {
     navigator.clipboard.writeText(inboundAddress);
     setCopied(true);
@@ -71,6 +74,7 @@ export function EmailInboxPanel({ onViewInCalendar }: EmailInboxPanelProps = {})
       const data = await res.json();
       const fetchedItems: QueueItem[] = data.items || [];
       setItems(fetchedItems);
+      onItemsLoaded?.(fetchedItems.length);
 
       // Fetch conflicts for all pending staging events
       const allStagingEvents = fetchedItems.flatMap(i => i.staging_events);
