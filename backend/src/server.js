@@ -10,7 +10,7 @@ const { devLog, devWarn, devError } = require('./utils/logger');
 const schoolDiscoveryService = require('./services/schoolDiscoveryService');
 const termDatesService = require('./services/termDatesService');
 const { CLAUDE_CONFIG, OPENAI_CONFIG } = require('./config/llmConfig');
-const { extractEventsFromEmail, getActivePrompt, invalidatePromptCache, callAI } = require('./services/llmService');
+const { extractEventsFromEmail, getActivePrompt, invalidatePromptCache, callAI, callAIVision } = require('./services/llmService');
 const { indexEvent, unindexEvent, findConflicts, findDuplicates, bulkIndex } = require('./services/elasticService');
 require('dotenv').config();
 
@@ -56,7 +56,11 @@ app.use((req, res, next) => {
 app.set('trust proxy', 1);
 
 // Rate limiters
-const generalLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 });
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV === 'production' ? 300 : 1000,
+  skip: (req) => req.path.startsWith('/api/events') || req.path === '/api/health',
+});
 const uploadLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10 });
 app.use(generalLimiter);
 
@@ -83,22 +87,21 @@ app.post('/api/extract-event', uploadLimiter, upload.single('image'), async (req
   try {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
 
-    const mimeType = req.file.mimetype;
-
-    const extractedEvent = await extractDataFromImage(
-      req.file.buffer,
-      req.file.originalname,
-      mimeType
+    const { EXTRACTION_PROMPT } = require('./config/prompts');
+    const text = await callAIVision(
+      EXTRACTION_PROMPT + '\n\nExtract all events from this image.',
+      req.file.buffer.toString('base64'),
+      req.file.mimetype
     );
 
-    res.setHeader('Content-Type', 'application/json');
-    res.send(JSON.stringify({ event: extractedEvent }));
+    const cleaned = text.trim().replace(/^```json\n?/, '').replace(/\n?```$/, '');
+    let events = JSON.parse(cleaned);
+    if (!Array.isArray(events)) events = [events];
+
+    res.json({ events });
   } catch (error) {
     console.error('extract-event error:', error);
-    const isUserFriendly = error.message.includes('refused') ||
-      error.message.includes('try again') ||
-      error.message.includes('busy');
-    res.status(isUserFriendly ? 400 : 500).json({
+    res.status(500).json({
       error: error.message || 'Failed to extract event',
       type: 'extraction_error',
     });
@@ -342,7 +345,32 @@ app.post('/api/inbound-email', async (req, res) => {
       return res.status(200).json({ received: true });
     }
 
-    // Step 1: Store raw email
+    // Step 1: Resolve user_id from plus-addressed To field
+    // Users forward to calendar+{userId}@inbound.powerparent.co.uk
+    // OriginalRecipient is the most reliable field for this
+    let resolvedUserId = null;
+    const toAddress = OriginalRecipient || (ToFull && ToFull[0]?.Email) || '';
+    const plusMatch = toAddress.match(/\+([^@+]+)@/);
+    if (plusMatch) {
+      const token = plusMatch[1];
+      // token is either a user UUID directly, or a short token we look up
+      // Try direct UUID first
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (uuidRegex.test(token)) {
+        resolvedUserId = token;
+      } else {
+        // Look up short token in profiles (future: add inbound_token column)
+        const { data: profile } = await db
+          .from('profiles')
+          .select('id')
+          .eq('inbound_token', token)
+          .single();
+        if (profile) resolvedUserId = profile.id;
+      }
+    }
+    log('user_resolved', { toAddress, resolvedUserId });
+
+    // Step 2: Store raw email
     const { data: queued, error: insertError } = await db
       .from('email_ingestion_queue')
       .insert({
@@ -351,7 +379,7 @@ app.post('/api/inbound-email', async (req, res) => {
         raw_html: html,
         from_address: fromAddress,
         status: 'processing',
-        user_id: null,
+        user_id: resolvedUserId,
       })
       .select()
       .single();
@@ -435,7 +463,7 @@ app.get('/api/inbound-email/pending', async (req, res) => {
   // Fetch queue items that still have at least one pending staging event
   const { data: queueItems, error: queueError } = await db
     .from('email_ingestion_queue')
-    .select('id, raw_subject, raw_body, from_address, received_at, confidence_score, status, error_message')
+    .select('id, raw_subject, raw_body, raw_html, from_address, received_at, confidence_score, status, error_message')
     .or(`user_id.eq.${user_id},user_id.is.null`)
     .eq('status', 'pending_review')
     .order('received_at', { ascending: false });

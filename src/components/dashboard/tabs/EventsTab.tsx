@@ -90,6 +90,7 @@ export function EventsTab({
   const { user } = useAuth();
   const { selectedProfile } = useChildProfiles();
   const [activeSubTab, setActiveSubTab] = useState(initialActiveSubTab || 'school');
+  const [calendarCollapsed, setCalendarCollapsed] = useState(false);
 
   // Handle sub-tab change with URL navigation
   const handleSubTabChange = (value: string) => {
@@ -113,8 +114,15 @@ export function EventsTab({
 
   return (
     <div className="space-y-6">
+      {/* Section heading */}
+      <WelcomeBanner
+        collapsed={calendarCollapsed}
+        onToggle={() => setCalendarCollapsed(c => !c)}
+        eventCount={schoolFilteredEvents.length + personalFilteredEvents.length}
+      />
+
       {/* Events Sub-Tabs */}
-      <Tabs value={activeSubTab} onValueChange={handleSubTabChange} className="w-full">
+      {!calendarCollapsed && <Tabs value={activeSubTab} onValueChange={handleSubTabChange} className="w-full">
         <TabsList className="w-full">
           <TabsTrigger value="school" className="text-xs sm:text-sm font-medium flex-1 min-w-0">
             <span className="hidden sm:inline">🏫 School Events</span>
@@ -129,9 +137,6 @@ export function EventsTab({
             <span className="sm:hidden">📅</span>
           </TabsTrigger>
         </TabsList>
-
-        {/* Welcome Banner */}
-        <WelcomeBanner />
 
         <TabsContent value="school" className="space-y-6 mt-6">
           <div className="flex justify-end items-center mb-6">
@@ -197,7 +202,7 @@ export function EventsTab({
             isSchoolAdmin={isSchoolAdmin}
           />
         </TabsContent>
-      </Tabs>
+      </Tabs>}
     </div>
   );
 } 

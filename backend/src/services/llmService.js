@@ -75,28 +75,37 @@ function parseEventsJson(text) {
   return { events, confidence_score: Math.round(avgConfidence * 100) / 100 };
 }
 
-// ─── Shared AI call with Gemini → Claude fallback ────────────────────────────
+// ─── Provider methods ─────────────────────────────────────────────────────────
+
+async function callGemini(prompt) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error('GEMINI_API_KEY not configured');
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+  const result = await model.generateContent(prompt);
+  return result.response.text();
+}
+
+async function callClaude(prompt, maxTokens = 2048) {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured');
+  const client = new Anthropic({ apiKey });
+  const message = await client.messages.create({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: maxTokens,
+    messages: [{ role: 'user', content: prompt }],
+  });
+  return message.content[0].text;
+}
+
+// ─── Shared AI call — swap providers by commenting/uncommenting ───────────────
 async function callAI(prompt, maxTokens = 2048) {
-  // Try Gemini first
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) throw new Error('GEMINI_API_KEY not configured');
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-    const result = await model.generateContent(prompt);
-    return result.response.text();
+    return await callGemini(prompt);           // PRIMARY: Gemini 2.0 Flash
   } catch (err) {
-    if (err.message && err.message.includes('429')) {
+    if (err.status === 429 || (err.message && err.message.includes('429'))) {
       console.warn('Gemini quota exceeded, falling back to Claude');
-      const apiKey = process.env.ANTHROPIC_API_KEY;
-      if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured');
-      const client = new Anthropic({ apiKey });
-      const message = await client.messages.create({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: maxTokens,
-        messages: [{ role: 'user', content: prompt }],
-      });
-      return message.content[0].text;
+      return await callClaude(prompt, maxTokens); // FALLBACK: Claude Haiku
     }
     throw err;
   }
@@ -117,4 +126,49 @@ function invalidatePromptCache() {
   cacheExpiry = 0;
 }
 
-module.exports = { extractEventsFromEmail, getActivePrompt, invalidatePromptCache, callAI };
+// ─── Image provider methods ───────────────────────────────────────────────────
+
+async function callGeminiVision(prompt, imageBase64, mimeType) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error('GEMINI_API_KEY not configured');
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+  const result = await model.generateContent([
+    prompt,
+    { inlineData: { data: imageBase64, mimeType } },
+  ]);
+  return result.response.text();
+}
+
+async function callClaudeVision(prompt, imageBase64, mimeType, maxTokens = 2048) {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured');
+  const client = new Anthropic({ apiKey });
+  const message = await client.messages.create({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: maxTokens,
+    messages: [{
+      role: 'user',
+      content: [
+        { type: 'image', source: { type: 'base64', media_type: mimeType, data: imageBase64 } },
+        { type: 'text', text: prompt },
+      ],
+    }],
+  });
+  return message.content[0].text;
+}
+
+// ─── Shared image AI call — swap providers by commenting/uncommenting ─────────
+async function callAIVision(prompt, imageBase64, mimeType) {
+  try {
+    return await callGeminiVision(prompt, imageBase64, mimeType);    // PRIMARY: Gemini 2.0 Flash
+  } catch (err) {
+    if (err.status === 429 || (err.message && err.message.includes('429'))) {
+      console.warn('Gemini quota exceeded for image, falling back to Claude');
+      return await callClaudeVision(prompt, imageBase64, mimeType);  // FALLBACK: Claude Haiku
+    }
+    throw err;
+  }
+}
+
+module.exports = { extractEventsFromEmail, getActivePrompt, invalidatePromptCache, callAI, callAIVision };

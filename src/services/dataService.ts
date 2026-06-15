@@ -164,111 +164,33 @@ export const dataService = {
   },
 
   async getSchoolEventsFromDb(schoolName: string): Promise<Event[]> {
-    try {
-      // Fetch the school ID from the database
-      const { data: school, error: schoolError } = await supabase
-        .from('schools')
-        .select('id')
-        .eq('name', schoolName)
-        .single();
-
-      if (schoolError) {
-        console.error('Error fetching school:', schoolError);
-        throw new Error('NO_EVENTS_DATA');
-      }
-
-      if (!school) {
-        console.error('School not found:', schoolName);
-        throw new Error('NO_EVENTS_DATA');
-      }
-
-      // Fetch events for this school from the database
-      const { data: events, error: eventsError } = await supabase
-        .from('events')
-        .select(`
-          *,
-          todos!fk_todos_event(*)
-        `)
-        .eq('school_id', school.id)
-        .order('date', { ascending: true });
-
-      if (eventsError) {
-        console.error('Error fetching events:', eventsError);
-        throw eventsError;
-      }
-
-      if (!events || events.length === 0) {
-        return [];
-      }
-
-      // Map the events to include school_code_required and parse year groups
-      const mappedEvents = events.map(ev => {
-        // Parse year_group string into an array if it contains commas
-        let yearGroups: string[] = [];
-        if (ev.year_group) {
-          if (ev.year_group.includes(',')) {
-            yearGroups = ev.year_group.split(',').map((yg: string) => yg.trim());
-          } else {
-            yearGroups = [ev.year_group];
-          }
-        }
-
-        return {
-          ...ev,
-          yearGroup: ev.year_group,
-          yearGroups: yearGroups,
-          todos: ev.todos || [],
-          school_code_required: ev.school_code_required || false
-        };
-      });
-
-      return mappedEvents;
-    } catch (error) {
-      console.error('Error fetching school events from DB:', error);
-      if (error.message === 'NO_EVENTS_DATA') {
-        throw error;
-      }
-      return [];
+    const res = await fetch(`${API_ENDPOINTS.events.school}?school_name=${encodeURIComponent(schoolName)}`);
+    if (!res.ok) {
+      if (res.status === 404) return [];
+      throw new Error('NO_EVENTS_DATA');
     }
+    const { events } = await res.json();
+    return (events || []).map((ev: any) => {
+      const yearGroups = ev.year_group
+        ? ev.year_group.includes(',')
+          ? ev.year_group.split(',').map((yg: string) => yg.trim())
+          : [ev.year_group]
+        : [];
+      return { ...ev, yearGroup: ev.year_group, yearGroups, todos: ev.todos || [], school_code_required: ev.school_code_required || false };
+    });
   },
 
   async getPersonalEvents(userId: string): Promise<Event[]> {
-    try {
-      // Fetch personal events with their todos
-      const { data: events, error: eventsError } = await supabase
-        .from('events')
-        .select(`
-          *,
-          todos!fk_todos_event(*)
-        `)
-        .eq('created_by_user_id', userId)
-        .order('date', { ascending: true });
-
-      if (eventsError) throw eventsError;
-      if (!events || events.length === 0) return [];
-
-      // Convert the events to the expected format
-      return events.map(event => {
-        // Parse year_group string into an array if it contains commas
-        let yearGroups: string[] = [];
-        if (event.year_group) {
-          if (event.year_group.includes(',')) {
-            yearGroups = event.year_group.split(',').map((yg: string) => yg.trim());
-          } else {
-            yearGroups = [event.year_group];
-          }
-        }
-
-        return {
-          ...event,
-          yearGroup: event.year_group,
-          yearGroups: yearGroups,
-          todos: event.todos || []
-        };
-      });
-    } catch (error) {
-      console.error('Error fetching personal events:', error);
-      return [];
-    }
+    const res = await fetch(`${API_ENDPOINTS.events.personal}?user_id=${encodeURIComponent(userId)}`);
+    if (!res.ok) return [];
+    const { events } = await res.json();
+    return (events || []).map((ev: any) => {
+      const yearGroups = ev.year_group
+        ? ev.year_group.includes(',')
+          ? ev.year_group.split(',').map((yg: string) => yg.trim())
+          : [ev.year_group]
+        : [];
+      return { ...ev, yearGroup: ev.year_group, yearGroups, todos: ev.todos || [] };
+    });
   }
 };

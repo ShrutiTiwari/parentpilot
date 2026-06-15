@@ -350,7 +350,7 @@ export function Dashboard({ showAuthModal, setShowAuthModal, onSignOut, initialA
             </div>
           )}
 
-          <div className="space-y-6">
+          <div className="space-y-6 px-4">
             <EventsTab
               initialActiveSubTab={initialActiveSubTab}
               hasSchoolAccess={hasSchoolAccess}

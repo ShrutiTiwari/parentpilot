@@ -49,14 +49,9 @@ export const AddEventTabs: React.FC<AddEventTabsProps> = ({
   };
 
   const handleExtractEvent = async (imageFile: File) => {
-    // Prevent rapid successive calls
     const now = Date.now();
     if (now - lastApiCallRef.current < RETRY_DELAY) {
-      toast({
-        title: 'Please Wait',
-        description: 'Please wait a moment before trying again.',
-        variant: 'destructive',
-      });
+      toast({ title: 'Please Wait', description: 'Please wait a moment before trying again.', variant: 'destructive' });
       return;
     }
     lastApiCallRef.current = now;
@@ -64,7 +59,7 @@ export const AddEventTabs: React.FC<AddEventTabsProps> = ({
     setIsExtracting(true);
     setExtractError(null);
     setShowModal(false);
-    
+
     try {
       const formData = new FormData();
       formData.append('image', imageFile);
@@ -72,117 +67,25 @@ export const AddEventTabs: React.FC<AddEventTabsProps> = ({
         method: 'POST',
         body: formData,
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
-        
-        // Handle different types of errors with appropriate user messages
-        if (errorData.type === 'extraction_error') {
-          // This is a user-friendly error from our backend
-          throw new Error(errorData.error);
-        } else if (response.status === 413) {
-          throw new Error('File is too large. Please use a file smaller than 10MB.');
-        } else if (response.status === 415) {
-          throw new Error('Invalid file type. Please upload an image file (JPEG, PNG, etc.).');
-        } else if (response.status === 400) {
-          throw new Error(errorData.error || 'Invalid request. Please check your file and try again.');
-        } else if (response.status === 503) {
-          throw new Error('Service temporarily unavailable. Please try again in a few minutes.');
-        } else {
-          throw new Error(errorData.error || 'Failed to extract event details. Please try again.');
-        }
+        throw new Error(errorData.error || 'Failed to extract event details. Please try again.');
       }
-      
+
       const data = await response.json();
-      
-      let events = [];
-      if (Array.isArray(data.events)) {
-        events = data.events;
-      } else if (Array.isArray(data.event)) {
-        events = data.event;
-      } else if (Array.isArray(data) && data.length === 1 && Array.isArray(data[0].events)) {
-        events = data[0].events;
-      } else if (data.event) {
-        events = [data.event];
-      } else {
-        throw new Error('No event data received from server');
-      }
-      
-      // Process all events and create an array of formatted events
-      const formattedEvents = events.map(event => {
-        let time_start = '';
-        let time_end = '';
-        if (event.time) {
-          const timeParts = event.time.split('-').map((t: string) => t.trim());
-          time_start = parseTime(timeParts[0] || '');
-          time_end = parseTime(timeParts[1] || '');
-        } else {
-          time_start = parseTime(event.time_start || '');
-          time_end = parseTime(event.time_end || '');
-        }
-        return {
-          title: event.title || '',
-          date: event.date || '',
-          category: (event.category || '').toLowerCase(),
-          yearGroup: event.yearGroup || '',
-          event_type: event.event_type || eventType,
-          visibility: 'private',
-          time_start,
-          time_end,
-          venue: event.venue || '',
-          todos: Array.isArray(event.todos) ? event.todos : [],
-          created_by_user_id: eventType === 'personal' ? userId : null,
-          school_id: eventType === 'school' && selectedProfile ? selectedProfile.school_id : null,
-        };
-      });
-      
-      // Call onExtractSuccess once with the full array of events
-      onExtractSuccess(formattedEvents);
-      
+      let events = Array.isArray(data.events) ? data.events : data.event ? [data.event] : [];
+      if (!events.length) throw new Error('No event data received from server');
+
+      onExtractSuccess(events);
+
       toast({
         title: 'Success',
         description: `Successfully extracted ${events.length} event${events.length > 1 ? 's' : ''}!`,
-        variant: 'default',
       });
     } catch (error: any) {
-      console.error('Error extracting event:', error);
-      
-      // Set the error message for display in the modal
       setExtractError(error.message || 'Failed to extract event details');
-      
-      // Show appropriate toast based on error type
-      const errorMessage = error.message || 'Failed to extract event details';
-      
-      if (errorMessage.includes('Image processing was refused') || 
-          errorMessage.includes('PDF processing was refused') ||
-          errorMessage.includes('Please try with a different image') ||
-          errorMessage.includes('Please try with a different PDF') ||
-          errorMessage.includes('Please try with a different file')) {
-        toast({
-          title: 'File Not Suitable',
-          description: errorMessage,
-          variant: 'destructive',
-        });
-      } else if (errorMessage.includes('Service is temporarily busy') ||
-                 errorMessage.includes('Temporary service issue')) {
-        toast({
-          title: 'Service Busy',
-          description: errorMessage,
-          variant: 'destructive',
-        });
-      } else if (errorMessage.includes('Service configuration error')) {
-        toast({
-          title: 'Service Error',
-          description: 'There was a configuration issue. Please contact support.',
-          variant: 'destructive',
-        });
-      } else {
-        toast({
-          title: 'Extraction Failed',
-          description: errorMessage,
-          variant: 'destructive',
-        });
-      }
+      toast({ title: 'Extraction Failed', description: error.message || 'Failed to extract event details', variant: 'destructive' });
     } finally {
       setIsExtracting(false);
     }
