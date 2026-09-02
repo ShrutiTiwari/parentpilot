@@ -215,7 +215,6 @@ export function EmailInboxPanel({ onViewInCalendar, onItemsLoaded }: EmailInboxP
                     description: ev.description || '',
                     actions: ev.actions || [],
                     confidence_score: ev.confidence_score ?? item.confidence_score ?? 0.8,
-                    event_type: 'school' as const,
                   }));
 
                 return agentEvents.map((ev, idx) => {

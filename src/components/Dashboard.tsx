@@ -328,7 +328,7 @@ export function Dashboard({ showAuthModal, setShowAuthModal, onSignOut, initialA
                       date: ev.date,
                       category: ev.category,
                       yearGroup: ev.year_group,
-                      event_type: ev.event_type || (selectedProfile ? 'school' : 'personal'),
+                      event_type: isSchool ? 'school' : 'personal',
                       visibility: 'private',
                       time_start: ev.time_start || '',
                       time_end: ev.time_end || '',
