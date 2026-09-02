@@ -81,7 +81,7 @@ async function callGemini(prompt) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error('GEMINI_API_KEY not configured');
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
   const result = await model.generateContent(prompt);
   return result.response.text();
 }
@@ -101,13 +101,10 @@ async function callClaude(prompt, maxTokens = 2048) {
 // ─── Shared AI call — swap providers by commenting/uncommenting ───────────────
 async function callAI(prompt, maxTokens = 2048) {
   try {
-    return await callGemini(prompt);           // PRIMARY: Gemini 2.0 Flash
+    return await callGemini(prompt);           // PRIMARY: Gemini 2.5 Flash
   } catch (err) {
-    if (err.status === 429 || (err.message && err.message.includes('429'))) {
-      console.warn('Gemini quota exceeded, falling back to Claude');
-      return await callClaude(prompt, maxTokens); // FALLBACK: Claude Haiku
-    }
-    throw err;
+    console.warn('Gemini failed, falling back to Claude:', err.message);
+    return await callClaude(prompt, maxTokens); // FALLBACK: Claude Haiku
   }
 }
 
@@ -132,7 +129,7 @@ async function callGeminiVision(prompt, imageBase64, mimeType) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error('GEMINI_API_KEY not configured');
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
   const result = await model.generateContent([
     prompt,
     { inlineData: { data: imageBase64, mimeType } },
@@ -161,13 +158,10 @@ async function callClaudeVision(prompt, imageBase64, mimeType, maxTokens = 2048)
 // ─── Shared image AI call — swap providers by commenting/uncommenting ─────────
 async function callAIVision(prompt, imageBase64, mimeType) {
   try {
-    return await callGeminiVision(prompt, imageBase64, mimeType);    // PRIMARY: Gemini 2.0 Flash
+    return await callGeminiVision(prompt, imageBase64, mimeType);    // PRIMARY: Gemini 2.5 Flash
   } catch (err) {
-    if (err.status === 429 || (err.message && err.message.includes('429'))) {
-      console.warn('Gemini quota exceeded for image, falling back to Claude');
-      return await callClaudeVision(prompt, imageBase64, mimeType);  // FALLBACK: Claude Haiku
-    }
-    throw err;
+    console.warn('Gemini vision failed, falling back to Claude:', err.message);
+    return await callClaudeVision(prompt, imageBase64, mimeType);    // FALLBACK: Claude Haiku
   }
 }
 
