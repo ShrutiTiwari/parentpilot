@@ -125,14 +125,28 @@ async function callAI(prompt, maxTokens = 8192) {
   }
 }
 
+// Same as callAI, but also reports which provider actually answered —
+// Gemini failures were previously only visible via console.warn, invisible
+// outside raw server logs, which made "is Gemini even working" unanswerable.
+async function callAIWithProvider(prompt, maxTokens = 8192) {
+  try {
+    const text = await callGemini(prompt);
+    return { text, provider: 'gemini' };
+  } catch (err) {
+    console.warn('Gemini failed, falling back to Claude:', err.message);
+    const text = await callClaude(prompt, maxTokens);
+    return { text, provider: 'claude', geminiError: err.message };
+  }
+}
+
 async function extractEventsFromEmail({ subject, body, html }) {
   const emailContent = `Subject: ${subject || '(no subject)'}
 
 ${body || html || '(no content)'}`;
 
   const prompt = await getActivePrompt();
-  const text = await callAI(prompt + '\n\nEmail:\n' + emailContent);
-  return parseEventsJson(text);
+  const { text, provider, geminiError } = await callAIWithProvider(prompt + '\n\nEmail:\n' + emailContent);
+  return { ...parseEventsJson(text), provider, geminiError };
 }
 
 function invalidatePromptCache() {

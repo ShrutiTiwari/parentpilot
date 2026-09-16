@@ -387,8 +387,14 @@ app.post('/api/inbound-email', async (req, res) => {
 
     // Step 2: AI extraction
     try {
-      const { events, confidence_score } = await extractEventsFromEmail({ subject, body, html });
-      log('ai_extraction_ok', { eventCount: events.length, confidence: confidence_score, durationMs: Date.now() - startTime });
+      const { events, confidence_score, provider, geminiError } = await extractEventsFromEmail({ subject, body, html });
+      log('ai_extraction_ok', {
+        eventCount: events.length,
+        confidence: confidence_score,
+        provider,
+        geminiError: geminiError || undefined,
+        durationMs: Date.now() - startTime,
+      });
 
       // Step 3: Insert each extracted event into event_staging
       const stagingRows = events.map(e => ({
@@ -420,7 +426,7 @@ app.post('/api/inbound-email', async (req, res) => {
         .from('email_ingestion_queue')
         .update({
           status: stagingError ? 'failed' : (stagingRows.length ? 'pending_review' : 'confirmed'),
-          extracted_data: { events },
+          extracted_data: { events, provider, gemini_error: geminiError || null },
           confidence_score,
           error_message: stagingError ? `Failed to save extracted events: ${stagingError.message}` : null,
           updated_at: new Date().toISOString(),
