@@ -454,12 +454,14 @@ app.get('/api/inbound-email/pending', async (req, res) => {
   const { user_id } = req.query;
   if (!user_id) return res.status(400).json({ error: 'user_id required' });
 
-  // Fetch queue items that still have at least one pending staging event
+  // Fetch queue items still needing review, plus ones that failed extraction —
+  // failed rows have no staging events, so parents would otherwise never learn
+  // their forward was lost (the email is still parsed, just wasn't extracted).
   const { data: queueItems, error: queueError } = await db
     .from('email_ingestion_queue')
     .select('id, raw_subject, raw_body, raw_html, from_address, received_at, confidence_score, status, error_message')
     .or(`user_id.eq.${user_id},user_id.is.null`)
-    .eq('status', 'pending_review')
+    .in('status', ['pending_review', 'failed'])
     .order('received_at', { ascending: false });
 
   if (queueError) return res.status(500).json({ error: queueError.message });
@@ -484,10 +486,11 @@ app.get('/api/inbound-email/pending', async (req, res) => {
     stagingByQueue[ev.queue_id].push(ev);
   }
 
-  // Only return queue items that still have pending staging events
+  // Keep queue items that still have pending staging events, or that failed
+  // outright (surfaced to the parent as an error card instead of silently dropped).
   const items = queueItems
     .map(q => ({ ...q, staging_events: stagingByQueue[q.id] || [] }))
-    .filter(q => q.staging_events.length > 0);
+    .filter(q => q.staging_events.length > 0 || q.status === 'failed');
 
   res.json({ items });
 });

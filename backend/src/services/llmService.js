@@ -86,7 +86,7 @@ async function callGemini(prompt) {
   return result.response.text();
 }
 
-async function callClaude(prompt, maxTokens = 2048) {
+async function callClaude(prompt, maxTokens = 8192) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured');
   const client = new Anthropic({ apiKey });
@@ -99,7 +99,7 @@ async function callClaude(prompt, maxTokens = 2048) {
 }
 
 // ─── Shared AI call — swap providers by commenting/uncommenting ───────────────
-async function callAI(prompt, maxTokens = 2048) {
+async function callAI(prompt, maxTokens = 8192) {
   try {
     return await callGemini(prompt);           // PRIMARY: Gemini 2.5 Flash
   } catch (err) {
@@ -137,7 +137,7 @@ async function callGeminiVision(prompt, imageBase64, mimeType) {
   return result.response.text();
 }
 
-async function callClaudeVision(prompt, imageBase64, mimeType, maxTokens = 2048) {
+async function callClaudeVision(prompt, imageBase64, mimeType, maxTokens = 8192) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured');
   const client = new Anthropic({ apiKey });
