@@ -82,6 +82,9 @@ function parseEventsJson(text) {
   } catch (e) {
     throw new Error('Failed to parse AI response as JSON: ' + cleaned.substring(0, 200));
   }
+  // Models sometimes wrap the array in an object (e.g. { "events": [...] })
+  // instead of returning it bare, despite the prompt's required format.
+  if (!Array.isArray(events) && Array.isArray(events?.events)) events = events.events;
   if (!Array.isArray(events)) events = [events];
   const avgConfidence = events.length
     ? events.reduce((sum, e) => sum + (e.confidence_score || 0.8), 0) / events.length

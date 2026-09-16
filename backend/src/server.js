@@ -411,13 +411,18 @@ app.post('/api/inbound-email', async (req, res) => {
         log('error', { step: 'db_staging_insert', code: stagingError.code, message: stagingError.message });
       }
 
-      // Step 4: Update queue row to pending_review (keep extracted_data for audit)
+      // Step 4: Update queue row. A staging insert failure is a real bug
+      // (e.g. malformed event fields) — mark 'failed' so it surfaces on the
+      // dashboard instead of silently sitting as an unreviewable pending_review
+      // row with zero staging events. A genuinely empty extraction (no events
+      // in the email) is not a failure — it closes out quietly below.
       const { error: updateError } = await db
         .from('email_ingestion_queue')
         .update({
-          status: 'pending_review',
+          status: stagingError ? 'failed' : (stagingRows.length ? 'pending_review' : 'confirmed'),
           extracted_data: { events },
           confidence_score,
+          error_message: stagingError ? `Failed to save extracted events: ${stagingError.message}` : null,
           updated_at: new Date().toISOString(),
         })
         .eq('id', queued.id);
