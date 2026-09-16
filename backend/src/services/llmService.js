@@ -62,8 +62,20 @@ async function getActivePrompt() {
 }
 
 function parseEventsJson(text) {
-  const cleaned = text.trim()
+  let cleaned = text.trim()
     .replace(/^```json\n?/, '').replace(/\n?```$/, '');
+
+  // Models sometimes add explanatory prose before/after the array despite
+  // being told not to (e.g. "[]\n```\nThe email contains no events...").
+  // Extract just the outermost [...] or {...} rather than trusting the
+  // whole trimmed response to be pure JSON.
+  const start = cleaned.search(/[[{]/);
+  if (start > 0) cleaned = cleaned.slice(start);
+  const openChar = cleaned[0];
+  const closeChar = openChar === '[' ? ']' : '}';
+  const end = cleaned.lastIndexOf(closeChar);
+  if (end !== -1 && end < cleaned.length - 1) cleaned = cleaned.slice(0, end + 1);
+
   let events;
   try {
     events = JSON.parse(cleaned);
@@ -71,7 +83,9 @@ function parseEventsJson(text) {
     throw new Error('Failed to parse AI response as JSON: ' + cleaned.substring(0, 200));
   }
   if (!Array.isArray(events)) events = [events];
-  const avgConfidence = events.reduce((sum, e) => sum + (e.confidence_score || 0.8), 0) / events.length;
+  const avgConfidence = events.length
+    ? events.reduce((sum, e) => sum + (e.confidence_score || 0.8), 0) / events.length
+    : 0;
   return { events, confidence_score: Math.round(avgConfidence * 100) / 100 };
 }
 
