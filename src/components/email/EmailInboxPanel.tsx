@@ -83,7 +83,7 @@ export function EmailInboxPanel({ onViewInCalendar, onItemsLoaded }: EmailInboxP
           const r = await fetch(API_ENDPOINTS.events.checkConflicts, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ date: ev.date, year_group: ev.year_group }),
+            body: JSON.stringify({ date: ev.date, year_group: ev.year_group, title: ev.title }),
           });
           if (!r.ok) return { id: ev.id, conflicts: [] };
           const d = await r.json();

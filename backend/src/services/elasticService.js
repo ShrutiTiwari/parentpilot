@@ -172,4 +172,20 @@ async function unindexEvent(eventId) {
   }
 }
 
-module.exports = { indexEvent, unindexEvent, findConflicts, findDuplicates, bulkIndex, ensureIndex };
+// ─── Health check ──────────────────────────────────────────────────────────
+// Distinguishes "Elastic unreachable/misconfigured" from "reachable but
+// index empty" — the two look identical from a search endpoint returning
+// zero hits, which is exactly what made silent failures here undiagnosable.
+async function pingElastic() {
+  try {
+    const es = getClient();
+    await es.ping();
+    const count = await es.count({ index: INDEX }).catch(() => null);
+    return { ok: true, configured: true, docCount: count?.count ?? null };
+  } catch (err) {
+    const configured = !!(process.env.ELASTIC_ENDPOINT && process.env.ELASTIC_API_KEY);
+    return { ok: false, configured, error: err.message };
+  }
+}
+
+module.exports = { indexEvent, unindexEvent, findConflicts, findDuplicates, bulkIndex, ensureIndex, pingElastic };

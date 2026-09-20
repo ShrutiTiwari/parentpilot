@@ -11,7 +11,7 @@ const schoolDiscoveryService = require('./services/schoolDiscoveryService');
 const termDatesService = require('./services/termDatesService');
 const { CLAUDE_CONFIG, OPENAI_CONFIG } = require('./config/llmConfig');
 const { extractEventsFromEmail, getActivePrompt, invalidatePromptCache, callAI, callAIVision } = require('./services/llmService');
-const { indexEvent, unindexEvent, findConflicts, findDuplicates, bulkIndex } = require('./services/elasticService');
+const { indexEvent, unindexEvent, findConflicts, findDuplicates, bulkIndex, pingElastic } = require('./services/elasticService');
 require('dotenv').config();
 
 const app = express();
@@ -721,18 +721,30 @@ app.delete('/api/events/:id', async (req, res) => {
 
 // ─── Elastic conflict check ───────────────────────────────────────────────────
 app.post('/api/events/check-conflicts', async (req, res) => {
-  const { date, year_group, exclude_id } = req.body;
+  const { date, year_group, title, exclude_id } = req.body;
   if (!date || !year_group) return res.status(400).json({ error: 'date and year_group required' });
 
   try {
+    // findConflicts requires an exact year_group match, which is fragile
+    // against free-text AI output (re-extracting the same email can yield
+    // "Reception-Year 6" one run and "Reception to Year 6" the next) — so a
+    // genuine duplicate can miss findConflicts entirely. findDuplicates only
+    // needs date + fuzzy title match, so it catches those cases too.
     const [conflicts, duplicates] = await Promise.all([
       findConflicts({ date, year_group, exclude_id }),
-      exclude_id ? Promise.resolve([]) : Promise.resolve([]),
+      title ? findDuplicates({ title, date }) : Promise.resolve([]),
     ]);
-    res.json({ conflicts, has_conflicts: conflicts.length > 0 });
+    const merged = [...conflicts];
+    for (const d of duplicates) {
+      if (!merged.some(c => String(c.id) === String(d.id))) merged.push(d);
+    }
+    res.json({ conflicts: merged, has_conflicts: merged.length > 0, elastic_ok: true });
   } catch (err) {
-    console.error('Conflict check failed:', err.message);
-    res.json({ conflicts: [], has_conflicts: false }); // fail open — don't block confirm
+    // Fail open so a broken Elastic never blocks confirming an event — but
+    // say so explicitly (elastic_ok: false) instead of returning the same
+    // shape as "genuinely no conflicts", which made this undiagnosable.
+    console.error(JSON.stringify({ step: 'check_conflicts_error', message: err.message, ts: new Date().toISOString() }));
+    res.json({ conflicts: [], has_conflicts: false, elastic_ok: false, elastic_error: err.message });
   }
 });
 
@@ -957,6 +969,19 @@ app.get('/api/inbound-email/pipeline-status', async (req, res) => {
   res.json(summary);
 });
 
+// ─── Elastic health check (admin only) ────────────────────────────────────────
+// Answers "is Elastic actually working" directly — check-conflicts fails open
+// on any Elastic error so confirming an event is never blocked, which means
+// "Elastic is down" and "genuinely no conflicts" look identical from there.
+app.get('/api/admin/elastic-status', async (req, res) => {
+  const adminSecret = process.env.ADMIN_SECRET;
+  const provided = req.headers['x-admin-secret'] || req.query.secret;
+  if (!adminSecret || provided !== adminSecret) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  res.json(await pingElastic());
+});
+
 // ─── Confirm a single staging event → create confirmed event ─────────────────
 app.post('/api/inbound-email/staging/:stagingId/confirm', async (req, res) => {
   const db = supabaseAdmin || supabase;
@@ -1046,8 +1071,12 @@ app.post('/api/inbound-email/staging/:stagingId/confirm', async (req, res) => {
         .eq('id', staging.queue_id);
     }
 
-    // Index in Elastic (non-blocking)
-    indexEvent(inserted).catch(err => console.error('Elastic index failed:', err.message));
+    // Index in Elastic (non-blocking) — a failure here means this event will
+    // never show up in future conflict/duplicate checks, so log it loudly
+    // and structured rather than a bare console.error that's easy to miss.
+    indexEvent(inserted).catch(err => console.error(JSON.stringify({
+      step: 'elastic_index_failed', eventId: inserted.id, message: err.message, ts: new Date().toISOString(),
+    })));
 
     res.json({ success: true, event: inserted });
   } catch (error) {
