@@ -197,4 +197,4 @@ async function callAIVision(prompt, imageBase64, mimeType) {
   }
 }
 
-module.exports = { extractEventsFromEmail, getActivePrompt, invalidatePromptCache, callAI, callAIVision };
+module.exports = { extractEventsFromEmail, getActivePrompt, invalidatePromptCache, callAI, callAIVision, parseEventsJson };

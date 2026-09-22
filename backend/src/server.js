@@ -10,7 +10,7 @@ const { devLog, devWarn, devError } = require('./utils/logger');
 const schoolDiscoveryService = require('./services/schoolDiscoveryService');
 const termDatesService = require('./services/termDatesService');
 const { CLAUDE_CONFIG, OPENAI_CONFIG } = require('./config/llmConfig');
-const { extractEventsFromEmail, getActivePrompt, invalidatePromptCache, callAI, callAIVision } = require('./services/llmService');
+const { extractEventsFromEmail, getActivePrompt, invalidatePromptCache, callAI, callAIVision, parseEventsJson } = require('./services/llmService');
 const { indexEvent, unindexEvent, findConflicts, findDuplicates, bulkIndex, pingElastic } = require('./services/elasticService');
 require('dotenv').config();
 
@@ -94,11 +94,12 @@ app.post('/api/extract-event', uploadLimiter, upload.single('image'), async (req
       req.file.mimetype
     );
 
-    const cleaned = text.trim().replace(/^```json\n?/, '').replace(/\n?```$/, '');
-    let events = JSON.parse(cleaned);
-    if (!Array.isArray(events)) events = [events];
+    // Same hardened parsing as the email path — tolerates a model wrapping
+    // the array in an object or adding commentary, instead of a bare
+    // JSON.parse that throws (and returns zero events) on either.
+    const { events, confidence_score } = parseEventsJson(text);
 
-    res.json({ events });
+    res.json({ events, confidence_score });
   } catch (error) {
     console.error('extract-event error:', error);
     res.status(500).json({
