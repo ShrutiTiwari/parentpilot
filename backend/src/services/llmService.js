@@ -29,7 +29,8 @@ Required format:
 Rules:
 - If no year is specified, use the current year (2026) for future dates, 2027 for past dates
 - If no time is specified, use null
-- Extract EVERY event mentioned, even if briefly
+- Extract EVERY event mentioned, even if briefly, AS LONG AS you can determine a specific date (YYYY-MM-DD) for it
+- date is required and must never be null — if a mention has no determinable date (e.g. "swimming lessons resume next term" with no date given), leave it out of the output entirely rather than guessing or returning date: null
 - confidence_score reflects how certain you are about the date/details
 - actions should be concrete parent tasks (e.g. "Return permission slip", "Pay £5 online")
 `;

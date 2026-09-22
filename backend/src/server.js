@@ -396,8 +396,24 @@ app.post('/api/inbound-email', async (req, res) => {
         durationMs: Date.now() - startTime,
       });
 
-      // Step 3: Insert each extracted event into event_staging
-      const stagingRows = events.map(e => ({
+      // Step 3: Insert each extracted event into event_staging. date is
+      // NOT NULL in the schema but not guaranteed by the AI (a vague mention
+      // with no determinable date can come back with date: null) — since this
+      // is a single bulk insert, one bad row would otherwise fail the whole
+      // batch and drop every other correctly-extracted event from the email.
+      const isValidDate = (d) => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d);
+      const [validEvents, invalidEvents] = events.reduce(
+        ([valid, invalid], e) => isValidDate(e.date) ? [[...valid, e], invalid] : [valid, [...invalid, e]],
+        [[], []]
+      );
+      if (invalidEvents.length) {
+        log('extraction_dropped_events', {
+          count: invalidEvents.length,
+          titles: invalidEvents.map(e => e.title),
+        });
+      }
+
+      const stagingRows = validEvents.map(e => ({
         queue_id: queued.id,
         title: e.title,
         date: e.date,
@@ -412,23 +428,30 @@ app.post('/api/inbound-email', async (req, res) => {
         status: 'pending',
       }));
 
-      const { error: stagingError } = await db.from('event_staging').insert(stagingRows);
+      const { error: stagingError } = stagingRows.length
+        ? await db.from('event_staging').insert(stagingRows)
+        : { error: null };
       if (stagingError) {
         log('error', { step: 'db_staging_insert', code: stagingError.code, message: stagingError.message });
       }
 
-      // Step 4: Update queue row. A staging insert failure is a real bug
-      // (e.g. malformed event fields) — mark 'failed' so it surfaces on the
-      // dashboard instead of silently sitting as an unreviewable pending_review
-      // row with zero staging events. A genuinely empty extraction (no events
-      // in the email) is not a failure — it closes out quietly below.
+      // Step 4: Update queue row.
+      // - stagingError: a real bug (e.g. an insert failure for another reason)
+      // - invalidEvents with zero valid ones: the AI found something but
+      //   couldn't pin a date on it — worth surfacing, not the same as a
+      //   genuinely empty email
+      // - zero events and none dropped: genuinely nothing in the email —
+      //   not a failure, closes out quietly
+      const droppedAllEvents = !stagingRows.length && invalidEvents.length > 0;
       const { error: updateError } = await db
         .from('email_ingestion_queue')
         .update({
-          status: stagingError ? 'failed' : (stagingRows.length ? 'pending_review' : 'confirmed'),
+          status: (stagingError || droppedAllEvents) ? 'failed' : (stagingRows.length ? 'pending_review' : 'confirmed'),
           extracted_data: { events, provider, gemini_error: geminiError || null },
           confidence_score,
-          error_message: stagingError ? `Failed to save extracted events: ${stagingError.message}` : null,
+          error_message: stagingError
+            ? `Failed to save extracted events: ${stagingError.message}`
+            : (droppedAllEvents ? `Found ${invalidEvents.length} event(s) but couldn't determine a date` : null),
           updated_at: new Date().toISOString(),
         })
         .eq('id', queued.id);
