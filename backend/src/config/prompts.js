@@ -29,7 +29,8 @@ Required format:
 Rules:
 - Extract EVERY event mentioned, even if briefly referenced, AS LONG AS you can determine a specific date for it
 - date is required (YYYY-MM-DD) and must never be null — if a mention has no determinable date, leave it out of the output entirely rather than guessing or returning date: null
-- if no year is specified use 2026 for future dates, 2027 for dates that have already passed
+- resolve relative dates ("tomorrow", "next Friday", "this term") against the current date given above
+- if no year is specified, assume the nearest future occurrence of that date relative to the current date given above
 - time_start / time_end in 24-hr HH:MM format; use null if not specified
 - year_group: use "All" if not specified, applies to whole school, or the event is personal/non-school (e.g. a medical appointment)
 - category: use "general" for personal/family events that don't fit the other categories (e.g. medical appointments, birthdays)

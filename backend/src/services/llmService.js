@@ -27,13 +27,26 @@ Required format:
 ]
 
 Rules:
-- If no year is specified, use the current year (2026) for future dates, 2027 for past dates
+- Resolve relative dates ("tomorrow", "next Friday", "this term") against the current date given above
+- If no year is specified, assume the nearest future occurrence of that date relative to the current date given above
 - If no time is specified, use null
 - Extract EVERY event mentioned, even if briefly, AS LONG AS you can determine a specific date (YYYY-MM-DD) for it
 - date is required and must never be null — if a mention has no determinable date (e.g. "swimming lessons resume next term" with no date given), leave it out of the output entirely rather than guessing or returning date: null
 - confidence_score reflects how certain you are about the date/details
 - actions should be concrete parent tasks (e.g. "Return permission slip", "Pay £5 online")
 `;
+
+// Neither FALLBACK_PROMPT nor the DB-stored active prompt (prompt_versions)
+// ever told the model what "today" is — relative dates ("tomorrow", "next
+// Friday") and bare year inference had nothing real to resolve against, so
+// the model guessed. This is prepended to every extraction call regardless
+// of which prompt text is active, so the fix doesn't depend on also editing
+// whatever is currently stored in prompt_versions.
+function getDateContext() {
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  return `The current date is ${dateStr} (${now.toISOString().slice(0, 10)}). Use this as "today" when resolving any relative or year-less date in the content below.\n\n`;
+}
 
 // ─── Prompt cache — refreshed every 5 minutes ─────────────────────────────────
 let cachedPrompt = null;
@@ -146,7 +159,7 @@ async function extractEventsFromEmail({ subject, body, html }) {
 ${body || html || '(no content)'}`;
 
   const prompt = await getActivePrompt();
-  const { text, provider, geminiError } = await callAIWithProvider(prompt + '\n\nEmail:\n' + emailContent);
+  const { text, provider, geminiError } = await callAIWithProvider(getDateContext() + prompt + '\n\nEmail:\n' + emailContent);
   return { ...parseEventsJson(text), provider, geminiError };
 }
 
@@ -197,4 +210,4 @@ async function callAIVision(prompt, imageBase64, mimeType) {
   }
 }
 
-module.exports = { extractEventsFromEmail, getActivePrompt, invalidatePromptCache, callAI, callAIVision, parseEventsJson };
+module.exports = { extractEventsFromEmail, getActivePrompt, invalidatePromptCache, callAI, callAIVision, parseEventsJson, getDateContext };

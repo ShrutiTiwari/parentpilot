@@ -10,7 +10,7 @@ const { devLog, devWarn, devError } = require('./utils/logger');
 const schoolDiscoveryService = require('./services/schoolDiscoveryService');
 const termDatesService = require('./services/termDatesService');
 const { CLAUDE_CONFIG, OPENAI_CONFIG } = require('./config/llmConfig');
-const { extractEventsFromEmail, getActivePrompt, invalidatePromptCache, callAI, callAIVision, parseEventsJson } = require('./services/llmService');
+const { extractEventsFromEmail, getActivePrompt, invalidatePromptCache, callAI, callAIVision, parseEventsJson, getDateContext } = require('./services/llmService');
 const { indexEvent, unindexEvent, findConflicts, findDuplicates, bulkIndex, pingElastic } = require('./services/elasticService');
 require('dotenv').config();
 
@@ -89,7 +89,7 @@ app.post('/api/extract-event', uploadLimiter, upload.single('image'), async (req
 
     const { EXTRACTION_PROMPT } = require('./config/prompts');
     const text = await callAIVision(
-      EXTRACTION_PROMPT + '\n\nExtract all events from this image.',
+      getDateContext() + EXTRACTION_PROMPT + '\n\nExtract all events from this image.',
       req.file.buffer.toString('base64'),
       req.file.mimetype
     );
