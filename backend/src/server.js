@@ -317,9 +317,168 @@ app.post('/api/schools/create-with-events', async (req, res) => {
   }
 });
 
+// Parents forward the school's email rather than the school emailing us
+// directly, so the real sender is buried in a quoted "Forwarded message"
+// block (Gmail/Outlook style), not the top-level Postmark From. Pull the
+// innermost quoted From address's domain out of the body text.
+function extractForwardedSenderDomain(text) {
+  if (!text) return null;
+  const matches = [...text.matchAll(/^From:.*?<([^@\s>]+@[^@\s>]+)>/gim)];
+  if (!matches.length) return null;
+  // Innermost (last) forwarded header is the original school sender when a
+  // parent forwards a forward; picking the last also skips the parent's own
+  // address, which only ever appears in the outermost "To:" line.
+  const email = matches[matches.length - 1][1];
+  const domain = email.split('@')[1]?.toLowerCase();
+  return domain || null;
+}
+
+// Turn a sender domain into a school-name search token, e.g.
+// "donotreply@blackheathprep.schoolpostmail.co.uk" -> "blackheathprep"
+// by dropping common mailer subdomains and the public-suffix-ish tail.
+function domainToSchoolToken(domain) {
+  if (!domain) return null;
+  const stripped = domain
+    .replace(/^(mail|email|noreply|donotreply|news|newsletter)\./i, '')
+    .replace(/\.(schoolpost(mail)?|schoolcloud|classlist|mailer|email)\.[a-z.]+$/i, '')
+    .split('.')[0];
+  return stripped || null;
+}
+
+// Strip spaces/punctuation for loose comparison — school names in the DB are
+// spaced ("Blackheath Preparatory School") but a domain token isn't
+// ("blackheathprep"), so a plain SQL ilike substring match would miss it.
+const normalizeForMatch = (s) => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
+// Resolve a school row from the forwarded sender's domain (primary signal —
+// structured and hard to get wrong) or the AI-extracted school_name
+// (fallback — free text, can be missing/wrong). Matching happens in memory
+// against all schools since names must be space-normalized to compare against
+// a domain token; the schools table is small enough for this to be cheap.
+// Never guesses: returns null rather than assigning the wrong school_id when
+// nothing matches confidently.
+async function resolveSchoolId(db, { bodyText, htmlText, aiSchoolName }) {
+  const domain = extractForwardedSenderDomain(bodyText) || extractForwardedSenderDomain(htmlText);
+  const token = domainToSchoolToken(domain);
+  const result = { school_id: null, matchedVia: null, domain };
+  if (!token && !aiSchoolName) return result;
+
+  const { data: schools } = await db.from('schools').select('id, name, school_code');
+  if (!schools?.length) return result;
+
+  if (token && token.length >= 4) {
+    const match = schools.find(s =>
+      normalizeForMatch(s.name).includes(token) || normalizeForMatch(s.school_code).includes(token)
+    );
+    if (match) return { school_id: match.id, matchedVia: 'domain', domain };
+  }
+  if (aiSchoolName) {
+    const needle = normalizeForMatch(aiSchoolName);
+    const match = needle.length >= 4 && schools.find(s => normalizeForMatch(s.name).includes(needle));
+    if (match) return { school_id: match.id, matchedVia: 'ai_name', domain };
+  }
+  return result;
+}
+
 // ─── Postmark inbound email webhook ───────────────────────────────────────────
 // Postmark posts JSON to this endpoint when an email is received
 // Set this URL in Postmark: https://parentpilot-g1oj.vercel.app/api/inbound-email
+// Runs AI extraction against an already-stored queue row and writes the
+// result (staging rows + queue status) — shared by the webhook (new email)
+// and the retry endpoint (re-running extraction on a 'failed' row once
+// whatever broke it, e.g. an API billing issue, is fixed).
+async function runExtractionPipeline(db, queued, log, startTime = Date.now()) {
+  const subject = queued.raw_subject;
+  const body = queued.raw_body;
+  const html = queued.raw_html;
+
+  try {
+    const { events, confidence_score, provider, geminiError } = await extractEventsFromEmail({ subject, body, html });
+    log('ai_extraction_ok', {
+      eventCount: events.length,
+      confidence: confidence_score,
+      provider,
+      geminiError: geminiError || undefined,
+      durationMs: Date.now() - startTime,
+    });
+
+    // Insert each extracted event into event_staging. date is NOT NULL in
+    // the schema but not guaranteed by the AI (a vague mention with no
+    // determinable date can come back with date: null) — since this is a
+    // single bulk insert, one bad row would otherwise fail the whole batch
+    // and drop every other correctly-extracted event from the email.
+    const isValidDate = (d) => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d);
+    const [validEvents, invalidEvents] = events.reduce(
+      ([valid, invalid], e) => isValidDate(e.date) ? [[...valid, e], invalid] : [valid, [...invalid, e]],
+      [[], []]
+    );
+    if (invalidEvents.length) {
+      log('extraction_dropped_events', {
+        count: invalidEvents.length,
+        titles: invalidEvents.map(e => e.title),
+      });
+    }
+
+    const stagingRows = validEvents.map(e => ({
+      queue_id: queued.id,
+      title: e.title,
+      date: e.date,
+      time_start: e.time_start || null,
+      time_end: e.time_end || null,
+      venue: e.venue || null,
+      year_group: e.year_group || 'All',
+      category: e.category || 'general',
+      description: e.description || null,
+      actions: e.actions || [],
+      confidence_score: e.confidence_score ?? confidence_score,
+      status: 'pending',
+    }));
+
+    const { error: stagingError } = stagingRows.length
+      ? await db.from('event_staging').insert(stagingRows)
+      : { error: null };
+    if (stagingError) {
+      log('error', { step: 'db_staging_insert', code: stagingError.code, message: stagingError.message });
+    }
+
+    // - stagingError: a real bug (e.g. an insert failure for another reason)
+    // - invalidEvents with zero valid ones: the AI found something but
+    //   couldn't pin a date on it — worth surfacing, not the same as a
+    //   genuinely empty email
+    // - zero events and none dropped: genuinely nothing in the email —
+    //   not a failure, closes out quietly
+    const droppedAllEvents = !stagingRows.length && invalidEvents.length > 0;
+    const { error: updateError } = await db
+      .from('email_ingestion_queue')
+      .update({
+        status: (stagingError || droppedAllEvents) ? 'failed' : (stagingRows.length ? 'pending_review' : 'confirmed'),
+        extracted_data: { events, provider, gemini_error: geminiError || null },
+        confidence_score,
+        error_message: stagingError
+          ? `Failed to save extracted events: ${stagingError.message}`
+          : (droppedAllEvents ? `Found ${invalidEvents.length} event(s) but couldn't determine a date` : null),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', queued.id);
+
+    if (updateError) {
+      log('error', { step: 'db_update_pending', code: updateError.code, message: updateError.message });
+    } else {
+      log('pipeline_complete', { id: queued.id, stagingCount: stagingRows.length, totalMs: Date.now() - startTime });
+    }
+  } catch (extractError) {
+    log('error', { step: 'ai_extraction', message: extractError.message });
+    await db
+      .from('email_ingestion_queue')
+      .update({
+        status: 'failed',
+        error_message: extractError.message,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', queued.id);
+  }
+}
+
 app.post('/api/inbound-email', async (req, res) => {
   const startTime = Date.now();
   const log = (step, data) => console.log(JSON.stringify({ step, ...data, ts: new Date().toISOString() }));
@@ -386,99 +545,95 @@ app.post('/api/inbound-email', async (req, res) => {
 
     log('db_insert_ok', { id: queued.id });
 
-    // Step 2: AI extraction
-    try {
-      const { events, confidence_score, provider, geminiError } = await extractEventsFromEmail({ subject, body, html });
-      log('ai_extraction_ok', {
-        eventCount: events.length,
-        confidence: confidence_score,
-        provider,
-        geminiError: geminiError || undefined,
-        durationMs: Date.now() - startTime,
-      });
-
-      // Step 3: Insert each extracted event into event_staging. date is
-      // NOT NULL in the schema but not guaranteed by the AI (a vague mention
-      // with no determinable date can come back with date: null) — since this
-      // is a single bulk insert, one bad row would otherwise fail the whole
-      // batch and drop every other correctly-extracted event from the email.
-      const isValidDate = (d) => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d);
-      const [validEvents, invalidEvents] = events.reduce(
-        ([valid, invalid], e) => isValidDate(e.date) ? [[...valid, e], invalid] : [valid, [...invalid, e]],
-        [[], []]
-      );
-      if (invalidEvents.length) {
-        log('extraction_dropped_events', {
-          count: invalidEvents.length,
-          titles: invalidEvents.map(e => e.title),
-        });
-      }
-
-      const stagingRows = validEvents.map(e => ({
-        queue_id: queued.id,
-        title: e.title,
-        date: e.date,
-        time_start: e.time_start || null,
-        time_end: e.time_end || null,
-        venue: e.venue || null,
-        year_group: e.year_group || 'All',
-        category: e.category || 'general',
-        description: e.description || null,
-        actions: e.actions || [],
-        confidence_score: e.confidence_score ?? confidence_score,
-        status: 'pending',
-      }));
-
-      const { error: stagingError } = stagingRows.length
-        ? await db.from('event_staging').insert(stagingRows)
-        : { error: null };
-      if (stagingError) {
-        log('error', { step: 'db_staging_insert', code: stagingError.code, message: stagingError.message });
-      }
-
-      // Step 4: Update queue row.
-      // - stagingError: a real bug (e.g. an insert failure for another reason)
-      // - invalidEvents with zero valid ones: the AI found something but
-      //   couldn't pin a date on it — worth surfacing, not the same as a
-      //   genuinely empty email
-      // - zero events and none dropped: genuinely nothing in the email —
-      //   not a failure, closes out quietly
-      const droppedAllEvents = !stagingRows.length && invalidEvents.length > 0;
-      const { error: updateError } = await db
-        .from('email_ingestion_queue')
-        .update({
-          status: (stagingError || droppedAllEvents) ? 'failed' : (stagingRows.length ? 'pending_review' : 'confirmed'),
-          extracted_data: { events, provider, gemini_error: geminiError || null },
-          confidence_score,
-          error_message: stagingError
-            ? `Failed to save extracted events: ${stagingError.message}`
-            : (droppedAllEvents ? `Found ${invalidEvents.length} event(s) but couldn't determine a date` : null),
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', queued.id);
-
-      if (updateError) {
-        log('error', { step: 'db_update_pending', code: updateError.code, message: updateError.message });
-      } else {
-        log('pipeline_complete', { id: queued.id, stagingCount: stagingRows.length, totalMs: Date.now() - startTime });
-      }
-    } catch (extractError) {
-      log('error', { step: 'ai_extraction', message: extractError.message });
-      await db
-        .from('email_ingestion_queue')
-        .update({
-          status: 'failed',
-          error_message: extractError.message,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', queued.id);
-    }
+    await runExtractionPipeline(db, queued, log, startTime);
   } catch (error) {
     log('error', { step: 'handler', message: error.message });
   }
 
   // Respond after all processing — Vercel kills the function on res.send()
   res.status(200).json({ received: true });
+});
+
+// ─── Retry extraction on a failed queue row (admin only) ─────────────────────
+// For failures caused by a transient/external problem (API billing exhausted,
+// Gemini down, etc.) rather than bad input — re-runs extraction against the
+// already-stored raw email content, no need to ask the parent to re-forward.
+app.post('/api/inbound-email/:id/retry', async (req, res) => {
+  const adminSecret = process.env.ADMIN_SECRET;
+  const provided = req.headers['x-admin-secret'] || req.query.secret;
+  if (!adminSecret || provided !== adminSecret) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const db = supabaseAdmin || supabase;
+  if (!db) return res.status(503).json({ error: 'Database unavailable' });
+
+  const { id } = req.params;
+  const log = (step, data) => console.log(JSON.stringify({ step, queueId: id, ...data, ts: new Date().toISOString() }));
+
+  const { data: queued, error: fetchError } = await db
+    .from('email_ingestion_queue')
+    .select('*')
+    .eq('id', id)
+    .single();
+  if (fetchError || !queued) return res.status(404).json({ error: 'Queue item not found' });
+  if (queued.status !== 'failed') {
+    return res.status(400).json({ error: `Can only retry a failed queue item (current status: ${queued.status})` });
+  }
+
+  // Clear any existing staging rows from the prior failed attempt before
+  // re-running, so a retry can't create duplicate pending review cards.
+  // Safe even if some exist — a 'failed' row (guarded above) never has
+  // confirmed staging rows, since a confirm would have changed its status.
+  await db.from('event_staging').delete().eq('queue_id', id);
+  await db.from('email_ingestion_queue').update({ status: 'processing', error_message: null }).eq('id', id);
+
+  await runExtractionPipeline(db, queued, log);
+
+  const { data: updated } = await db
+    .from('email_ingestion_queue')
+    .select('id, status, error_message, confidence_score')
+    .eq('id', id)
+    .single();
+
+  res.json({ retried: true, result: updated });
+});
+
+// ─── Retry all failed queue items for a user (admin only) ────────────────────
+// Convenience for clearing a batch of failures caused by one root cause
+// (e.g. an API billing lapse) without calling the single-item retry N times.
+app.post('/api/inbound-email/retry-all-failed', async (req, res) => {
+  const adminSecret = process.env.ADMIN_SECRET;
+  const provided = req.headers['x-admin-secret'] || req.query.secret;
+  if (!adminSecret || provided !== adminSecret) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const db = supabaseAdmin || supabase;
+  if (!db) return res.status(503).json({ error: 'Database unavailable' });
+
+  const { user_id } = req.body || {};
+  let query = db.from('email_ingestion_queue').select('*').eq('status', 'failed');
+  if (user_id) query = query.or(`user_id.eq.${user_id},user_id.is.null`);
+  const { data: failedRows, error: fetchError } = await query;
+  if (fetchError) return res.status(500).json({ error: fetchError.message });
+  if (!failedRows?.length) return res.json({ retried: 0, results: [] });
+
+  const results = [];
+  for (const queued of failedRows) {
+    const log = (step, data) => console.log(JSON.stringify({ step, queueId: queued.id, ...data, ts: new Date().toISOString() }));
+    await db.from('event_staging').delete().eq('queue_id', queued.id);
+    await db.from('email_ingestion_queue').update({ status: 'processing', error_message: null }).eq('id', queued.id);
+    await runExtractionPipeline(db, queued, log);
+    const { data: updated } = await db
+      .from('email_ingestion_queue')
+      .select('id, status, error_message, confidence_score')
+      .eq('id', queued.id)
+      .single();
+    results.push(updated);
+  }
+
+  res.json({ retried: results.length, results });
 });
 
 // ─── Get pending review items for a user ──────────────────────────────────────
@@ -573,6 +728,64 @@ app.get('/api/events/personal', async (req, res) => {
 
     if (error) throw error;
     res.json({ events: events || [] });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Strip HTML tags down to readable plain text — mirrors the stripping used
+// in the email review UI so both places render the same way.
+function stripHtmlToText(html) {
+  return html
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/\s{2,}/g, '\n')
+    .trim();
+}
+
+// ─── Get the original email/screenshot an event was extracted from ───────────
+app.get('/api/events/:id/source', async (req, res) => {
+  const db = supabaseAdmin || supabase;
+  if (!db) return res.status(503).json({ error: 'Database unavailable' });
+
+  const { id } = req.params;
+  try {
+    const { data: event, error: eventError } = await db
+      .from('events')
+      .select('source, ingestion_queue_id')
+      .eq('id', id)
+      .single();
+
+    if (eventError || !event) return res.status(404).json({ error: 'Event not found' });
+    if (!event.ingestion_queue_id) return res.json({ source: event.source || null });
+
+    const { data: queued, error: queueError } = await db
+      .from('email_ingestion_queue')
+      .select('raw_subject, raw_body, raw_html, from_address, received_at')
+      .eq('id', event.ingestion_queue_id)
+      .single();
+
+    if (queueError || !queued) return res.json({ source: event.source || null });
+
+    const rawBody = queued.raw_body?.trim();
+    const body = (rawBody && rawBody.length > 50)
+      ? rawBody
+      : (queued.raw_html ? stripHtmlToText(queued.raw_html) : rawBody) || null;
+
+    res.json({
+      source: event.source || null,
+      email: {
+        subject: queued.raw_subject,
+        body,
+        from: queued.from_address,
+        received_at: queued.received_at,
+      },
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
