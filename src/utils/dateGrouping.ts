@@ -35,6 +35,7 @@ export interface Event {
   time_start?: string;
   time_end?: string;
   source?: string;
+  ingestion_queue_id?: string;
   venue?: string;
   created_by_user_id?: string;
   school_id?: string;

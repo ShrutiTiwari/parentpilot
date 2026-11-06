@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import {
   Calendar, Clock, MapPin, Users, Tag,
   Lock, Eye, CheckCircle, XCircle,
-  ChevronDown, ChevronUp, AlertCircle, Trash2, Plus, Pencil
+  ChevronDown, ChevronUp, AlertCircle, Trash2, Plus, Pencil, Mail
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useAgeTheme } from '@/contexts/AgeThemeContext';
@@ -13,6 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Event } from '../../utils/dateGrouping';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { getEventVisibility, setEventVisibility, getSchoolEventVisibilityOptions } from '../../utils/eventVisibilityUtils';
+import { API_ENDPOINTS } from '@/config/api';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -93,6 +94,10 @@ export function EventDialog({
   const { currentTheme } = useAgeTheme();
   const [editingField, setEditingField] = useState<string | null>(null);
   const [actionsExpanded, setActionsExpanded] = useState(true);
+  const [sourceExpanded, setSourceExpanded] = useState(false);
+  const [sourceEmail, setSourceEmail] = useState<{ subject: string; body: string; from: string } | null>(null);
+  const [sourceLoading, setSourceLoading] = useState(false);
+  const [sourceError, setSourceError] = useState(false);
 
   useEffect(() => {
     if (open && !editingEvent) {
@@ -101,6 +106,35 @@ export function EventDialog({
       }
     }
   }, [open, editingEvent]);
+
+  useEffect(() => {
+    setSourceExpanded(false);
+    setSourceEmail(null);
+    setSourceError(false);
+  }, [editingEvent?.id]);
+
+  const loadSource = async () => {
+    if (!editingEvent?.id || sourceEmail || sourceLoading) return;
+    setSourceLoading(true);
+    try {
+      const res = await fetch(API_ENDPOINTS.events.source(editingEvent.id));
+      if (!res.ok) throw new Error('Failed to load source');
+      const data = await res.json();
+      if (data.email) {
+        setSourceEmail({
+          subject: data.email.subject || '(no subject)',
+          body: data.email.body || '(no content)',
+          from: data.email.from || 'Unknown sender',
+        });
+      } else {
+        setSourceError(true);
+      }
+    } catch {
+      setSourceError(true);
+    } finally {
+      setSourceLoading(false);
+    }
+  };
 
   const formattedDate = (() => {
     try { return newEvent.date ? format(new Date(newEvent.date + 'T00:00:00'), 'EEE d MMM yyyy') : ''; }
@@ -243,12 +277,43 @@ export function EventDialog({
           {/* Core fields */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <Field icon={Calendar} field="date" label="Date" display={formattedDate} inputType="date" />
-            <Field
-              icon={Clock} field="time_start" label="Time"
-              display={newEvent.time_start
-                ? `${newEvent.time_start}${newEvent.time_end ? ` – ${newEvent.time_end}` : ''}`
-                : ''}
-            />
+            {/* Time — start + end inline */}
+            <div
+              className="flex items-center gap-2 group cursor-pointer"
+              onClick={() => editingField !== 'time_start' && setEditingField('time_start')}
+            >
+              <Clock className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+              {editingField === 'time_start' ? (
+                <div className="flex items-center gap-1 flex-1" onClick={e => e.stopPropagation()}>
+                  <Input
+                    autoFocus
+                    type="time"
+                    className="h-7 text-sm py-0 px-2 w-28"
+                    value={newEvent.time_start || ''}
+                    onChange={e => setNewEvent({ ...newEvent, time_start: e.target.value })}
+                    onKeyDown={e => e.key === 'Enter' && setEditingField(null)}
+                  />
+                  <span className="text-xs text-gray-400">–</span>
+                  <Input
+                    type="time"
+                    className="h-7 text-sm py-0 px-2 w-28"
+                    value={newEvent.time_end || ''}
+                    onChange={e => setNewEvent({ ...newEvent, time_end: e.target.value })}
+                    onBlur={() => setEditingField(null)}
+                    onKeyDown={e => e.key === 'Enter' && setEditingField(null)}
+                  />
+                </div>
+              ) : (
+                <span className="text-sm text-gray-700 flex-1">
+                  {newEvent.time_start
+                    ? `${newEvent.time_start}${newEvent.time_end ? ` – ${newEvent.time_end}` : ''}`
+                    : <span className="text-gray-400 italic">Not specified</span>}
+                </span>
+              )}
+              {editingField !== 'time_start' && (
+                <Pencil className="w-3 h-3 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+              )}
+            </div>
             <Field icon={MapPin} field="venue" label="Venue" display={newEvent.venue || ''} />
 
             {/* Year group */}
@@ -320,6 +385,45 @@ export function EventDialog({
               </div>
             )}
           </div>
+
+          {/* Source — only for events extracted from a forwarded email */}
+          {editingEvent?.ingestion_queue_id && (
+            <div>
+              <button
+                className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 hover:text-gray-700"
+                onClick={() => {
+                  const next = !sourceExpanded;
+                  setSourceExpanded(next);
+                  if (next) loadSource();
+                }}
+              >
+                {sourceExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                <Mail className="w-3 h-3" /> View source
+              </button>
+
+              {sourceExpanded && (
+                <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 text-xs">
+                  {sourceLoading && <p className="text-gray-400">Loading…</p>}
+                  {sourceError && !sourceLoading && (
+                    <p className="text-gray-400 italic">Original email is no longer available.</p>
+                  )}
+                  {sourceEmail && !sourceLoading && (
+                    <>
+                      <p className="text-gray-500 mb-1">
+                        <span className="font-medium text-gray-700">From:</span> {sourceEmail.from}
+                      </p>
+                      <p className="text-gray-500 mb-2">
+                        <span className="font-medium text-gray-700">Subject:</span> {sourceEmail.subject}
+                      </p>
+                      <div className="text-gray-600 whitespace-pre-wrap max-h-48 overflow-y-auto border-t border-gray-200 pt-2">
+                        {sourceEmail.body}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* CTA */}
           <div className="flex gap-2 pt-3 border-t border-gray-100">

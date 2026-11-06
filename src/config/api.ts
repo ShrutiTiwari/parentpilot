@@ -27,6 +27,7 @@ export const API_ENDPOINTS = {
     create: `${API_BASE_URL}/api/events`,
     update: (id: string | number) => `${API_BASE_URL}/api/events/${id}`,
     delete: (id: string | number) => `${API_BASE_URL}/api/events/${id}`,
+    source: (id: string | number) => `${API_BASE_URL}/api/events/${id}/source`,
   },
   extractionCorrections: `${API_BASE_URL}/api/extraction-corrections`,
   prompts: {
