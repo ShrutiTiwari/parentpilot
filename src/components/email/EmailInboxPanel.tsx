@@ -313,7 +313,11 @@ export function EmailInboxPanel({ onViewInCalendar, onItemsLoaded }: EmailInboxP
                           if (i.id !== item.id) return i;
                           const remaining = i.staging_events.filter(s => s.id !== ev._stagingId);
                           return { ...i, staging_events: remaining };
-                        }).filter(i => i.staging_events.length > 0));
+                        // Only drop items that had staging events and are now empty —
+                        // a 'failed' row has staging_events.length === 0 by definition,
+                        // so a blanket "> 0" filter here was wiping every failed card
+                        // off the screen (not the DB) whenever any event was confirmed.
+                        }).filter(i => i.status === 'failed' || i.staging_events.length > 0));
                       }}
                       onDiscard={async () => {
                         await fetch(API_ENDPOINTS.inboundEmail.stagingDiscard(ev._stagingId), {
@@ -324,7 +328,7 @@ export function EmailInboxPanel({ onViewInCalendar, onItemsLoaded }: EmailInboxP
                           if (i.id !== item.id) return i;
                           const remaining = i.staging_events.filter(s => s.id !== ev._stagingId);
                           return { ...i, staging_events: remaining };
-                        }).filter(i => i.staging_events.length > 0));
+                        }).filter(i => i.status === 'failed' || i.staging_events.length > 0));
                       }}
                       onViewInCalendar={onViewInCalendar && isDuplicate
                         ? () => onViewInCalendar({ ...conflicts[0], date: ev.date })
