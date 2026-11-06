@@ -106,13 +106,19 @@ function parseEventsJson(text) {
   return { events, confidence_score: Math.round(avgConfidence * 100) / 100 };
 }
 
+// gemini-2.5-flash was retired for new callers and started returning 404
+// ("no longer available to new users") on every single call — which the
+// try/catch silently swallowed into the Claude fallback, so extraction kept
+// working while Gemini was 100% dead and invisible outside server logs.
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
+
 // ─── Provider methods ─────────────────────────────────────────────────────────
 
 async function callGemini(prompt) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error('GEMINI_API_KEY not configured');
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+  const model = genAI.getGenerativeModel({ model: GEMINI_MODEL });
   const result = await model.generateContent(prompt);
   return result.response.text();
 }
@@ -153,10 +159,46 @@ async function callAIWithProvider(prompt, maxTokens = 8192) {
   }
 }
 
+// Many school mailers (Heath House et al via their messaging platform) send a
+// placeholder plain-text part — literally "You have been sent an email" — and
+// put the real notice in the HTML part. `body || html` picked the truthy stub
+// and the model never saw the content, so a fully-dated event ("Date: Monday
+// 16th November, Time: 2:00 PM") came back as date: null and the whole email
+// failed with "couldn't determine a date". Pick whichever part actually
+// carries content rather than trusting the text part to be non-empty.
+function htmlToText(html) {
+  if (!html) return '';
+  return html
+    .replace(/<(script|style)[^>]*>[\s\S]*?<\/\1>/gi, ' ')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(p|div|tr|h[1-6]|li)>/gi, '\n')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&pound;/gi, '\u00a3')
+    .replace(/&rsquo;|&lsquo;|&#39;/gi, "'")
+    .replace(/&ldquo;|&rdquo;|&quot;/gi, '"')
+    .replace(/&ndash;/gi, '\u2013')
+    .replace(/&mdash;/gi, '\u2014')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n\s*\n\s*\n+/g, '\n\n')
+    .trim();
+}
+
+function pickEmailContent(body, html) {
+  const bodyText = (body || '').trim();
+  const htmlText = htmlToText(html);
+  // Longer part wins: a real text body stays authoritative, but a stub loses
+  // to the HTML that actually holds the notice.
+  return htmlText.length > bodyText.length ? htmlText : bodyText;
+}
+
 async function extractEventsFromEmail({ subject, body, html }) {
   const emailContent = `Subject: ${subject || '(no subject)'}
 
-${body || html || '(no content)'}`;
+${pickEmailContent(body, html) || '(no content)'}`;
 
   const prompt = await getActivePrompt();
   const { text, provider, geminiError } = await callAIWithProvider(getDateContext() + prompt + '\n\nEmail:\n' + emailContent);
@@ -174,7 +216,7 @@ async function callGeminiVision(prompt, imageBase64, mimeType) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error('GEMINI_API_KEY not configured');
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+  const model = genAI.getGenerativeModel({ model: GEMINI_MODEL });
   const result = await model.generateContent([
     prompt,
     { inlineData: { data: imageBase64, mimeType } },
@@ -210,4 +252,4 @@ async function callAIVision(prompt, imageBase64, mimeType) {
   }
 }
 
-module.exports = { extractEventsFromEmail, getActivePrompt, invalidatePromptCache, callAI, callAIVision, parseEventsJson, getDateContext };
+module.exports = { extractEventsFromEmail, getActivePrompt, invalidatePromptCache, callAI, callAIVision, parseEventsJson, getDateContext, htmlToText, pickEmailContent };

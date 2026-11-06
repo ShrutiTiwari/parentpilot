@@ -407,7 +407,16 @@ async function runExtractionPipeline(db, queued, log, startTime = Date.now()) {
     // determinable date can come back with date: null) — since this is a
     // single bulk insert, one bad row would otherwise fail the whole batch
     // and drop every other correctly-extracted event from the email.
-    const isValidDate = (d) => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d);
+    // Shape alone isn't enough: the AI returns placeholder components for a
+    // partially-known date (e.g. "2026-12-00" for a December event with no
+    // day given), which matches the regex but blows up the insert with
+    // 'date/time field value out of range'. Round-trip through Date to
+    // confirm the calendar date is real.
+    const isValidDate = (d) => {
+      if (typeof d !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(d)) return false;
+      const parsed = new Date(`${d}T00:00:00Z`);
+      return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === d;
+    };
     const [validEvents, invalidEvents] = events.reduce(
       ([valid, invalid], e) => isValidDate(e.date) ? [[...valid, e], invalid] : [valid, [...invalid, e]],
       [[], []]
