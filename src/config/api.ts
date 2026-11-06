@@ -38,6 +38,7 @@ export const API_ENDPOINTS = {
   inboundEmail: {
     pending: `${API_BASE_URL}/api/inbound-email/pending`,
     discard: (id: string) => `${API_BASE_URL}/api/inbound-email/${id}/discard`,
+    retry: (id: string) => `${API_BASE_URL}/api/inbound-email/${id}/retry-extraction`,
     stagingConfirm: (stagingId: string) => `${API_BASE_URL}/api/inbound-email/staging/${stagingId}/confirm`,
     stagingDiscard: (stagingId: string) => `${API_BASE_URL}/api/inbound-email/staging/${stagingId}/discard`,
   },

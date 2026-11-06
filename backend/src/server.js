@@ -1417,6 +1417,44 @@ app.post('/api/inbound-email/:id/discard', async (req, res) => {
   }
 });
 
+// ─── Retry a failed extraction (parent-facing) ────────────────────────────────
+// Same work as the admin-only /retry above, but reachable from the dashboard's
+// "Retry" button on a failed email card — no admin secret, scoped by the
+// queue row's own id (an unguessable UUID the parent only has because it was
+// already returned to them by GET /pending), same trust model as /discard above.
+app.post('/api/inbound-email/:id/retry-extraction', async (req, res) => {
+  const db = supabaseAdmin || supabase;
+  if (!db) return res.status(503).json({ error: 'Database unavailable' });
+
+  const { id } = req.params;
+  const log = (step, data) => console.log(JSON.stringify({ step, queueId: id, ...data, ts: new Date().toISOString() }));
+
+  const { data: queued, error: fetchError } = await db
+    .from('email_ingestion_queue')
+    .select('*')
+    .eq('id', id)
+    .single();
+  if (fetchError || !queued) return res.status(404).json({ error: 'Queue item not found' });
+  if (queued.status !== 'failed') {
+    return res.status(400).json({ error: `Can only retry a failed queue item (current status: ${queued.status})` });
+  }
+
+  // Clear any existing staging rows from the prior failed attempt before
+  // re-running, so a retry can't create duplicate pending review cards.
+  await db.from('event_staging').delete().eq('queue_id', id);
+  await db.from('email_ingestion_queue').update({ status: 'processing', error_message: null }).eq('id', id);
+
+  await runExtractionPipeline(db, queued, log);
+
+  const { data: updated } = await db
+    .from('email_ingestion_queue')
+    .select('id, status, error_message, confidence_score')
+    .eq('id', id)
+    .single();
+
+  res.json({ retried: true, result: updated });
+});
+
 // ─── Start ─────────────────────────────────────────────────────────────────────
 app.listen(port, () => {
   console.log(`Power Parent API running on port ${port}`);

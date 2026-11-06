@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Mail, RefreshCw, Inbox, XCircle, Copy, Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { Mail, RefreshCw, Inbox, XCircle, Copy, Check, ChevronDown, ChevronUp, RotateCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AgentReviewCard, AgentExtractedEvent } from './AgentReviewCard';
 import { API_ENDPOINTS } from '@/config/api';
@@ -55,6 +55,8 @@ export function EmailInboxPanel({ onViewInCalendar, onItemsLoaded }: EmailInboxP
   const [copied, setCopied] = useState(false);
   // conflicts keyed by staging event id
   const [conflictsMap, setConflictsMap] = useState<Record<string, ConflictResult[]>>({});
+  // queue item ids currently re-running extraction, to disable/spin their Retry button
+  const [retryingIds, setRetryingIds] = useState<Set<string>>(new Set());
 
   const inboundAddress = user?.email
     ? `calendar+${user.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '')}@inbound.powerparent.co.uk`
@@ -107,6 +109,33 @@ export function EmailInboxPanel({ onViewInCalendar, onItemsLoaded }: EmailInboxP
   useEffect(() => { fetchPending(); }, [user]);
 
   const removeItem = (id: string) => setItems(prev => prev.filter(i => i.id !== id));
+
+  // Re-runs extraction against the already-stored email content — for
+  // failures caused by a transient problem (Gemini outage, a parsing bug
+  // since fixed) rather than the email genuinely having nothing to extract.
+  const retryItem = async (id: string) => {
+    setRetryingIds(prev => new Set(prev).add(id));
+    try {
+      const res = await fetch(API_ENDPOINTS.inboundEmail.retry(id), { method: 'POST' });
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      if (data.result?.status === 'failed') {
+        toast({
+          title: 'Still couldn’t extract an event',
+          description: data.result.error_message || 'The retry failed again.',
+          variant: 'destructive',
+        });
+        setItems(prev => prev.map(i => i.id === id ? { ...i, error_message: data.result.error_message } : i));
+      } else {
+        toast({ title: 'Retried — refreshing…' });
+        await fetchPending();
+      }
+    } catch {
+      toast({ title: 'Retry failed', description: 'Could not reach the server.', variant: 'destructive' });
+    } finally {
+      setRetryingIds(prev => { const next = new Set(prev); next.delete(id); return next; });
+    }
+  };
 
   // Strip HTML tags and return plain text; prefer raw_body if it has real content
   const getBestBody = (item: QueueItem): string | undefined => {
@@ -182,6 +211,7 @@ export function EmailInboxPanel({ onViewInCalendar, onItemsLoaded }: EmailInboxP
                       toast({ title: 'Failed to discard', variant: 'destructive' });
                     }
                   };
+                  const isRetrying = retryingIds.has(item.id);
                   return (
                     <div key={item.id} className="border border-red-100 rounded-xl bg-white shadow-sm p-4">
                       <div className="flex items-start justify-between gap-3">
@@ -194,9 +224,20 @@ export function EmailInboxPanel({ onViewInCalendar, onItemsLoaded }: EmailInboxP
                               : 'No events found in this email'}
                           </p>
                         </div>
-                        <Button variant="outline" size="sm" onClick={discard} className="text-gray-500 flex-shrink-0">
-                          <XCircle className="w-4 h-4 mr-1.5" />Dismiss
-                        </Button>
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                          <Button
+                            variant="outline" size="sm"
+                            onClick={() => retryItem(item.id)}
+                            disabled={isRetrying}
+                            className="text-gray-500"
+                          >
+                            <RotateCw className={`w-4 h-4 mr-1.5 ${isRetrying ? 'animate-spin' : ''}`} />
+                            {isRetrying ? 'Retrying…' : 'Retry'}
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={discard} disabled={isRetrying} className="text-gray-500">
+                            <XCircle className="w-4 h-4 mr-1.5" />Dismiss
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   );
