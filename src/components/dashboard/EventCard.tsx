@@ -360,7 +360,9 @@ export function EventCard({ event, onEditEvent, onCloneEvent, onDeleteEvent, isS
             <CardContent className="pb-1.5 pt-0.5 px-2.5 sm:px-3">
               <div className="space-y-1 text-xs">
                 {event.venue && event.venue.trim() !== '' && (
-                  <div className="flex items-center text-xs text-gray-500 mt-1 break-words whitespace-pre-line">
+                  <div className={`flex items-center text-xs mt-1 break-words whitespace-pre-line ${
+                    festivalTheme.isFestival ? festivalTheme.colors.accent : 'text-gray-500'
+                  }`}>
                     <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
                     <span className="block whitespace-pre-line break-words">{event.venue}</span>
                   </div>
