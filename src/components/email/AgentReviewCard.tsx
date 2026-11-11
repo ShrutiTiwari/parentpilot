@@ -23,6 +23,12 @@ export interface AgentExtractedEvent {
   actions: { text: string; deadline: string | null }[];
   confidence_score: number;
   event_type?: 'personal' | 'school';
+  // Which of the parent's own schools this event belongs to. Pre-filled when
+  // the backend could match the email to one (sender domain or an
+  // AI-extracted school name); null otherwise, surfaced as a dropdown so the
+  // parent can pick instead of silently defaulting to whichever child
+  // profile happens to be selected in the dashboard.
+  school_id?: string | null;
 }
 
 export interface AgentReviewCardProps {
@@ -42,6 +48,11 @@ export interface AgentReviewCardProps {
 
   // Show personal/school toggle (screenshot flow only)
   showEventTypePicker?: boolean;
+
+  // The logged-in parent's own schools (set up during onboarding), for the
+  // school-selection dropdown on school-type events. Empty array hides the
+  // dropdown (falls back to whatever the caller does with no school chosen).
+  schoolOptions?: { id: string; name: string }[];
 
   // Callbacks
   onConfirm: (events: AgentExtractedEvent[], corrections?: {field_name: string; original_value: string; corrected_value: string}[]) => Promise<void>;
@@ -102,6 +113,7 @@ function EventForm({
   conflicts,
   isDuplicate,
   showEventTypePicker,
+  schoolOptions,
   onConfirm,
   onDiscard,
   onViewInCalendar,
@@ -114,6 +126,7 @@ function EventForm({
   conflicts: { title: string; year_group: string }[];
   isDuplicate: boolean;
   showEventTypePicker: boolean;
+  schoolOptions: { id: string; name: string }[];
   onConfirm: (corrections: {field_name: string; original_value: string; corrected_value: string}[]) => Promise<void>;
   onDiscard: () => Promise<void>;
   onViewInCalendar?: () => void;
@@ -128,7 +141,7 @@ function EventForm({
   const handleConfirm = async () => {
     setConfirming(true);
     try {
-      const trackedFields: (keyof AgentExtractedEvent)[] = ['title', 'date', 'time_start', 'venue', 'category', 'year_group'];
+      const trackedFields: (keyof AgentExtractedEvent)[] = ['title', 'date', 'time_start', 'venue', 'category', 'year_group', 'school_id'];
       const corrections = trackedFields
         .filter(f => String(event[f] || '') !== String(originalEvent[f] || ''))
         .map(f => ({
@@ -199,9 +212,9 @@ function EventForm({
         </p>
       )}
 
-      {/* Event type toggle — only for screenshot flow */}
+      {/* Event type toggle — personal/school, shown for both email and screenshot flows */}
       {showEventTypePicker && (
-        <div className="flex gap-2 mb-4">
+        <div className="flex gap-2 mb-2">
           <button
             onClick={() => onChange('event_type', 'personal')}
             className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border font-medium transition-colors ${
@@ -222,6 +235,26 @@ function EventForm({
           >
             <Users className="w-3 h-3" /> School
           </button>
+        </div>
+      )}
+
+      {/* Which school — school events only. Pre-filled when extraction could
+          match the email (sender domain or an AI-read school name) against
+          one of the parent's own schools; otherwise the parent picks, rather
+          than it silently defaulting to whichever child profile is active. */}
+      {showEventTypePicker && event.event_type === 'school' && schoolOptions.length > 0 && (
+        <div className="flex items-center gap-2 mb-4">
+          <Users className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+          <select
+            className="text-sm text-gray-700 bg-transparent border-0 border-b border-dashed border-gray-300 focus:border-gray-400 focus:outline-none cursor-pointer py-0.5 pr-6 flex-1"
+            value={event.school_id || ''}
+            onChange={e => onChange('school_id', e.target.value || null)}
+          >
+            <option value="" disabled>Select school…</option>
+            {schoolOptions.map(s => (
+              <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+          </select>
         </div>
       )}
 
@@ -453,6 +486,7 @@ export function AgentReviewCard({
   conflicts = [],
   isDuplicate = false,
   showEventTypePicker = false,
+  schoolOptions = [],
   onConfirm,
   onDiscard,
   onViewInCalendar,
@@ -533,6 +567,7 @@ export function AgentReviewCard({
                 conflicts={conflicts}
                 isDuplicate={isDuplicate}
                 showEventTypePicker={showEventTypePicker}
+                schoolOptions={schoolOptions}
                 onConfirm={(corrections) => handleEventConfirm(idx, corrections)}
                 onDiscard={() => handleEventDiscard(idx)}
                 onViewInCalendar={onViewInCalendar}

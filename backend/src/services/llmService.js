@@ -195,13 +195,33 @@ function pickEmailContent(body, html) {
   return htmlText.length > bodyText.length ? htmlText : bodyText;
 }
 
-async function extractEventsFromEmail({ subject, body, html }) {
+// School name was never in the extraction schema at all, so events always
+// came back with no school attached — confirming one relied entirely on
+// whichever child profile happened to be selected in the UI, unrelated to
+// which school the email was actually from. Rather than have the model
+// guess against every school in the DB (typos, multiple "St Mary's" etc.),
+// scope it to the small list of schools the logged-in parent has actually
+// set up during onboarding — a much easier match, and the only schools a
+// resolved school_name could sensibly map to anyway.
+function getSchoolContext(knownSchoolNames) {
+  if (!knownSchoolNames?.length) return '';
+  return `In addition to the fields the prompt below asks for, add a "school_name" field to every ` +
+    `event object you return. The parent's children attend the following school(s): ` +
+    `${knownSchoolNames.join(', ')}. If the email signature, header, or body names one of these ` +
+    `schools (even abbreviated, or as "<School Name> Has sent you a message"), set "school_name" ` +
+    `to the matching name exactly as written in this list. If no school from this list is clearly ` +
+    `identifiable, set "school_name" to null — never guess a school that isn't in this list, and never ` +
+    `invent a school name that wasn't given here.\n\n`;
+}
+
+async function extractEventsFromEmail({ subject, body, html, knownSchoolNames }) {
   const emailContent = `Subject: ${subject || '(no subject)'}
 
 ${pickEmailContent(body, html) || '(no content)'}`;
 
   const prompt = await getActivePrompt();
-  const { text, provider, geminiError } = await callAIWithProvider(getDateContext() + prompt + '\n\nEmail:\n' + emailContent);
+  const fullPrompt = getDateContext() + getSchoolContext(knownSchoolNames) + prompt + '\n\nEmail:\n' + emailContent;
+  const { text, provider, geminiError } = await callAIWithProvider(fullPrompt);
   return { ...parseEventsJson(text), provider, geminiError };
 }
 

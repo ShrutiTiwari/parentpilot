@@ -352,32 +352,70 @@ const normalizeForMatch = (s) => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '
 
 // Resolve a school row from the forwarded sender's domain (primary signal —
 // structured and hard to get wrong) or the AI-extracted school_name
-// (fallback — free text, can be missing/wrong). Matching happens in memory
-// against all schools since names must be space-normalized to compare against
-// a domain token; the schools table is small enough for this to be cheap.
+// (fallback — free text, can be missing/wrong).
+//
+// Matched against `candidateSchools` — the logged-in parent's own schools
+// (via child_users -> children -> schools), NOT every school in the DB.
+// Two reasons: (1) a global match risks false positives across unrelated
+// schools with similar names, and (2) a resolved school_id that isn't one
+// of the parent's own schools would be useless to them anyway. Falls back
+// to no match (school_id: null) when user_id didn't resolve for this email,
+// rather than guessing against the whole table.
 // Never guesses: returns null rather than assigning the wrong school_id when
 // nothing matches confidently.
-async function resolveSchoolId(db, { bodyText, htmlText, aiSchoolName }) {
+async function resolveSchoolId(db, { bodyText, htmlText, aiSchoolName, candidateSchools }) {
   const domain = extractForwardedSenderDomain(bodyText) || extractForwardedSenderDomain(htmlText);
   const token = domainToSchoolToken(domain);
   const result = { school_id: null, matchedVia: null, domain };
-  if (!token && !aiSchoolName) return result;
-
-  const { data: schools } = await db.from('schools').select('id, name, school_code');
-  if (!schools?.length) return result;
+  if (!candidateSchools?.length || (!token && !aiSchoolName)) return result;
 
   if (token && token.length >= 4) {
-    const match = schools.find(s =>
+    const match = candidateSchools.find(s =>
       normalizeForMatch(s.name).includes(token) || normalizeForMatch(s.school_code).includes(token)
     );
     if (match) return { school_id: match.id, matchedVia: 'domain', domain };
   }
   if (aiSchoolName) {
     const needle = normalizeForMatch(aiSchoolName);
-    const match = needle.length >= 4 && schools.find(s => normalizeForMatch(s.name).includes(needle));
+    const match = needle.length >= 4 && candidateSchools.find(s => normalizeForMatch(s.name).includes(needle));
     if (match) return { school_id: match.id, matchedVia: 'ai_name', domain };
   }
   return result;
+}
+
+// The schools the logged-in parent has actually set up (via onboarding —
+// adding a child and assigning their school), scoped through
+// child_users -> children -> schools. Used both to constrain AI school-name
+// extraction to a short, meaningful list, and to resolve school_id after.
+// Returns [] rather than throwing when user_id is null (email didn't
+// resolve to a user) or the parent has no children yet.
+async function getParentSchools(db, userId) {
+  if (!userId) return [];
+  const { data: childLinks } = await db.from('child_users').select('child_id').eq('user_id', userId);
+  if (!childLinks?.length) return [];
+
+  const { data: children } = await db
+    .from('children')
+    .select('school_id')
+    .in('id', childLinks.map(c => c.child_id));
+  const schoolIds = [...new Set((children || []).map(c => c.school_id).filter(Boolean))];
+  if (!schoolIds.length) return [];
+
+  const { data: schools } = await db.from('schools').select('id, name, school_code, duplicate_of').in('id', schoolIds);
+  if (!schools?.length) return [];
+
+  // A school row can be a duplicate of another (merged during school
+  // discovery) — resolve to the canonical one so matching/display is
+  // consistent with what childProfileService already does on the frontend.
+  const resolved = await Promise.all(schools.map(async (s) => {
+    if (!s.duplicate_of) return s;
+    const { data: original } = await db.from('schools').select('id, name, school_code').eq('id', s.duplicate_of).single();
+    return original || s;
+  }));
+  // De-dupe in case two of the parent's children attend schools that both
+  // point at the same canonical school.
+  const seen = new Set();
+  return resolved.filter(s => s && !seen.has(s.id) && seen.add(s.id));
 }
 
 // ─── Postmark inbound email webhook ───────────────────────────────────────────
@@ -393,7 +431,14 @@ async function runExtractionPipeline(db, queued, log, startTime = Date.now()) {
   const html = queued.raw_html;
 
   try {
-    const { events, confidence_score, provider, geminiError } = await extractEventsFromEmail({ subject, body, html });
+    // Scoped to the resolved parent's own schools (empty when user_id didn't
+    // resolve, e.g. the sender-matching issue — extraction still runs, it
+    // just won't have a school list to match against, same as before).
+    const parentSchools = await getParentSchools(db, queued.user_id);
+    const { events, confidence_score, provider, geminiError } = await extractEventsFromEmail({
+      subject, body, html,
+      knownSchoolNames: parentSchools.map(s => s.name),
+    });
     log('ai_extraction_ok', {
       eventCount: events.length,
       confidence: confidence_score,
@@ -428,7 +473,16 @@ async function runExtractionPipeline(db, queued, log, startTime = Date.now()) {
       });
     }
 
-    const stagingRows = validEvents.map(e => ({
+    // Resolve each event's school against the parent's own schools only —
+    // domain match first (structured, hard to get wrong), then the
+    // AI-extracted school_name as fallback. null when nothing matches
+    // confidently; the review UI then falls back to a dropdown instead of
+    // silently misattributing to whichever child profile is active.
+    const schoolResolutions = await Promise.all(validEvents.map(e =>
+      resolveSchoolId(db, { bodyText: body, htmlText: html, aiSchoolName: e.school_name, candidateSchools: parentSchools })
+    ));
+
+    const stagingRows = validEvents.map((e, i) => ({
       queue_id: queued.id,
       title: e.title,
       date: e.date,
@@ -441,6 +495,7 @@ async function runExtractionPipeline(db, queued, log, startTime = Date.now()) {
       actions: e.actions || [],
       confidence_score: e.confidence_score ?? confidence_score,
       status: 'pending',
+      school_id: schoolResolutions[i].school_id,
     }));
 
     const { error: stagingError } = stagingRows.length

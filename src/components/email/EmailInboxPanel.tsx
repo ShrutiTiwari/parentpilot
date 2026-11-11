@@ -21,6 +21,7 @@ interface StagingEvent {
   actions: { text: string; deadline: string | null }[];
   confidence_score: number;
   status: string;
+  school_id: string | null;
 }
 
 interface QueueItem {
@@ -48,7 +49,22 @@ interface EmailInboxPanelProps {
 
 export function EmailInboxPanel({ onViewInCalendar, onItemsLoaded }: EmailInboxPanelProps = {}) {
   const { user } = useAuth();
-  const { selectedProfile } = useChildProfiles();
+  const { profiles, selectedProfile } = useChildProfiles();
+
+  // The parent's own schools (set up during onboarding, one per child
+  // profile), de-duped by id — used both to pre-select a dropdown value and
+  // to populate its options. Previously there was no dropdown at all: a
+  // confirmed event's school_id came only from selectedProfile?.school_id,
+  // unrelated to which school the email was actually from.
+  const schoolOptions = React.useMemo(() => {
+    const seen = new Map<string, { id: string; name: string }>();
+    for (const p of profiles) {
+      if (p.schoolId && p.schoolName && !seen.has(p.schoolId)) {
+        seen.set(p.schoolId, { id: p.schoolId, name: p.schoolName });
+      }
+    }
+    return [...seen.values()];
+  }, [profiles]);
   const [items, setItems] = useState<QueueItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
@@ -256,6 +272,12 @@ export function EmailInboxPanel({ onViewInCalendar, onItemsLoaded }: EmailInboxP
                     description: ev.description || '',
                     actions: ev.actions || [],
                     confidence_score: ev.confidence_score ?? item.confidence_score ?? 0.8,
+                    // Pre-filled by extraction when it could match the email to one
+                    // of this parent's schools; event_type isn't known yet at this
+                    // point (defaults to personal), so default this to unset too —
+                    // the type toggle + school dropdown decide it from here.
+                    event_type: ev.school_id ? 'school' : undefined,
+                    school_id: ev.school_id,
                   }));
 
                 return agentEvents.map((ev, idx) => {
@@ -280,17 +302,22 @@ export function EmailInboxPanel({ onViewInCalendar, onItemsLoaded }: EmailInboxP
                       conflicts={conflicts}
                       isDuplicate={isDuplicate}
                       showEventTypePicker={true}
+                      schoolOptions={schoolOptions}
                       onConfirm={async (eventsToConfirm, corrections) => {
                         const edited = eventsToConfirm[0];
+                        // The confirm endpoint reads school_id from the top-level
+                        // body field (not from inside `event`) — fall back to the
+                        // currently-selected child profile's school only if the
+                        // parent never touched the dropdown (e.g. extraction
+                        // matched one but they left the type toggle on personal).
+                        const resolvedSchoolId = edited.school_id || selectedProfile?.schoolId || null;
                         const res = await fetch(API_ENDPOINTS.inboundEmail.stagingConfirm(ev._stagingId), {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify({
                             user_id: user.id,
-                            event: {
-                              ...edited,
-                              school_id: edited.school_id || selectedProfile?.school_id || null,
-                            },
+                            school_id: resolvedSchoolId,
+                            event: edited,
                           }),
                         });
                         if (!res.ok) throw new Error(await res.text());
