@@ -9,7 +9,9 @@ export const festivalThemes = {
       background: 'from-red-600 to-red-800',
       cardBg: 'bg-gradient-to-br from-red-600 to-red-800',
       text: 'text-white',
-      accent: 'text-red-100',
+      // text-red-100 (the other themes' default) was too close to the deep
+      // red background here to read comfortably — white for this theme only.
+      accent: 'text-white',
       border: 'border-red-400',
       shadow: 'shadow-lg shadow-red-500/30',
     },
