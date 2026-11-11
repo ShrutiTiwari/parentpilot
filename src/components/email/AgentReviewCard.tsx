@@ -238,26 +238,6 @@ function EventForm({
         </div>
       )}
 
-      {/* Which school — school events only. Pre-filled when extraction could
-          match the email (sender domain or an AI-read school name) against
-          one of the parent's own schools; otherwise the parent picks, rather
-          than it silently defaulting to whichever child profile is active. */}
-      {showEventTypePicker && event.event_type === 'school' && schoolOptions.length > 0 && (
-        <div className="flex items-center gap-2 mb-4">
-          <Users className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-          <select
-            className="text-sm text-gray-700 bg-transparent border-0 border-b border-dashed border-gray-300 focus:border-gray-400 focus:outline-none cursor-pointer py-0.5 pr-6 flex-1"
-            value={event.school_id || ''}
-            onChange={e => onChange('school_id', e.target.value || null)}
-          >
-            <option value="" disabled>Select school…</option>
-            {schoolOptions.map(s => (
-              <option key={s.id} value={s.id}>{s.name}</option>
-            ))}
-          </select>
-        </div>
-      )}
-
       {/* Title */}
       <div
         className="group flex items-start gap-2 mb-4 cursor-pointer"
@@ -279,6 +259,26 @@ function EventForm({
           </>
         )}
       </div>
+
+      {/* Which school — school events only. Pre-filled when extraction could
+          match the email (sender domain or an AI-read school name) against
+          one of the parent's own schools; otherwise the parent picks, rather
+          than it silently defaulting to whichever child profile is active. */}
+      {showEventTypePicker && event.event_type === 'school' && schoolOptions.length > 0 && (
+        <div className="flex items-center gap-2 mb-4">
+          <Users className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+          <select
+            className="text-sm text-gray-700 bg-transparent border-0 border-b border-dashed border-gray-300 focus:border-gray-400 focus:outline-none cursor-pointer py-0.5 pr-6 flex-1"
+            value={event.school_id || ''}
+            onChange={e => onChange('school_id', e.target.value || null)}
+          >
+            <option value="" disabled>Select school…</option>
+            {schoolOptions.map(s => (
+              <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* Edit hint — shown until first edit */}
       {!hasEdited && (
