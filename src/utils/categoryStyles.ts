@@ -84,13 +84,15 @@ export const categoryStyles: CategoryStyleMap = {
     tagText: 'text-[#D946EF]',
   },
   trip: {
-    // Was identical to holiday's orange (#F97316). Shifted to brown/tan —
-    // suitcase/travel-coded, distinct from both holiday and birthday now.
-    gradient: 'bg-gradient-to-r from-[#FAF0E6] to-[#F0DFC8]',
-    textColor: 'text-[#92400E]',
-    borderColor: 'border-[#D6A86A]/30',
-    tagBg: 'bg-[#F5E6D3]/60',
-    tagText: 'text-[#92400E]',
+    // Was identical to holiday's orange (#F97316). Tried brown, then a
+    // standard amber/gold — both landed too close to exam/competition's
+    // existing gold tones. Settled on a brighter lime-yellow, genuinely
+    // distinct from every other hue in the palette.
+    gradient: 'bg-gradient-to-r from-[#F7FEE7] to-[#D9F99D]',
+    textColor: 'text-[#65A30D]',
+    borderColor: 'border-[#A3E635]/40',
+    tagBg: 'bg-[#ECFCCB]/70',
+    tagText: 'text-[#65A30D]',
   },
   // The categories below previously had no dedicated style at all — any
   // event with one of these category values silently fell back to

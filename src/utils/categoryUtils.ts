@@ -16,7 +16,9 @@ import {
   Trophy,
   UsersRound,
   FileText,
-  CircleDot
+  CircleDot,
+  Bus,
+  Palmtree
 } from "lucide-react";
 import { getEventStyle } from './categoryStyles';
 
@@ -53,10 +55,10 @@ export const CATEGORIES: CategoryConfig[] = [
   { value: 'swimming', label: 'Swimming', icon: Fish, eventType: 'both' },
   { value: 'drama', label: 'Drama', icon: Theater, eventType: 'school' },
   { value: 'dance', label: 'Dance', icon: VenetianMask, eventType: 'school' },
-  { value: 'trip', label: 'Trip', icon: Sparkles, eventType: 'school' },
+  { value: 'trip', label: 'Trip', icon: Bus, eventType: 'school' },
   { value: 'club', label: 'Club', icon: School, eventType: 'school' },
   { value: 'meeting', label: 'Meeting', icon: Users, eventType: 'school' },
-  { value: 'holiday', label: 'Holiday', icon: Sparkles, eventType: 'school' },
+  { value: 'holiday', label: 'Holiday', icon: Palmtree, eventType: 'school' },
   { value: 'parents', label: 'Parents', icon: UsersRound, eventType: 'school' },
   { value: 'academic', label: 'Academic', icon: BookOpen, eventType: 'school' },
   { value: 'exam', label: 'Exam', icon: FileEdit, eventType: 'school' },
