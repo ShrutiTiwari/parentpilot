@@ -171,10 +171,14 @@ export function EventCard({ event, onEditEvent, onCloneEvent, onDeleteEvent, isS
     };
   };
 
-  // Get the appropriate icon based on category
+  // Get the appropriate icon based on category. Medical renders larger than
+  // the rest — it's meant to be the one category that's unmistakable at a
+  // glance (vaccinations, GP, dentist are often higher-stakes/time-fixed),
+  // so the standard h-4 w-4 every other category uses wasn't prominent enough.
   const CategoryIcon = () => {
     const IconComponent = getCategoryIcon(event.category);
-    return IconComponent ? <IconComponent className="h-4 w-4" /> : null;
+    const sizeClass = event.category === 'medical' ? 'h-6 w-6' : 'h-4 w-4';
+    return IconComponent ? <IconComponent className={sizeClass} /> : null;
   };
 
   // Handle todo toggle
