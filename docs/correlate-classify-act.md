@@ -83,6 +83,91 @@ concentrated in complex/end-of-term events, not spread evenly) and keeps
 false-merge risk bounded to a small, already-plausible candidate set rather
 than a blind classification over everything.
 
+### What this is actually called
+
+This problem is older than AI systems — it comes from database/data-
+integration literature under the name **entity resolution** (also **record
+linkage**): deciding whether multiple records refer to the same real-world
+thing. A few sub-concepts map directly onto this design:
+
+- **Blocking** (also **canopy clustering**) — cheaply narrowing the
+  candidate pool using a strong structural signal (same sender domain, same
+  school, same date window) *before* doing expensive similarity work. This
+  is the formal name for "correlate first, narrow the set, only then reason
+  about it" above.
+- **Coreference resolution**, specifically **cross-document** coreference
+  resolution in NLP terms, since the "mentions" (emails) arrive as separate
+  documents over time rather than within one document.
+- **Memory write policy** — the term used in agent-memory literature for
+  the retrieve → merge/update → or create-new decision an agent makes when
+  new information arrives. Classify/act above is this policy, applied to
+  school emails instead of general agent memory.
+
+### Topic as the anchor, not pairwise correlation
+
+The design above was first framed as *pairwise correlation*: a new email
+arrives, the system finds "the one" existing confirmed event it most
+resembles, classifies the relationship, and acts. A sharper way to frame
+the same mechanism, closer to how larger systems actually do this: treat
+each event as a **topic** — a persistent anchor that messages *attach to*,
+rather than something a new message is merely *compared against* one time.
+
+Concretely, this doesn't require a new table: `events.id` already serves as
+a stable topic anchor, and `description`/`actions` on that row are what the
+topic's accumulated state looks like after multiple messages attach to it.
+What changes is the framing, not the schema — correlate's job is "does this
+email belong to an existing topic," not "which single record does this
+email most resemble right now."
+
+**Why the "implicit" attachment is genuinely easier here than in the
+general case:** topic attachment in a general system (Slack threads,
+support tickets) needs real inference, because messages can come from
+different people, channels, or contexts with no shared signal. Here, every
+follow-up about the same event comes from *the same source* (the same
+school, same sender) and the information is *cumulative*, not
+contradictory — date, then costume details, then a reminder, then pickup
+logistics. Nothing needs reconciling, only collecting. That's what makes
+same-school + same-date + fuzzy-title a strong enough implicit signal to
+attach on, without the heavier explicit-linking machinery (thread headers,
+manual tagging) larger systems often need.
+
+### How this compares to Microsoft 365 Copilot's cross-source aggregation
+
+> From general knowledge, not a verified check of Microsoft's current
+> published architecture — worth confirming against Microsoft Learn docs
+> (Graph connectors, Copilot architecture) before treating as settled fact.
+
+Copilot aggregating email, Teams chat, and files into one answer looks like
+the same problem on the surface, but the mechanism is different in an
+instructive way — and the real answer is "similar on the outside, different
+in the middle, but similar again at the core":
+
+- **Different, on the surface and in the middle:** Microsoft owns the data
+  plumbing end-to-end (Exchange, Teams, SharePoint), so a huge amount of
+  what looks like aggregation is actually **following structural links that
+  already exist at write-time** — a Teams `conversationId`, an email
+  `conversationId` (their server-side thread ID, not inferred from
+  content), a calendar event referenced by a meeting. Where Copilot *does*
+  infer, it's **retrieval-augmented generation**: a semantic (embedding)
+  index built across a tenant's content, queried and synthesized **on
+  demand, per question** — there's no persistent "topic" row being
+  incrementally built up over time the way `events` is here.
+- **Similar at the core:** underneath the different mechanics, the
+  structural-link case is just blocking with a perfect signal (an explicit
+  ID instead of an inferred one), and the retrieval case is still, at
+  bottom, deciding "which existing things does this new piece of
+  information belong with" — the same entity-resolution question, solved
+  with a stronger, owned signal where Microsoft has one and with semantic
+  search where it doesn't.
+- **The actual reason this project can't just copy Copilot's approach:**
+  Microsoft owns the pipes and can stamp a shared ID across sources at
+  write-time. This project ingests forwarded email from systems it doesn't
+  control (ParentMail, school mailers) that provide no such ID — closer in
+  shape to **CRM deduplication** (Salesforce Einstein, HubSpot) or
+  **support-ticket "is this email about an existing case"** systems
+  (Zendesk, Intercom), which also have to infer linkage over genuinely
+  external, unlinked email rather than follow a link they control.
+
 ### The three stages
 
 **1. Correlate** — a fuzzy title + date + year-group match against
