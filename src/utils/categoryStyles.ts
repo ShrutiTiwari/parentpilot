@@ -11,6 +11,19 @@ type CategoryStyleMap = {
 };
 
 export const categoryStyles: CategoryStyleMap = {
+  // Medical appointments (vaccinations, GP, dentist) previously fell back to
+  // `general`'s neutral style and were visually indistinguishable from any
+  // other event — a coral/red background + stethoscope icon makes them
+  // stand out deliberately, since these are often higher-stakes/time-fixed.
+  medical: {
+    // A deeper, more saturated red than drama's (#E11D48) — needs to be
+    // unmistakably distinct, not just another pink/coral in the mix.
+    gradient: 'bg-gradient-to-r from-[#FEE2E2] to-[#FCA5A5]',
+    textColor: 'text-[#DC2626]',
+    borderColor: 'border-[#DC2626]/30',
+    tagBg: 'bg-[#FEE2E2]/60',
+    tagText: 'text-[#DC2626]',
+  },
   holiday: {
     gradient: 'bg-white/10',
     textColor: 'text-[#F97316]',

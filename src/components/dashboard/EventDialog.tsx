@@ -31,6 +31,7 @@ const CATEGORY_OPTIONS = [
   { value: 'parents',     label: '👨‍👩‍👧 Parents' },
   { value: 'holiday',     label: '🏖️ Holiday' },
   { value: 'report',      label: '📄 Report' },
+  { value: 'medical',     label: '🏥 Medical' },
   { value: 'general',     label: '📌 General' },
 ];
 

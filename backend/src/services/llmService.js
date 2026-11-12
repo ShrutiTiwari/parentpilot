@@ -17,7 +17,7 @@ Required format:
     "time_end": "HH:MM" or null,
     "venue": "string or null",
     "year_group": "Year 1-6 or All",
-    "category": "holiday|sports|swimming|music|parent|report|exam|trip|general",
+    "category": "holiday|sports|swimming|music|parent|report|exam|trip|medical|general",
     "description": "any extra details e.g. bring £5, wear PE kit",
     "actions": [
       { "text": "action the parent needs to take", "deadline": "YYYY-MM-DD or null" }
@@ -32,6 +32,7 @@ Rules:
 - If no time is specified, use null
 - Extract EVERY event mentioned, even if briefly, AS LONG AS you can determine a specific date (YYYY-MM-DD) for it
 - date is required and must never be null — if a mention has no determinable date (e.g. "swimming lessons resume next term" with no date given), leave it out of the output entirely rather than guessing or returning date: null
+- category: use "medical" for medical/health appointments (vaccinations, dentist, GP, hospital) rather than "general" — these are shown with distinct styling so parents can spot them at a glance
 - confidence_score reflects how certain you are about the date/details
 - actions should be concrete parent tasks (e.g. "Return permission slip", "Pay £5 online")
 `;

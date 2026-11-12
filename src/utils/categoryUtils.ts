@@ -1,14 +1,15 @@
 import React from 'react';
-import { 
-  Music4, 
-  Volleyball, 
-  Fish, 
-  Theater, 
-  CheckSquare, 
-  VenetianMask, 
-  Sparkles, 
+import {
+  Music4,
+  Volleyball,
+  Fish,
+  Theater,
+  CheckSquare,
+  VenetianMask,
+  Sparkles,
   PartyPopper,
-  Users
+  Users,
+  Stethoscope
 } from "lucide-react";
 import { getEventStyle } from './categoryStyles';
 
@@ -45,6 +46,7 @@ export const CATEGORIES: CategoryConfig[] = [
   
   // Personal categories
   { value: 'birthday', label: 'Birthday', icon: PartyPopper, eventType: 'personal' },
+  { value: 'medical', label: 'Medical', icon: Stethoscope, eventType: 'personal' },
   { value: 'appointment', label: 'Appointment', icon: Sparkles, eventType: 'personal' },
   { value: 'family', label: 'Family', icon: Users, eventType: 'personal' },
 ];

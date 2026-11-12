@@ -17,7 +17,7 @@ Required format:
     "time_end": "HH:MM" or null,
     "venue": "string or null",
     "year_group": "Reception" | "Year 1" | "Year 2" | "Year 3" | "Year 4" | "Year 5" | "Year 6" | "All",
-    "category": "holiday" | "sports" | "swimming" | "music" | "parent" | "report" | "exam" | "trip" | "general",
+    "category": "holiday" | "sports" | "swimming" | "music" | "parent" | "report" | "exam" | "trip" | "medical" | "general",
     "description": "any extra context e.g. bring £5, wear PE kit, selected by PE staff",
     "actions": [
       { "text": "concrete action the parent needs to take", "deadline": "YYYY-MM-DD or null" }
@@ -33,7 +33,7 @@ Rules:
 - if no year is specified, assume the nearest future occurrence of that date relative to the current date given above
 - time_start / time_end in 24-hr HH:MM format; use null if not specified
 - year_group: use "All" if not specified, applies to whole school, or the event is personal/non-school (e.g. a medical appointment)
-- category: use "general" for personal/family events that don't fit the other categories (e.g. medical appointments, birthdays)
+- category: use "medical" for medical/health appointments (vaccinations, dentist, GP, hospital) — shown with distinct styling so parents spot them at a glance. Use "general" for other personal/family events that don't fit elsewhere (e.g. birthdays)
 - actions must be concrete parent tasks with realistic deadlines, e.g.:
     "Return permission slip" deadline 1 week before event
     "Pay £5 online" deadline 2 weeks before event
