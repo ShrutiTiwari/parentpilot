@@ -596,6 +596,12 @@ app.post('/api/inbound-email', async (req, res) => {
         raw_body: body,
         raw_html: html,
         from_address: fromAddress,
+        // The actual recipient Postmark delivered to — not spoofable the way
+        // From: is, since it's determined by mail routing, not a header the
+        // sender writes. Persisted so a failed/unexpected resolution is
+        // diagnosable from the DB afterward instead of needing a live
+        // Postmark Activity log lookup (separate, limited retention).
+        to_address: toAddress || null,
         status: 'processing',
         user_id: resolvedUserId,
       })
