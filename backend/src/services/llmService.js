@@ -17,7 +17,7 @@ Required format:
     "time_end": "HH:MM" or null,
     "venue": "string or null",
     "year_group": "Year 1-6 or All",
-    "category": "holiday|sports|swimming|music|parent|report|exam|trip|medical|general",
+    "category": "holiday|sports|swimming|music|parents|report|exam|trip|club|academic|competition|birthday|medical|general",
     "description": "any extra details e.g. bring £5, wear PE kit",
     "actions": [
       { "text": "action the parent needs to take", "deadline": "YYYY-MM-DD or null" }

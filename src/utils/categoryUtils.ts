@@ -9,7 +9,14 @@ import {
   Sparkles,
   PartyPopper,
   Users,
-  Stethoscope
+  Stethoscope,
+  FileEdit,
+  School,
+  BookOpen,
+  Trophy,
+  UsersRound,
+  FileText,
+  CircleDot
 } from "lucide-react";
 import { getEventStyle } from './categoryStyles';
 
@@ -25,7 +32,19 @@ export interface CategoryIconProps {
   className?: string;
 }
 
-// All available categories with their configurations
+// All available categories with their configurations.
+//
+// This used to drift out of sync with the category dropdowns in
+// EventDialog.tsx/AgentReviewCard.tsx (two more hand-written lists) — e.g.
+// "Birthday" existed here but was never selectable in either dropdown, and
+// this list used "test" where the dropdowns used "exam" for the same thing.
+// Those two dropdowns now derive their options from this list directly (see
+// getCategoryOptionsWithEmoji below) instead of maintaining their own, so
+// there's one place to add/rename a category going forward.
+//
+// Several categories below previously reused the generic Sparkles icon —
+// given real icons here so they're visually distinct, matching the
+// dedicated colors added in categoryStyles.ts for the same reason.
 export const CATEGORIES: CategoryConfig[] = [
   // School categories
   { value: 'general', label: 'General', icon: Sparkles, eventType: 'school' },
@@ -35,15 +54,16 @@ export const CATEGORIES: CategoryConfig[] = [
   { value: 'drama', label: 'Drama', icon: Theater, eventType: 'school' },
   { value: 'dance', label: 'Dance', icon: VenetianMask, eventType: 'school' },
   { value: 'trip', label: 'Trip', icon: Sparkles, eventType: 'school' },
-  { value: 'club', label: 'Club', icon: Sparkles, eventType: 'school' },
-  { value: 'meeting', label: 'Meeting', icon: Sparkles, eventType: 'school' },
+  { value: 'club', label: 'Club', icon: School, eventType: 'school' },
+  { value: 'meeting', label: 'Meeting', icon: Users, eventType: 'school' },
   { value: 'holiday', label: 'Holiday', icon: Sparkles, eventType: 'school' },
-  { value: 'parents', label: 'Parents', icon: Users, eventType: 'school' },
-  { value: 'academic', label: 'Academic', icon: Sparkles, eventType: 'school' },
-  { value: 'test', label: 'Test', icon: Sparkles, eventType: 'school' },
-  { value: 'competition', label: 'Competition', icon: Sparkles, eventType: 'school' },
-  { value: 'other', label: 'Other', icon: Sparkles, eventType: 'school' },
-  
+  { value: 'parents', label: 'Parents', icon: UsersRound, eventType: 'school' },
+  { value: 'academic', label: 'Academic', icon: BookOpen, eventType: 'school' },
+  { value: 'exam', label: 'Exam', icon: FileEdit, eventType: 'school' },
+  { value: 'competition', label: 'Competition', icon: Trophy, eventType: 'school' },
+  { value: 'report', label: 'Report', icon: FileText, eventType: 'school' },
+  { value: 'other', label: 'Other', icon: CircleDot, eventType: 'school' },
+
   // Personal categories
   { value: 'birthday', label: 'Birthday', icon: PartyPopper, eventType: 'personal' },
   { value: 'medical', label: 'Medical', icon: Stethoscope, eventType: 'personal' },
@@ -87,6 +107,33 @@ export const getCategoryOptions = (eventType: 'school' | 'personal'): { value: s
   return getCategoriesByEventType(eventType).map(category => ({
     value: category.value,
     label: category.label
+  }));
+};
+
+// Emoji per category, for the native <select> dropdowns in EventDialog.tsx
+// and AgentReviewCard.tsx — a plain <option> can't render a React icon
+// component, so those dropdowns show an emoji-prefixed label instead. Kept
+// here, next to CATEGORIES, so adding a category only means editing one
+// place rather than three.
+const CATEGORY_EMOJI: Record<string, string> = {
+  sports: '🏅', swimming: '🏊', music: '🎵', drama: '🎭', dance: '💃',
+  exam: '📝', trip: '🚌', club: '🏫', meeting: '🗣️', academic: '📚',
+  competition: '🏆', parents: '👨‍👩‍👧', holiday: '🏖️', report: '📄',
+  medical: '🏥', birthday: '🎂', appointment: '📅', family: '👪',
+  other: '🔹', general: '📌',
+};
+
+// All categories (school + personal) as emoji-labelled options, for a flat
+// dropdown that isn't filtered by event type — both EventDialog.tsx and
+// AgentReviewCard.tsx show one combined list rather than switching options
+// based on the personal/school toggle, so this doesn't use
+// getCategoriesByEventType's split. "general" is always listed last to
+// match the existing convention of "catch-all sits at the bottom".
+export const getAllCategoryOptionsWithEmoji = (): { value: string; label: string }[] => {
+  const ordered = [...CATEGORIES.filter(c => c.value !== 'general'), ...CATEGORIES.filter(c => c.value === 'general')];
+  return ordered.map(category => ({
+    value: category.value,
+    label: `${CATEGORY_EMOJI[category.value] || '📌'} ${category.label}`,
   }));
 };
 

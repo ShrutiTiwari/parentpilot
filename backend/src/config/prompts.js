@@ -17,7 +17,7 @@ Required format:
     "time_end": "HH:MM" or null,
     "venue": "string or null",
     "year_group": "Reception" | "Year 1" | "Year 2" | "Year 3" | "Year 4" | "Year 5" | "Year 6" | "All",
-    "category": "holiday" | "sports" | "swimming" | "music" | "parent" | "report" | "exam" | "trip" | "medical" | "general",
+    "category": "holiday" | "sports" | "swimming" | "music" | "parents" | "report" | "exam" | "trip" | "club" | "academic" | "competition" | "birthday" | "medical" | "general",
     "description": "any extra context e.g. bring £5, wear PE kit, selected by PE staff",
     "actions": [
       { "text": "concrete action the parent needs to take", "deadline": "YYYY-MM-DD or null" }
