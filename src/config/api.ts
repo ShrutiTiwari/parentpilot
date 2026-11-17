@@ -35,6 +35,12 @@ export const API_ENDPOINTS = {
     review: `${API_BASE_URL}/api/prompts/review`,
     apply: `${API_BASE_URL}/api/prompts/apply`,
   },
+  admin: {
+    quality: (days: number) => `${API_BASE_URL}/api/admin/quality?days=${days}`,
+    qualityEmail: (id: string, includeBody = false) =>
+      `${API_BASE_URL}/api/admin/quality/emails/${id}${includeBody ? '?include_body=1' : ''}`,
+    elasticStatus: `${API_BASE_URL}/api/admin/elastic-status`,
+  },
   inboundEmail: {
     pending: `${API_BASE_URL}/api/inbound-email/pending`,
     discard: (id: string) => `${API_BASE_URL}/api/inbound-email/${id}/discard`,

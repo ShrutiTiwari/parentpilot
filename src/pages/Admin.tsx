@@ -1,11 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { API_ENDPOINTS } from '@/config/api';
-
-const ADMIN_SECRET = 'powerparent-admin-2026';
-
-function authHeaders() {
-  return { 'Content-Type': 'application/json', 'x-admin-secret': ADMIN_SECRET };
-}
+import { adminHeaders as authHeaders } from '@/config/admin';
 
 interface Pattern {
   field_name: string;
@@ -110,7 +105,10 @@ export default function Admin() {
             <h1 className="text-2xl font-bold text-gray-900">Prompt Improvement Engine</h1>
             <p className="text-sm text-gray-500 mt-1">Analyse parent corrections and improve the extraction prompt</p>
           </div>
-          <a href="/" className="text-sm text-blue-600 hover:underline">← Back to app</a>
+          <div className="flex items-center gap-4">
+            <a href="/admin/quality" className="text-sm text-blue-600 hover:underline">Quality dashboard →</a>
+            <a href="/" className="text-sm text-blue-600 hover:underline">← Back to app</a>
+          </div>
         </div>
 
         {/* Trigger review */}

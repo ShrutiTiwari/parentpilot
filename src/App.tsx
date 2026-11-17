@@ -14,6 +14,7 @@ import SharedCalendar from "./pages/shared/[shareToken]";
 import NotFound from "./pages/NotFound";
 import ReviewPreview from "./pages/ReviewPreview";
 import Admin from "./pages/Admin";
+import AdminQuality from "./pages/AdminQuality";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => (
                 <Route path="/shared/:shareToken" element={<SharedCalendar />} />
                 <Route path="/review-preview" element={<ReviewPreview />} />
                 <Route path="/admin" element={<Admin />} />
+                <Route path="/admin/quality" element={<AdminQuality />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </SchoolAuthorizationProvider>

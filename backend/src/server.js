@@ -12,6 +12,8 @@ const termDatesService = require('./services/termDatesService');
 const { CLAUDE_CONFIG, OPENAI_CONFIG } = require('./config/llmConfig');
 const { extractEventsFromEmail, getActivePrompt, invalidatePromptCache, callAI, callAIVision, parseEventsJson, getDateContext } = require('./services/llmService');
 const { indexEvent, unindexEvent, findConflicts, findDuplicates, bulkIndex, pingElastic } = require('./services/elasticService');
+const { isValidIsoDate } = require('./utils/dateValidation');
+const { fetchQualityData, computeQualityMetrics, fetchEmailDetail } = require('./services/qualityMetricsService');
 require('dotenv').config();
 
 const app = express();
@@ -452,18 +454,8 @@ async function runExtractionPipeline(db, queued, log, startTime = Date.now()) {
     // determinable date can come back with date: null) — since this is a
     // single bulk insert, one bad row would otherwise fail the whole batch
     // and drop every other correctly-extracted event from the email.
-    // Shape alone isn't enough: the AI returns placeholder components for a
-    // partially-known date (e.g. "2026-12-00" for a December event with no
-    // day given), which matches the regex but blows up the insert with
-    // 'date/time field value out of range'. Round-trip through Date to
-    // confirm the calendar date is real.
-    const isValidDate = (d) => {
-      if (typeof d !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(d)) return false;
-      const parsed = new Date(`${d}T00:00:00Z`);
-      return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === d;
-    };
     const [validEvents, invalidEvents] = events.reduce(
-      ([valid, invalid], e) => isValidDate(e.date) ? [[...valid, e], invalid] : [valid, [...invalid, e]],
+      ([valid, invalid], e) => isValidIsoDate(e.date) ? [[...valid, e], invalid] : [valid, [...invalid, e]],
       [[], []]
     );
     if (invalidEvents.length) {
@@ -1287,6 +1279,58 @@ app.get('/api/admin/elastic-status', async (req, res) => {
     return res.status(401).json({ error: 'Unauthorized' });
   }
   res.json(await pingElastic());
+});
+
+// ─── Quality & reliability dashboard (admin only, read-only) ─────────────────
+// Requires the service-role client: under the anon key RLS would silently
+// filter rows and every metric would read as zero instead of erroring.
+function requireAdminSecretHeader(req, res) {
+  const adminSecret = process.env.ADMIN_SECRET;
+  if (!adminSecret || req.headers['x-admin-secret'] !== adminSecret) {
+    res.status(401).json({ error: 'Unauthorized' });
+    return false;
+  }
+  if (!supabaseAdmin) {
+    res.status(503).json({ error: 'SUPABASE_SERVICE_ROLE_KEY not configured — metrics would be incomplete under RLS' });
+    return false;
+  }
+  return true;
+}
+
+app.get('/api/admin/quality', async (req, res) => {
+  if (!requireAdminSecretHeader(req, res)) return;
+  const days = Number(req.query.days) === 30 ? 30 : 7;
+  const now = Date.now();
+  try {
+    const data = await fetchQualityData(supabaseAdmin, { since: new Date(now - days * 24 * 60 * 60 * 1000) });
+    res.json(computeQualityMetrics({ ...data, days, now }));
+  } catch (error) {
+    console.error(JSON.stringify({ step: 'admin_quality_error', message: error.message, ts: new Date().toISOString() }));
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/admin/quality/emails/:id', async (req, res) => {
+  if (!requireAdminSecretHeader(req, res)) return;
+  const includeBody = req.query.include_body === '1';
+  try {
+    const detail = await fetchEmailDetail(supabaseAdmin, req.params.id, { includeBody });
+    if (!detail) return res.status(404).json({ error: 'Email not found' });
+    if (includeBody) {
+      // Same body selection as /api/events/:id/source — school mailers often
+      // send a stub text part with the real notice only in the HTML.
+      const rawBody = detail.email.raw_body?.trim();
+      detail.email.body = (rawBody && rawBody.length > 50)
+        ? rawBody
+        : (detail.email.raw_html ? stripHtmlToText(detail.email.raw_html) : rawBody) || null;
+      delete detail.email.raw_body;
+      delete detail.email.raw_html;
+    }
+    res.json(detail);
+  } catch (error) {
+    console.error(JSON.stringify({ step: 'admin_quality_detail_error', message: error.message, ts: new Date().toISOString() }));
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // ─── Confirm a single staging event → create confirmed event ─────────────────
