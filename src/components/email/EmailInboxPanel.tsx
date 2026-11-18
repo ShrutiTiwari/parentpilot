@@ -83,11 +83,14 @@ export function EmailInboxPanel({ onViewInCalendar, onItemsLoaded }: EmailInboxP
     setTimeout(() => setCopied(false), 2000);
   };
 
+  // Keyed on user.id, not the user object: AuthContext hands out a new user
+  // object several times during startup, which fired this fetch 4x per load.
+  const userId = user?.id;
   const fetchPending = useCallback(async () => {
-    if (!user) return;
+    if (!userId) return;
     setLoading(true);
     try {
-      const res = await fetch(`${API_ENDPOINTS.inboundEmail.pending}?user_id=${user.id}`);
+      const res = await fetch(`${API_ENDPOINTS.inboundEmail.pending}?user_id=${userId}`);
       if (!res.ok) return;
       const data = await res.json();
       const fetchedItems: QueueItem[] = data.items || [];
@@ -120,9 +123,9 @@ export function EmailInboxPanel({ onViewInCalendar, onItemsLoaded }: EmailInboxP
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [userId]);
 
-  useEffect(() => { fetchPending(); }, [user]);
+  useEffect(() => { fetchPending(); }, [fetchPending]);
 
   const removeItem = (id: string) => setItems(prev => prev.filter(i => i.id !== id));
 
