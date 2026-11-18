@@ -6,7 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { dataService } from '../services/dataService';
 import { v4 as uuidv4 } from 'uuid';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { getEventVisibility, canSeeEvent } from '../utils/eventVisibilityUtils';
 import { convertToInputFormat, parseTimeForInput } from '../utils/dateUtils';
 import { convertYearGroupsToDatabase, getYearGroupsFromDatabase, parseCompoundYearGroups } from '@/utils/yearGroupUtils';
@@ -253,6 +253,10 @@ export function useEventManagement(showAuthModal?: boolean, setShowAuthModal?: (
       return schoolEvents;
     },
     enabled: !!user,
+    // The key changes as profiles and school access finish loading. Without
+    // this, each change resets isLoading, Dashboard swaps the whole page for a
+    // spinner, and every child (incl. the email inbox) remounts and re-fetches.
+    placeholderData: keepPreviousData,
   });
 
   // React Query for fetching personal events
